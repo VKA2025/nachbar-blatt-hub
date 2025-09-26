@@ -178,7 +178,7 @@ const Index = () => {
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold">Schlossbote</h1>
+            <h1 className="text-2xl font-bold">Schlossstadt.Info</h1>
             <Badge variant="secondary">Nachbarschafts-Portal</Badge>
           </div>
           <div className="flex items-center space-x-4">
@@ -330,7 +330,7 @@ const Index = () => {
       <footer className="border-t bg-card mt-16">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center text-muted-foreground">
-            <p>&copy; 2024 Schlossbote - Ihr Nachbarschafts-Portal</p>
+            <p>&copy; 2024 Schlossstadt.Info - Ihr Nachbarschafts-Portal</p>
           </div>
         </div>
       </footer>

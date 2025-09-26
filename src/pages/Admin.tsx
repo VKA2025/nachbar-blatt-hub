@@ -281,7 +281,7 @@ const Admin = () => {
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold">Schlossbote Admin</h1>
+            <h1 className="text-2xl font-bold">Schlossstadt.Info Admin</h1>
           </div>
           <div className="flex items-center space-x-4">
             <Button variant="outline" onClick={() => navigate("/")}>

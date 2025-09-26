@@ -211,7 +211,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Schlossbote</CardTitle>
+          <CardTitle className="text-2xl font-bold">Schlossstadt.Info</CardTitle>
           <CardDescription>Nachbarschafts-Portal</CardDescription>
         </CardHeader>
         <CardContent>
