@@ -5,15 +5,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { Upload, LogOut, Home, FileText } from "lucide-react";
+import { Upload, LogOut, Home, FileText, Link } from "lucide-react";
 import { z } from "zod";
 
 const flyerSchema = z.object({
   title: z.string().trim().min(1, "Titel ist erforderlich").max(100),
   description: z.string().trim().max(500).optional(),
+});
+
+const urlSchema = z.object({
+  title: z.string().trim().min(1, "Titel ist erforderlich").max(100),
+  description: z.string().trim().max(500).optional(),
+  external_url: z.string().url("Bitte geben Sie eine gültige URL ein").max(500),
 });
 
 const Admin = () => {
@@ -25,6 +32,8 @@ const Admin = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [externalUrl, setExternalUrl] = useState("");
+  const [uploadType, setUploadType] = useState<"file" | "url">("file");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -120,64 +129,102 @@ const Admin = () => {
     }
   };
 
-  const handleUpload = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!file || !user) return;
+    if (!user) return;
+    
+    if (uploadType === "file" && !file) return;
+    if (uploadType === "url" && !externalUrl.trim()) return;
     
     setUploading(true);
 
     try {
-      const validatedData = flyerSchema.parse({
-        title: title.trim(),
-        description: description.trim() || undefined,
-      });
-
-      // Upload file to storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('flyers')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('flyers')
-        .getPublicUrl(filePath);
-
-      // Save flyer record to database
-      const { error: dbError } = await supabase
-        .from('flyers')
-        .insert({
-          title: validatedData.title,
-          description: validatedData.description,
-          file_url: publicUrl,
-          file_name: file.name,
-          file_size: file.size,
-          uploaded_by: user.id,
+      if (uploadType === "file") {
+        const validatedData = flyerSchema.parse({
+          title: title.trim(),
+          description: description.trim() || undefined,
         });
 
-      if (dbError) {
-        // If database insert fails, clean up the uploaded file
-        await supabase.storage.from('flyers').remove([filePath]);
-        throw dbError;
-      }
+        // Upload file to storage
+        const fileExt = file!.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `${fileName}`;
 
-      toast({
-        title: "Werbeblatt hochgeladen",
-        description: "Das Werbeblatt wurde erfolgreich hochgeladen.",
-      });
+        const { error: uploadError } = await supabase.storage
+          .from('flyers')
+          .upload(filePath, file!);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('flyers')
+          .getPublicUrl(filePath);
+
+        // Save flyer record to database
+        const { error: dbError } = await supabase
+          .from('flyers')
+          .insert({
+            title: validatedData.title,
+            description: validatedData.description,
+            file_url: publicUrl,
+            file_name: file!.name,
+            file_size: file!.size,
+            uploaded_by: user.id,
+            is_external: false,
+            external_url: null,
+          });
+
+        if (dbError) {
+          // If database insert fails, clean up the uploaded file
+          await supabase.storage.from('flyers').remove([filePath]);
+          throw dbError;
+        }
+
+        toast({
+          title: "Werbeblatt hochgeladen",
+          description: "Das Werbeblatt wurde erfolgreich hochgeladen.",
+        });
+      } else {
+        // Handle external URL
+        const validatedData = urlSchema.parse({
+          title: title.trim(),
+          description: description.trim() || undefined,
+          external_url: externalUrl.trim(),
+        });
+
+        // Save external URL to database
+        const { error: dbError } = await supabase
+          .from('flyers')
+          .insert({
+            title: validatedData.title,
+            description: validatedData.description,
+            external_url: validatedData.external_url,
+            uploaded_by: user.id,
+            is_external: true,
+            file_url: null,
+            file_name: null,
+            file_size: null,
+          });
+
+        if (dbError) {
+          throw dbError;
+        }
+
+        toast({
+          title: "Link hinzugefügt",
+          description: "Der externe Link wurde erfolgreich hinzugefügt.",
+        });
+      }
 
       // Reset form
       setTitle("");
       setDescription("");
       setFile(null);
+      setExternalUrl("");
       // Reset file input
       const fileInput = document.getElementById('file-input') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
@@ -190,10 +237,12 @@ const Admin = () => {
           variant: "destructive",
         });
       } else {
-        console.error('Error uploading flyer:', error);
+        console.error('Error saving flyer:', error);
         toast({
-          title: "Upload fehlgeschlagen",
-          description: "Das Werbeblatt konnte nicht hochgeladen werden.",
+          title: uploadType === "file" ? "Upload fehlgeschlagen" : "Speichern fehlgeschlagen",
+          description: uploadType === "file" 
+            ? "Das Werbeblatt konnte nicht hochgeladen werden."
+            : "Der Link konnte nicht gespeichert werden.",
           variant: "destructive",
         });
       }
@@ -252,79 +301,128 @@ const Admin = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <Upload className="w-5 h-5 mr-2" />
-              Werbeblatt hochladen
+              Werbeblatt hinzufügen
             </CardTitle>
             <CardDescription>
-              Laden Sie wöchentliche Werbeblätter für die Nachbarschaft hoch.
+              Laden Sie Dateien hoch oder verlinken Sie zu externen Dokumenten.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleUpload} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="title">Titel *</Label>
-                <Input
-                  id="title"
-                  type="text"
-                  placeholder="z.B. Wochenangebote KW 38"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                  maxLength={100}
-                />
-              </div>
+            <Tabs value={uploadType} onValueChange={(value) => setUploadType(value as "file" | "url")}>
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="file">Datei hochladen</TabsTrigger>
+                <TabsTrigger value="url">Externe URL</TabsTrigger>
+              </TabsList>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Beschreibung (optional)</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Kurze Beschreibung des Werbeblatts..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  maxLength={500}
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="file-input">Datei auswählen *</Label>
-                <Input
-                  id="file-input"
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png,.webp"
-                  onChange={handleFileChange}
-                  required
-                />
-                <p className="text-sm text-muted-foreground">
-                  Erlaubte Formate: PDF, JPEG, PNG, WebP (max. 20MB)
-                </p>
-              </div>
-
-              {file && (
-                <div className="p-4 bg-muted rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <FileText className="w-4 h-4" />
-                    <span className="text-sm font-medium">{file.name}</span>
-                    <span className="text-sm text-muted-foreground">
-                      ({Math.round(file.size / 1024)} KB)
-                    </span>
-                  </div>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Titel *</Label>
+                  <Input
+                    id="title"
+                    type="text"
+                    placeholder="z.B. Wochenangebote KW 38"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    required
+                    maxLength={100}
+                  />
                 </div>
-              )}
 
-              <Button type="submit" className="w-full" disabled={uploading || !file}>
-                {uploading ? (
-                  <>
-                    <Upload className="w-4 h-4 mr-2 animate-spin" />
-                    Hochladen...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Werbeblatt hochladen
-                  </>
-                )}
-              </Button>
-            </form>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Beschreibung (optional)</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Kurze Beschreibung..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    maxLength={500}
+                    rows={3}
+                  />
+                </div>
+
+                <TabsContent value="file" className="space-y-4 mt-0">
+                  <div className="space-y-2">
+                    <Label htmlFor="file-input">Datei auswählen *</Label>
+                    <Input
+                      id="file-input"
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png,.webp"
+                      onChange={handleFileChange}
+                      required={uploadType === "file"}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Erlaubte Formate: PDF, JPEG, PNG, WebP (max. 20MB)
+                    </p>
+                  </div>
+
+                  {file && (
+                    <div className="p-4 bg-muted rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="w-4 h-4" />
+                        <span className="text-sm font-medium">{file.name}</span>
+                        <span className="text-sm text-muted-foreground">
+                          ({Math.round(file.size / 1024)} KB)
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="url" className="space-y-4 mt-0">
+                  <div className="space-y-2">
+                    <Label htmlFor="external-url">URL zum Dokument *</Label>
+                    <Input
+                      id="external-url"
+                      type="url"
+                      placeholder="https://beispiel.de/werbeblatt.pdf"
+                      value={externalUrl}
+                      onChange={(e) => setExternalUrl(e.target.value)}
+                      required={uploadType === "url"}
+                      maxLength={500}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Geben Sie eine direkte URL zum Dokument ein
+                    </p>
+                  </div>
+
+                  {externalUrl && (
+                    <div className="p-4 bg-muted rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <Link className="w-4 h-4" />
+                        <span className="text-sm font-medium break-all">{externalUrl}</span>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={uploading || (uploadType === "file" && !file) || (uploadType === "url" && !externalUrl.trim())}
+                >
+                  {uploading ? (
+                    <>
+                      <Upload className="w-4 h-4 mr-2 animate-spin" />
+                      {uploadType === "file" ? "Hochladen..." : "Speichern..."}
+                    </>
+                  ) : (
+                    <>
+                      {uploadType === "file" ? (
+                        <>
+                          <Upload className="w-4 h-4 mr-2" />
+                          Werbeblatt hochladen
+                        </>
+                      ) : (
+                        <>
+                          <Link className="w-4 h-4 mr-2" />
+                          Link hinzufügen
+                        </>
+                      )}
+                    </>
+                  )}
+                </Button>
+              </form>
+            </Tabs>
           </CardContent>
         </Card>
       </main>

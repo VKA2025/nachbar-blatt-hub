@@ -18,11 +18,13 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
-          file_name: string
+          external_url: string | null
+          file_name: string | null
           file_size: number | null
-          file_url: string
+          file_url: string | null
           id: string
           is_active: boolean
+          is_external: boolean
           title: string
           updated_at: string
           upload_date: string
@@ -31,11 +33,13 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
-          file_name: string
+          external_url?: string | null
+          file_name?: string | null
           file_size?: number | null
-          file_url: string
+          file_url?: string | null
           id?: string
           is_active?: boolean
+          is_external?: boolean
           title: string
           updated_at?: string
           upload_date?: string
@@ -44,11 +48,13 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
-          file_name?: string
+          external_url?: string | null
+          file_name?: string | null
           file_size?: number | null
-          file_url?: string
+          file_url?: string | null
           id?: string
           is_active?: boolean
+          is_external?: boolean
           title?: string
           updated_at?: string
           upload_date?: string

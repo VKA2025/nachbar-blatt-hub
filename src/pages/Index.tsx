@@ -6,15 +6,17 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { LogIn, LogOut, Calendar, FileText, Shield, Download, Eye } from "lucide-react";
+import { LogIn, LogOut, Calendar, FileText, Shield, Download, Eye, ExternalLink } from "lucide-react";
 
 interface Flyer {
   id: string;
   title: string;
   description: string | null;
-  file_url: string;
-  file_name: string;
+  file_url: string | null;
+  file_name: string | null;
   file_size: number | null;
+  external_url: string | null;
+  is_external: boolean;
   upload_date: string;
   created_at: string;
 }
@@ -88,6 +90,8 @@ const Index = () => {
           file_url,
           file_name,
           file_size,
+          external_url,
+          is_external,
           upload_date,
           created_at
         `)
@@ -135,17 +139,28 @@ const Index = () => {
     });
   };
 
-  const handleViewFlyer = (url: string) => {
-    window.open(url, '_blank');
+  const handleViewFlyer = (flyer: Flyer) => {
+    const url = flyer.is_external ? flyer.external_url : flyer.file_url;
+    if (url) {
+      window.open(url, '_blank');
+    }
   };
 
-  const handleDownloadFlyer = (url: string, filename: string) => {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownloadFlyer = (flyer: Flyer) => {
+    if (flyer.is_external) {
+      // For external URLs, just open in new tab since we can't force download
+      handleViewFlyer(flyer);
+      return;
+    }
+    
+    if (flyer.file_url && flyer.file_name) {
+      const link = document.createElement('a');
+      link.href = flyer.file_url;
+      link.download = flyer.file_name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   if (loading) {
@@ -237,12 +252,21 @@ const Index = () => {
               <Card key={flyer.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-start space-x-2">
-                    <FileText className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                    {flyer.is_external ? (
+                      <ExternalLink className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                    ) : (
+                      <FileText className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                    )}
                     <span className="line-clamp-2">{flyer.title}</span>
                   </CardTitle>
                   <CardDescription className="flex items-center space-x-2">
                     <Calendar className="w-4 h-4" />
                     <span>{formatUploadDate(flyer.upload_date)}</span>
+                    {flyer.is_external && (
+                      <Badge variant="secondary" className="text-xs">
+                        Externer Link
+                      </Badge>
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -253,8 +277,14 @@ const Index = () => {
                   )}
                   
                   <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>{flyer.file_name}</span>
-                    <span>{formatFileSize(flyer.file_size)}</span>
+                    {flyer.is_external ? (
+                      <span className="break-all">{flyer.external_url}</span>
+                    ) : (
+                      <>
+                        <span>{flyer.file_name}</span>
+                        <span>{formatFileSize(flyer.file_size)}</span>
+                      </>
+                    )}
                   </div>
 
                   {user && (
@@ -262,21 +292,32 @@ const Index = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleViewFlyer(flyer.file_url)}
+                        onClick={() => handleViewFlyer(flyer)}
                         className="flex-1"
                       >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Anzeigen
+                        {flyer.is_external ? (
+                          <>
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Link öffnen
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-4 h-4 mr-2" />
+                            Anzeigen
+                          </>
+                        )}
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownloadFlyer(flyer.file_url, flyer.file_name)}
-                        className="flex-1"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download
-                      </Button>
+                      {!flyer.is_external && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownloadFlyer(flyer)}
+                          className="flex-1"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download
+                        </Button>
+                      )}
                     </div>
                   )}
                 </CardContent>
