@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { LogIn, LogOut, Calendar, FileText, Shield, Download, Eye, ExternalLink } from "lucide-react";
+import { LogIn, LogOut, Calendar, FileText, Shield, Download, Eye, ExternalLink, ArrowUpDown } from "lucide-react";
 
 interface Flyer {
   id: string;
@@ -21,12 +22,21 @@ interface Flyer {
   created_at: string;
 }
 
+interface SortPreferences {
+  field: 'upload_date' | 'title' | 'created_at';
+  direction: 'asc' | 'desc';
+}
+
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [flyers, setFlyers] = useState<Flyer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortPreferences, setSortPreferences] = useState<SortPreferences>({
+    field: 'upload_date',
+    direction: 'desc'
+  });
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -38,10 +48,10 @@ const Index = () => {
         
         if (session?.user) {
           checkAdminStatus(session.user.id);
+          loadSortPreferences(session.user.id);
         } else {
           setIsAdmin(false);
         }
-        loadFlyers();
       }
     );
 
@@ -51,12 +61,16 @@ const Index = () => {
       
       if (session?.user) {
         checkAdminStatus(session.user.id);
+        loadSortPreferences(session.user.id);
       }
-      loadFlyers();
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    loadFlyers();
+  }, [sortPreferences]);
 
   const checkAdminStatus = async (userId: string) => {
     try {
@@ -79,8 +93,52 @@ const Index = () => {
     }
   };
 
+  const loadSortPreferences = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('sort_preferences')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading sort preferences:', error);
+      } else if (data?.sort_preferences) {
+        const prefs = data.sort_preferences as any;
+        if (prefs && typeof prefs === 'object' && 'field' in prefs && 'direction' in prefs) {
+          setSortPreferences(prefs as SortPreferences);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading sort preferences:', error);
+    }
+  };
+
+  const saveSortPreferences = async (preferences: SortPreferences) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ sort_preferences: preferences as any })
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error saving sort preferences:', error);
+        toast({
+          title: "Fehler",
+          description: "Sortiereinstellungen konnten nicht gespeichert werden.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error saving sort preferences:', error);
+    }
+  };
+
   const loadFlyers = async () => {
     try {
+      const ascending = sortPreferences.direction === 'asc';
       const { data, error } = await supabase
         .from('flyers')
         .select(`
@@ -96,7 +154,7 @@ const Index = () => {
           created_at
         `)
         .eq('is_active', true)
-        .order('upload_date', { ascending: false });
+        .order(sortPreferences.field, { ascending });
 
       if (error) {
         console.error('Error loading flyers:', error);
@@ -113,6 +171,21 @@ const Index = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSortChange = async (field: string, direction: string) => {
+    const newPreferences = { 
+      field: field as SortPreferences['field'], 
+      direction: direction as SortPreferences['direction'] 
+    };
+    setSortPreferences(newPreferences);
+    
+    if (user) {
+      await saveSortPreferences(newPreferences);
+    }
+    
+    setLoading(true);
+    await loadFlyers();
   };
 
   const handleSignOut = async () => {
@@ -232,6 +305,43 @@ const Index = () => {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {user && flyers.length > 0 && (
+          <div className="flex flex-col sm:flex-row gap-4 mb-6 p-4 bg-muted/30 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <ArrowUpDown className="w-4 h-4" />
+              <span className="text-sm font-medium">Sortierung:</span>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Select
+                value={sortPreferences.field}
+                onValueChange={(field) => handleSortChange(field, sortPreferences.direction)}
+              >
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Sortieren nach" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="upload_date">Upload-Datum</SelectItem>
+                  <SelectItem value="title">Titel</SelectItem>
+                  <SelectItem value="created_at">Erstellungszeit</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select
+                value={sortPreferences.direction}
+                onValueChange={(direction) => handleSortChange(sortPreferences.field, direction)}
+              >
+                <SelectTrigger className="w-full sm:w-32">
+                  <SelectValue placeholder="Richtung" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="desc">Absteigend</SelectItem>
+                  <SelectItem value="asc">Aufsteigend</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         )}
 
         {flyers.length === 0 ? (
