@@ -17,10 +17,6 @@ interface Flyer {
   file_size: number | null;
   upload_date: string;
   created_at: string;
-  profiles: {
-    first_name: string | null;
-    last_name: string | null;
-  } | null;
 }
 
 const Index = () => {
@@ -93,12 +89,7 @@ const Index = () => {
           file_name,
           file_size,
           upload_date,
-          created_at,
-          uploaded_by,
-          profiles (
-            first_name,
-            last_name
-          )
+          created_at
         `)
         .eq('is_active', true)
         .order('upload_date', { ascending: false });
@@ -265,12 +256,6 @@ const Index = () => {
                     <span>{flyer.file_name}</span>
                     <span>{formatFileSize(flyer.file_size)}</span>
                   </div>
-
-                  {flyer.profiles && (
-                    <div className="text-sm text-muted-foreground">
-                      Hochgeladen von: {flyer.profiles.first_name} {flyer.profiles.last_name}
-                    </div>
-                  )}
 
                   {user && (
                     <div className="flex space-x-2">
