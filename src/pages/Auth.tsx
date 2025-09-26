@@ -21,10 +21,12 @@ const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [resetEmail, setResetEmail] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -162,6 +164,49 @@ const Auth = () => {
     }
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetLoading(true);
+
+    try {
+      const validatedEmail = z.string().email("Ungültige E-Mail-Adresse").parse(resetEmail.trim());
+
+      const { error } = await supabase.auth.resetPasswordForEmail(validatedEmail, {
+        redirectTo: `${window.location.origin}/auth`
+      });
+
+      if (error) {
+        toast({
+          title: "Fehler beim Passwort-Reset",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "E-Mail gesendet",
+          description: "Bitte überprüfen Sie Ihre E-Mail für Anweisungen zum Zurücksetzen des Passworts.",
+        });
+        setResetEmail("");
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Ungültige E-Mail",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Fehler",
+          description: "Ein unerwarteter Fehler ist aufgetreten.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
@@ -171,9 +216,10 @@ const Auth = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signin">Anmelden</TabsTrigger>
               <TabsTrigger value="signup">Registrieren</TabsTrigger>
+              <TabsTrigger value="reset">Passwort zurücksetzen</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
@@ -265,6 +311,29 @@ const Auth = () => {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Registrieren..." : "Registrieren"}
                 </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="reset">
+              <form onSubmit={handlePasswordReset} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email">E-Mail-Adresse</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    placeholder="ihre.email@beispiel.de"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    required
+                    maxLength={255}
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={resetLoading}>
+                  {resetLoading ? "E-Mail wird gesendet..." : "Passwort zurücksetzen"}
+                </Button>
+                <p className="text-sm text-muted-foreground text-center">
+                  Sie erhalten eine E-Mail mit Anweisungen zum Zurücksetzen Ihres Passworts.
+                </p>
               </form>
             </TabsContent>
           </Tabs>
