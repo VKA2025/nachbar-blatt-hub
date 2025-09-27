@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { z } from "zod";
-import { ArrowLeft, Save, User as UserIcon } from "lucide-react";
+import { ArrowLeft, Save, User as UserIcon, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const profileSchema = z.object({
   firstName: z.string().trim().min(1, "Vorname ist erforderlich").max(50),
@@ -43,6 +45,8 @@ const Profile = () => {
   const [street, setStreet] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
   const [streets, setStreets] = useState<Street[]>([]);
+  const [streetOpen, setStreetOpen] = useState(false);
+  const [houseNumberOpen, setHouseNumberOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -292,35 +296,123 @@ const Profile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="street">Straße</Label>
-                  <Select value={street || "none"} onValueChange={(value) => setStreet(value === "none" ? "" : value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Straße wählen" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Keine Straße</SelectItem>
-                      {streets.map((streetOption) => (
-                        <SelectItem key={streetOption.id} value={streetOption.name}>
-                          {streetOption.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={streetOpen} onOpenChange={setStreetOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={streetOpen}
+                        className="w-full justify-between"
+                      >
+                        {street
+                          ? streets.find((streetOption) => streetOption.name === street)?.name || street
+                          : "Straße wählen..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Straße suchen..." />
+                        <CommandList>
+                          <CommandEmpty>Keine Straße gefunden.</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem
+                              value=""
+                              onSelect={() => {
+                                setStreet("");
+                                setStreetOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  street === "" ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              Keine Straße
+                            </CommandItem>
+                            {streets.map((streetOption) => (
+                              <CommandItem
+                                key={streetOption.id}
+                                value={streetOption.name}
+                                onSelect={(currentValue) => {
+                                  setStreet(currentValue === street ? "" : currentValue);
+                                  setStreetOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    street === streetOption.name ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {streetOption.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="houseNumber">Hausnummer</Label>
-                  <Select value={houseNumber || "none"} onValueChange={(value) => setHouseNumber(value === "none" ? "" : value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Nr. wählen" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Keine Nummer</SelectItem>
-                      {houseNumbers.map((number) => (
-                        <SelectItem key={number} value={number}>
-                          {number}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={houseNumberOpen} onOpenChange={setHouseNumberOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={houseNumberOpen}
+                        className="w-full justify-between"
+                      >
+                        {houseNumber || "Nr. wählen..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Nummer suchen..." />
+                        <CommandList>
+                          <CommandEmpty>Keine Nummer gefunden.</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem
+                              value=""
+                              onSelect={() => {
+                                setHouseNumber("");
+                                setHouseNumberOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  houseNumber === "" ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              Keine Nummer
+                            </CommandItem>
+                            {houseNumbers.map((number) => (
+                              <CommandItem
+                                key={number}
+                                value={number}
+                                onSelect={(currentValue) => {
+                                  setHouseNumber(currentValue === houseNumber ? "" : currentValue);
+                                  setHouseNumberOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    houseNumber === number ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {number}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
 
