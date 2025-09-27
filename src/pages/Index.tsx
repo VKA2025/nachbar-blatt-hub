@@ -612,7 +612,7 @@ const Index = () => {
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center space-x-2">
                       <Filter className="w-4 h-4" />
-                      <span className="text-sm font-medium">Filter nach Info-Typen:</span>
+                      <span className="text-sm font-medium">Filter:</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {infoTypes.map((type) => (
