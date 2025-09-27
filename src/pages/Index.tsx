@@ -705,9 +705,9 @@ const Index = () => {
             <CardContent className="pt-6">
               <div className="text-center">
                 <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">Keine Werbeblätter verfügbar</h3>
+                <h3 className="text-lg font-semibold mb-2">Keine Informationen verfügbar</h3>
                 <p className="text-muted-foreground">
-                  Aktuell sind keine Werbeblätter verfügbar. Schauen Sie später wieder vorbei!
+                  Aktuell sind keine Informationen verfügbar. Schauen Sie später wieder vorbei!
                 </p>
               </div>
             </CardContent>
