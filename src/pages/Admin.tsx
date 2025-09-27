@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
@@ -15,12 +16,14 @@ import { z } from "zod";
 const flyerSchema = z.object({
   title: z.string().trim().min(1, "Titel ist erforderlich").max(100),
   description: z.string().trim().max(500).optional(),
+  info_type_id: z.string().uuid("Bitte wählen Sie eine Info-Art aus"),
 });
 
 const urlSchema = z.object({
   title: z.string().trim().min(1, "Titel ist erforderlich").max(100),
   description: z.string().trim().max(500).optional(),
   external_url: z.string().url("Bitte geben Sie eine gültige URL ein").max(500),
+  info_type_id: z.string().uuid("Bitte wählen Sie eine Info-Art aus"),
 });
 
 const Admin = () => {
@@ -35,6 +38,8 @@ const Admin = () => {
   const [externalUrl, setExternalUrl] = useState("");
   const [uploadType, setUploadType] = useState<"file" | "url">("file");
   const [editingFlyer, setEditingFlyer] = useState<any>(null);
+  const [infoTypes, setInfoTypes] = useState<Array<{id: string, name: string}>>([]);
+  const [selectedInfoType, setSelectedInfoType] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -68,12 +73,29 @@ const Admin = () => {
   }, [navigate]);
 
   useEffect(() => {
+    // Load info types
+    const loadInfoTypes = async () => {
+      const { data, error } = await supabase
+        .from('info_types')
+        .select('id, name')
+        .order('name');
+      
+      if (error) {
+        console.error('Error loading info types:', error);
+      } else {
+        setInfoTypes(data || []);
+      }
+    };
+
+    loadInfoTypes();
+
     // Check if we're editing a flyer
     const editFlyer = location.state?.editFlyer;
     if (editFlyer) {
       setEditingFlyer(editFlyer);
       setTitle(editFlyer.title);
       setDescription(editFlyer.description || "");
+      setSelectedInfoType(editFlyer.info_type_id || "");
       setUploadType(editFlyer.is_external ? "url" : "file");
       if (editFlyer.is_external) {
         setExternalUrl(editFlyer.external_url || "");
@@ -161,6 +183,7 @@ const Admin = () => {
         const updateData: any = {
           title: title.trim(),
           description: description.trim() || null,
+          info_type_id: selectedInfoType || null,
         };
 
         if (uploadType === "url") {
@@ -168,6 +191,7 @@ const Admin = () => {
             title: title.trim(),
             description: description.trim() || undefined,
             external_url: externalUrl.trim(),
+            info_type_id: selectedInfoType,
           });
           
           updateData.external_url = validatedData.external_url;
@@ -180,6 +204,7 @@ const Admin = () => {
           const validatedData = flyerSchema.parse({
             title: title.trim(),
             description: description.trim() || undefined,
+            info_type_id: selectedInfoType,
           });
 
           // Upload new file
@@ -236,6 +261,7 @@ const Admin = () => {
         const validatedData = flyerSchema.parse({
           title: title.trim(),
           description: description.trim() || undefined,
+          info_type_id: selectedInfoType,
         });
 
         // Upload file to storage
@@ -268,6 +294,7 @@ const Admin = () => {
             uploaded_by: user.id,
             is_external: false,
             external_url: null,
+            info_type_id: validatedData.info_type_id,
           });
 
         if (dbError) {
@@ -286,6 +313,7 @@ const Admin = () => {
           title: title.trim(),
           description: description.trim() || undefined,
           external_url: externalUrl.trim(),
+          info_type_id: selectedInfoType,
         });
 
         // Save external URL to database
@@ -300,6 +328,7 @@ const Admin = () => {
             file_url: null,
             file_name: null,
             file_size: null,
+            info_type_id: validatedData.info_type_id,
           });
 
         if (dbError) {
@@ -318,6 +347,7 @@ const Admin = () => {
         setDescription("");
         setFile(null);
         setExternalUrl("");
+        setSelectedInfoType("");
         // Reset file input
         const fileInput = document.getElementById('file-input') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
@@ -437,6 +467,22 @@ const Admin = () => {
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="info-type">Info-Art *</Label>
+                  <Select value={selectedInfoType} onValueChange={setSelectedInfoType} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Wählen Sie eine Info-Art..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {infoTypes.map((infoType) => (
+                        <SelectItem key={infoType.id} value={infoType.id}>
+                          {infoType.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <TabsContent value="file" className="space-y-4 mt-0">
                   <div className="space-y-2">
                     <Label htmlFor="file-input">Datei auswählen *</Label>
@@ -495,7 +541,7 @@ const Admin = () => {
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={uploading || (uploadType === "file" && !file && !editingFlyer) || (uploadType === "url" && !externalUrl.trim())}
+                  disabled={uploading || !selectedInfoType || (uploadType === "file" && !file && !editingFlyer) || (uploadType === "url" && !externalUrl.trim())}
                 >
                   {uploading ? (
                     <>
