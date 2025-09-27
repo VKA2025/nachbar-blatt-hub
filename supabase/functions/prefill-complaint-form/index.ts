@@ -12,7 +12,25 @@ serve(async (req) => {
   }
 
   try {
-    const { userProfile } = await req.json();
+    let userProfile;
+    
+    if (req.method === 'POST') {
+      const contentType = req.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/x-www-form-urlencoded')) {
+        // Handle form data from HTML form
+        const formData = await req.formData();
+        const userProfileStr = formData.get('userProfile');
+        if (userProfileStr) {
+          userProfile = JSON.parse(userProfileStr.toString());
+        }
+      } else {
+        // Handle JSON data from API call
+        const body = await req.json();
+        userProfile = body.userProfile;
+      }
+    }
+
     console.log('Received user profile:', userProfile);
 
     // Fetch the original form
@@ -25,38 +43,40 @@ serve(async (req) => {
     let html = await formResponse.text();
     console.log('Fetched HTML length:', html.length);
 
-    // Pre-fill form fields with user data
-    if (userProfile.first_name) {
-      html = html.replace(/<input([^>]*name=["']?Vorname["']?[^>]*)>/gi, 
-        `<input$1 value="${userProfile.first_name}">`);
+    // Pre-fill form fields with user data if provided
+    if (userProfile) {
+      if (userProfile.first_name) {
+        html = html.replace(/<input([^>]*name=["']?Vorname["']?[^>]*)>/gi, 
+          `<input$1 value="${userProfile.first_name}">`);
+      }
+
+      if (userProfile.last_name) {
+        html = html.replace(/<input([^>]*name=["']?Nachname["']?[^>]*)>/gi, 
+          `<input$1 value="${userProfile.last_name}">`);
+      }
+
+      if (userProfile.email) {
+        html = html.replace(/<input([^>]*name=["']?Email["']?[^>]*)>/gi, 
+          `<input$1 value="${userProfile.email}">`);
+      }
+
+      if (userProfile.street) {
+        html = html.replace(/<input([^>]*name=["']?Strasse["']?[^>]*)>/gi, 
+          `<input$1 value="${userProfile.street}">`);
+      }
+
+      if (userProfile.house_number) {
+        html = html.replace(/<input([^>]*name=["']?HsNr["']?[^>]*)>/gi, 
+          `<input$1 value="${userProfile.house_number}">`);
+      }
+
+      // Pre-select the complaint reason
+      html = html.replace(/<option value="5">([^<]+)<\/option>/gi, 
+        '<option value="5" selected>$1</option>');
+
+      // Remove any existing selected option for the dropdown
+      html = html.replace(/<option value="" selected>/gi, '<option value="">');
     }
-
-    if (userProfile.last_name) {
-      html = html.replace(/<input([^>]*name=["']?Nachname["']?[^>]*)>/gi, 
-        `<input$1 value="${userProfile.last_name}">`);
-    }
-
-    if (userProfile.email) {
-      html = html.replace(/<input([^>]*name=["']?Email["']?[^>]*)>/gi, 
-        `<input$1 value="${userProfile.email}">`);
-    }
-
-    if (userProfile.street) {
-      html = html.replace(/<input([^>]*name=["']?Strasse["']?[^>]*)>/gi, 
-        `<input$1 value="${userProfile.street}">`);
-    }
-
-    if (userProfile.house_number) {
-      html = html.replace(/<input([^>]*name=["']?HsNr["']?[^>]*)>/gi, 
-        `<input$1 value="${userProfile.house_number}">`);
-    }
-
-    // Pre-select the complaint reason
-    html = html.replace(/<option value="5">([^<]+)<\/option>/gi, 
-      '<option value="5" selected>$1</option>');
-
-    // Remove any existing selected option for the dropdown
-    html = html.replace(/<option value="" selected>/gi, '<option value="">');
 
     console.log('HTML processing completed');
 

@@ -77,25 +77,26 @@ export const SortableFlyerCard = ({
     if (!userProfile) return;
     
     try {
-      // Call the edge function to get prefilled form
-      const { supabase } = await import("@/integrations/supabase/client");
-      const { data, error } = await supabase.functions.invoke('prefill-complaint-form', {
-        body: { userProfile }
-      });
-
-      if (error) {
-        console.error('Error calling prefill function:', error);
-        // Fallback to original form
-        window.open('https://www.rag-koeln.de/WebAdRAG/de-de/14/Reklamation', '_blank');
-        return;
-      }
-
-      // Open new window and write the HTML directly
-      const newWindow = window.open('', '_blank');
-      if (newWindow) {
-        newWindow.document.write(data);
-        newWindow.document.close();
-      }
+      // Create the URL for the edge function with user data as POST body
+      const functionUrl = `https://kvrxgaxjdpxqlnfhhsrc.supabase.co/functions/v1/prefill-complaint-form`;
+      
+      // Create a form to POST the data to the edge function
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = functionUrl;
+      form.target = '_blank';
+      
+      // Add the user profile data as a hidden input
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'userProfile';
+      input.value = JSON.stringify(userProfile);
+      form.appendChild(input);
+      
+      // Submit the form to open the prefilled page
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
 
     } catch (error) {
       console.error('Error opening prefilled form:', error);
