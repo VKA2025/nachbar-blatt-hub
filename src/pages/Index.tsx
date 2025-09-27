@@ -61,6 +61,16 @@ interface SortPreferences {
   custom_order?: string[];
 }
 
+interface UserProfile {
+  id: string;
+  user_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  street: string | null;
+  house_number: string | null;
+}
+
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -71,6 +81,7 @@ const Index = () => {
   const [selectedInfoTypes, setSelectedInfoTypes] = useState<string[]>([]);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [sortPreferences, setSortPreferences] = useState<SortPreferences>({
     field: 'custom',
     direction: 'desc',
@@ -89,9 +100,11 @@ const Index = () => {
           checkAdminStatus(session.user.id);
           loadSortPreferences(session.user.id);
           loadFilterPreferences(session.user.id);
+          loadUserProfile(session.user.id);
         } else {
           setIsAdmin(false);
           setSelectedInfoTypes([]);
+          setUserProfile(null);
         }
       }
     );
@@ -104,6 +117,7 @@ const Index = () => {
         checkAdminStatus(session.user.id);
         loadSortPreferences(session.user.id);
         loadFilterPreferences(session.user.id);
+        loadUserProfile(session.user.id);
       }
     });
 
@@ -186,6 +200,24 @@ const Index = () => {
       }
     } catch (error) {
       console.error('Error loading filter preferences:', error);
+    }
+  };
+
+  const loadUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, user_id, first_name, last_name, email, street, house_number')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading user profile:', error);
+      } else if (data) {
+        setUserProfile(data);
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
     }
   };
 
@@ -697,6 +729,7 @@ const Index = () => {
                     flyer={flyer}
                     isCustomSort={sortPreferences.field === 'custom'}
                     user={user}
+                    userProfile={userProfile}
                     isAdmin={isAdmin}
                     onViewFlyer={handleViewFlyer}
                     onDownloadFlyer={handleDownloadFlyer}

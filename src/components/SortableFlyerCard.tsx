@@ -27,6 +27,15 @@ interface SortableFlyerCardProps {
   flyer: Flyer;
   isCustomSort: boolean;
   user: any;
+  userProfile: {
+    id: string;
+    user_id: string;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+    street: string | null;
+    house_number: string | null;
+  } | null;
   isAdmin: boolean;
   onViewFlyer: (flyer: Flyer) => void;
   onDownloadFlyer: (flyer: Flyer) => void;
@@ -40,6 +49,7 @@ export const SortableFlyerCard = ({
   flyer, 
   isCustomSort, 
   user, 
+  userProfile,
   isAdmin,
   onViewFlyer, 
   onDownloadFlyer, 
@@ -61,6 +71,27 @@ export const SortableFlyerCard = ({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+  };
+
+  const handleComplaintClick = () => {
+    if (!userProfile) return;
+    
+    // Build the URL with pre-filled data
+    const baseUrl = "https://www.rag-koeln.de/WebAdRAG/de-de/14/Reklamation";
+    const params = new URLSearchParams();
+    
+    // Pre-fill with profile data
+    if (userProfile.first_name) params.append('vorname', userProfile.first_name);
+    if (userProfile.last_name) params.append('nachname', userProfile.last_name);
+    if (userProfile.email) params.append('email', userProfile.email);
+    if (userProfile.street) params.append('strasse', userProfile.street);
+    if (userProfile.house_number) params.append('hausnummer', userProfile.house_number);
+    
+    // Pre-fill the reason
+    params.append('grund', 'Zeitung bitte nicht mehr zustellen!');
+    
+    const urlWithParams = `${baseUrl}?${params.toString()}`;
+    window.open(urlWithParams, '_blank');
   };
 
   return (
@@ -149,6 +180,17 @@ export const SortableFlyerCard = ({
                 </Button>
               )}
             </div>
+            
+            {flyer.info_types?.name === 'Zeitung' && userProfile && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleComplaintClick}
+                className="w-full"
+              >
+                Papierversion abbestellen
+              </Button>
+            )}
             
             {isAdmin && (
               <div className="flex space-x-2">
