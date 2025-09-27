@@ -80,15 +80,15 @@ export const SortableFlyerCard = ({
     const baseUrl = "https://www.rag-koeln.de/WebAdRAG/de-de/14/Reklamation";
     const params = new URLSearchParams();
     
-    // Pre-fill with profile data
-    if (userProfile.first_name) params.append('vorname', userProfile.first_name);
-    if (userProfile.last_name) params.append('nachname', userProfile.last_name);
-    if (userProfile.email) params.append('email', userProfile.email);
-    if (userProfile.street) params.append('strasse', userProfile.street);
-    if (userProfile.house_number) params.append('hausnummer', userProfile.house_number);
+    // Pre-fill with profile data using correct field names
+    if (userProfile.first_name) params.append('Vorname', userProfile.first_name);
+    if (userProfile.last_name) params.append('Nachname', userProfile.last_name);
+    if (userProfile.email) params.append('Email', userProfile.email);
+    if (userProfile.street) params.append('Strasse', userProfile.street);
+    if (userProfile.house_number) params.append('HsNr', userProfile.house_number);
     
     // Pre-fill the reason
-    params.append('grund', 'Zeitung bitte nicht mehr zustellen!');
+    params.append('Grund', 'Zeitung bitte nicht mehr zustellen!');
     
     const urlWithParams = `${baseUrl}?${params.toString()}`;
     window.open(urlWithParams, '_blank');
