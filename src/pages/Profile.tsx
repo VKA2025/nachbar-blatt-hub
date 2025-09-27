@@ -292,12 +292,12 @@ const Profile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="street">Straße</Label>
-                  <Select value={street} onValueChange={setStreet}>
+                  <Select value={street || "none"} onValueChange={(value) => setStreet(value === "none" ? "" : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Straße wählen" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Keine Straße</SelectItem>
+                      <SelectItem value="none">Keine Straße</SelectItem>
                       {streets.map((streetOption) => (
                         <SelectItem key={streetOption.id} value={streetOption.name}>
                           {streetOption.name}
@@ -308,12 +308,12 @@ const Profile = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="houseNumber">Hausnummer</Label>
-                  <Select value={houseNumber} onValueChange={setHouseNumber}>
+                  <Select value={houseNumber || "none"} onValueChange={(value) => setHouseNumber(value === "none" ? "" : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Nr. wählen" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Keine Nummer</SelectItem>
+                      <SelectItem value="none">Keine Nummer</SelectItem>
                       {houseNumbers.map((number) => (
                         <SelectItem key={number} value={number}>
                           {number}
