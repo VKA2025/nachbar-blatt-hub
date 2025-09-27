@@ -81,11 +81,11 @@ export const SortableFlyerCard = ({
     const params = new URLSearchParams();
     
     // Pre-fill with profile data using correct field names
-    if (userProfile.first_name) params.append('Vorname', userProfile.first_name);
-    if (userProfile.last_name) params.append('Nachname', userProfile.last_name);
-    if (userProfile.email) params.append('Email', userProfile.email);
-    if (userProfile.street) params.append('Strasse', userProfile.street);
-    if (userProfile.house_number) params.append('HsNr', userProfile.house_number);
+    //if (userProfile.first_name) params.append('Vorname', userProfile.first_name);
+    //if (userProfile.last_name) params.append('Nachname', userProfile.last_name);
+    //if (userProfile.email) params.append('Email', userProfile.email);
+    //if (userProfile.street) params.append('Strasse', userProfile.street);
+    //if (userProfile.house_number) params.append('HsNr', userProfile.house_number);
     
     // Pre-fill the reason with the correct field name and value
     params.append('GewaehlterGrund', '5');
