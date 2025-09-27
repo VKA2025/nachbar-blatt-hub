@@ -572,9 +572,9 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold mb-4 text-primary">Informationen aus Deiner Stadt</h2>
+          <h2 className="text-3xl font-bold mb-4 text-primary">Aktuelle Infos aus Deiner Stadt</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Entdecke die neuesten Angebote und Informationen aus Deiner Nachbarschaft.
+            Entdecken Sie die neuesten Angebote und Informationen aus Ihrer Nachbarschaft.
             {!user && " Melden Sie sich an, um alle Funktionen zu nutzen."}
           </p>
         </div>
@@ -612,7 +612,7 @@ const Index = () => {
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center space-x-2">
                       <Filter className="w-4 h-4" />
-                      <span className="text-sm font-medium">Filter:</span>
+                      <span className="text-sm font-medium">Filter nach Info-Typen:</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {infoTypes.map((type) => (
@@ -693,7 +693,7 @@ const Index = () => {
             {sortPreferences.field === 'custom' && (
               <div className="mt-3 p-3 bg-primary/10 rounded-md border border-primary/20">
                 <p className="text-sm text-primary font-medium">
-                  💡 Sortiere deine Informationen durch tippen und ziehen der Infokacheln
+                  💡 Sortiere deine Informationen durch tippen und ziehen auf die Infokacheln wie du es möchtest
                 </p>
               </div>
             )}
@@ -705,9 +705,9 @@ const Index = () => {
             <CardContent className="pt-6">
               <div className="text-center">
                 <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">Keine Informationen verfügbar</h3>
+                <h3 className="text-lg font-semibold mb-2">Keine Werbeblätter verfügbar</h3>
                 <p className="text-muted-foreground">
-                  Es sind keine Informationen verfügbar. Bitte passe den Filter an.
+                  Aktuell sind keine Werbeblätter verfügbar. Schauen Sie später wieder vorbei!
                 </p>
               </div>
             </CardContent>

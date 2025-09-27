@@ -101,7 +101,6 @@ export type Database = {
           id: string
           last_name: string | null
           sort_preferences: Json | null
-          status: string | null
           street: string | null
           updated_at: string
           user_id: string
@@ -115,7 +114,6 @@ export type Database = {
           id?: string
           last_name?: string | null
           sort_preferences?: Json | null
-          status?: string | null
           street?: string | null
           updated_at?: string
           user_id: string
@@ -129,7 +127,6 @@ export type Database = {
           id?: string
           last_name?: string | null
           sort_preferences?: Json | null
-          status?: string | null
           street?: string | null
           updated_at?: string
           user_id?: string

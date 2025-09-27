@@ -10,9 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { Upload, LogOut, Home, FileText, Link, Edit, Users } from "lucide-react";
+import { Upload, LogOut, Home, FileText, Link, Edit } from "lucide-react";
 import { z } from "zod";
-import { UserManagement } from "@/components/UserManagement";
 
 const flyerSchema = z.object({
   title: z.string().trim().min(1, "Titel ist erforderlich").max(100),
@@ -422,38 +421,25 @@ const Admin = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="flyers" className="max-w-6xl mx-auto">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="flyers" className="flex items-center">
-              <FileText className="w-4 h-4 mr-2" />
-              Informationen verwalten
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center">
-              <Users className="w-4 h-4 mr-2" />
-              Benutzer verwalten
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="flyers">
-            <Card className="max-w-2xl mx-auto">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Upload className="w-5 h-5 mr-2" />
-                  {editingFlyer ? "Werbeblatt bearbeiten" : "Werbeblatt hinzufügen"}
-                </CardTitle>
-                <CardDescription>
-                  {editingFlyer 
-                    ? "Bearbeiten Sie die Details des Werbeblatts."
-                    : "Laden Sie Dateien hoch oder verlinken Sie zu externen Dokumenten."
-                  }
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Tabs value={uploadType} onValueChange={(value) => setUploadType(value as "file" | "url")}>
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="file">Datei hochladen</TabsTrigger>
-                    <TabsTrigger value="url">Externe URL</TabsTrigger>
-                  </TabsList>
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Upload className="w-5 h-5 mr-2" />
+              {editingFlyer ? "Werbeblatt bearbeiten" : "Werbeblatt hinzufügen"}
+            </CardTitle>
+            <CardDescription>
+              {editingFlyer 
+                ? "Bearbeiten Sie die Details des Werbeblatts."
+                : "Laden Sie Dateien hoch oder verlinken Sie zu externen Dokumenten."
+              }
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={uploadType} onValueChange={(value) => setUploadType(value as "file" | "url")}>
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="file">Datei hochladen</TabsTrigger>
+                <TabsTrigger value="url">Externe URL</TabsTrigger>
+              </TabsList>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
@@ -584,15 +570,9 @@ const Admin = () => {
                   )}
                 </Button>
               </form>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="users">
-            <UserManagement />
-          </TabsContent>
-        </Tabs>
+            </Tabs>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
