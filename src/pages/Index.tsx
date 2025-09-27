@@ -7,7 +7,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { LogIn, LogOut, Calendar, FileText, Shield, Download, Eye, ExternalLink, ArrowUpDown } from "lucide-react";
+import { LogIn, LogOut, Calendar, FileText, Shield, Download, Eye, ExternalLink, ArrowUpDown, GripVertical } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import {
+  CSS,
+} from '@dnd-kit/utilities';
+import { SortableFlyerCard } from "@/components/SortableFlyerCard";
 
 interface Flyer {
   id: string;
@@ -23,8 +43,9 @@ interface Flyer {
 }
 
 interface SortPreferences {
-  field: 'upload_date' | 'title' | 'created_at';
+  field: 'upload_date' | 'title' | 'created_at' | 'custom';
   direction: 'asc' | 'desc';
+  custom_order?: string[];
 }
 
 const Index = () => {
@@ -35,7 +56,8 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [sortPreferences, setSortPreferences] = useState<SortPreferences>({
     field: 'upload_date',
-    direction: 'desc'
+    direction: 'desc',
+    custom_order: []
   });
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -106,7 +128,11 @@ const Index = () => {
       } else if (data?.sort_preferences) {
         const prefs = data.sort_preferences as any;
         if (prefs && typeof prefs === 'object' && 'field' in prefs && 'direction' in prefs) {
-          setSortPreferences(prefs as SortPreferences);
+          setSortPreferences({
+            field: prefs.field || 'upload_date',
+            direction: prefs.direction || 'desc',
+            custom_order: prefs.custom_order || []
+          });
         }
       }
     } catch (error) {
@@ -138,8 +164,7 @@ const Index = () => {
 
   const loadFlyers = async () => {
     try {
-      const ascending = sortPreferences.direction === 'asc';
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('flyers')
         .select(`
           id,
@@ -153,8 +178,7 @@ const Index = () => {
           upload_date,
           created_at
         `)
-        .eq('is_active', true)
-        .order(sortPreferences.field, { ascending });
+        .eq('is_active', true);
 
       if (error) {
         console.error('Error loading flyers:', error);
@@ -163,9 +187,34 @@ const Index = () => {
           description: "Die Werbeblätter konnten nicht geladen werden.",
           variant: "destructive",
         });
-      } else {
-        setFlyers(data as any[] || []);
+        return;
       }
+
+      let sortedFlyers = data as Flyer[] || [];
+
+      // Apply sorting based on preferences
+      if (sortPreferences.field === 'custom' && sortPreferences.custom_order && sortPreferences.custom_order.length > 0) {
+        // Sort by custom order
+        const orderMap = new Map(sortPreferences.custom_order.map((id, index) => [id, index]));
+        sortedFlyers.sort((a, b) => {
+          const orderA = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+          const orderB = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+          return orderA - orderB;
+        });
+      } else {
+        // Sort by field and direction
+        const ascending = sortPreferences.direction === 'asc';
+        sortedFlyers.sort((a, b) => {
+          const aValue = a[sortPreferences.field as keyof Flyer];
+          const bValue = b[sortPreferences.field as keyof Flyer];
+          
+          if (aValue < bValue) return ascending ? -1 : 1;
+          if (aValue > bValue) return ascending ? 1 : -1;
+          return 0;
+        });
+      }
+
+      setFlyers(sortedFlyers);
     } catch (error) {
       console.error('Error loading flyers:', error);
     } finally {
@@ -174,9 +223,10 @@ const Index = () => {
   };
 
   const handleSortChange = async (field: string, direction: string) => {
-    const newPreferences = { 
+    const newPreferences: SortPreferences = { 
       field: field as SortPreferences['field'], 
-      direction: direction as SortPreferences['direction'] 
+      direction: direction as SortPreferences['direction'],
+      custom_order: field === 'custom' ? sortPreferences.custom_order : []
     };
     setSortPreferences(newPreferences);
     
@@ -186,6 +236,43 @@ const Index = () => {
     
     setLoading(true);
     await loadFlyers();
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      const oldIndex = flyers.findIndex((flyer) => flyer.id === active.id);
+      const newIndex = flyers.findIndex((flyer) => flyer.id === over?.id);
+      
+      const newFlyers = arrayMove(flyers, oldIndex, newIndex);
+      setFlyers(newFlyers);
+      
+      // Update sort preferences to custom order
+      const newCustomOrder = newFlyers.map(flyer => flyer.id);
+      const newPreferences: SortPreferences = {
+        field: 'custom',
+        direction: 'desc',
+        custom_order: newCustomOrder
+      };
+      
+      setSortPreferences(newPreferences);
+      
+      if (user) {
+        await saveSortPreferences(newPreferences);
+      }
+    }
   };
 
   const handleSignOut = async () => {
@@ -325,6 +412,7 @@ const Index = () => {
                   <SelectItem value="upload_date">Upload-Datum</SelectItem>
                   <SelectItem value="title">Titel</SelectItem>
                   <SelectItem value="created_at">Erstellungszeit</SelectItem>
+                  <SelectItem value="custom">Benutzerdefiniert</SelectItem>
                 </SelectContent>
               </Select>
               
@@ -357,83 +445,31 @@ const Index = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {flyers.map((flyer) => (
-              <Card key={flyer.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="flex items-start space-x-2">
-                    {flyer.is_external ? (
-                      <ExternalLink className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                    ) : (
-                      <FileText className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                    )}
-                    <span className="line-clamp-2">{flyer.title}</span>
-                  </CardTitle>
-                  <CardDescription className="flex items-center space-x-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>{formatUploadDate(flyer.upload_date)}</span>
-                    {flyer.is_external && (
-                      <Badge variant="secondary" className="text-xs">
-                        Externer Link
-                      </Badge>
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {flyer.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-3">
-                      {flyer.description}
-                    </p>
-                  )}
-                  
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    {flyer.is_external ? (
-                      <span className="break-all">{flyer.external_url}</span>
-                    ) : (
-                      <>
-                        <span>{flyer.file_name}</span>
-                        <span>{formatFileSize(flyer.file_size)}</span>
-                      </>
-                    )}
-                  </div>
-
-                  {user && (
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewFlyer(flyer)}
-                        className="flex-1"
-                      >
-                        {flyer.is_external ? (
-                          <>
-                            <ExternalLink className="w-4 h-4 mr-2" />
-                            Link öffnen
-                          </>
-                        ) : (
-                          <>
-                            <Eye className="w-4 h-4 mr-2" />
-                            Anzeigen
-                          </>
-                        )}
-                      </Button>
-                      {!flyer.is_external && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDownloadFlyer(flyer)}
-                          className="flex-1"
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          Download
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <DndContext 
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext 
+              items={flyers.map(f => f.id)} 
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {flyers.map((flyer) => (
+                  <SortableFlyerCard
+                    key={flyer.id}
+                    flyer={flyer}
+                    isCustomSort={sortPreferences.field === 'custom'}
+                    user={user}
+                    onViewFlyer={handleViewFlyer}
+                    onDownloadFlyer={handleDownloadFlyer}
+                    formatFileSize={formatFileSize}
+                    formatUploadDate={formatUploadDate}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </main>
 
