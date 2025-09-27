@@ -774,7 +774,7 @@ const Index = () => {
                   </p>
                   <p>
                     <strong>Datenschutz:</strong><br />
-                    Die Nutzung unserer Webseite ist in der Regel ohne Angabe personenbezogener Daten möglich. Soweit auf unseren Seiten personenbezogene Daten erhoben werden, erfolgt dies stets auf freiwilliger Basis.
+                    Personenbezogene Daten dienen lediglich zur Anmeldung und zur Nutzung von auf dieser Webseite hinterlegten Funktionen. Die Daten werden nicht weitergegeben und nicht ausgewertet. Sie werden auf freiwilliger Basis erhoben.
                   </p>
                 </div>
               </div>
