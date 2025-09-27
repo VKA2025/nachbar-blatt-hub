@@ -90,15 +90,12 @@ export const SortableFlyerCard = ({
         return;
       }
 
-      // Create a blob from the HTML response and open it
-      const blob = new Blob([data], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const newWindow = window.open(url, '_blank');
-      
-      // Clean up the object URL after a delay
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-      }, 1000);
+      // Open new window and write the HTML directly
+      const newWindow = window.open('', '_blank');
+      if (newWindow) {
+        newWindow.document.write(data);
+        newWindow.document.close();
+      }
 
     } catch (error) {
       console.error('Error opening prefilled form:', error);
