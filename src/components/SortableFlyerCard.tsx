@@ -192,6 +192,17 @@ export const SortableFlyerCard = ({
               </Button>
             )}
             
+            {flyer.info_types?.name === 'Abfallkalender' && userProfile && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open('https://www.awb-koeln.de/service/abfuhrtermine/', '_blank')}
+                className="w-full"
+              >
+                Meine Abholtermine
+              </Button>
+            )}
+            
             {isAdmin && (
               <div className="flex space-x-2">
                 <Button
