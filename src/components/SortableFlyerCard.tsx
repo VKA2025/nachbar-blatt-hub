@@ -76,24 +76,35 @@ export const SortableFlyerCard = ({
   const handleComplaintClick = async () => {
     if (!userProfile) return;
     
-    // Copy instruction text to clipboard
-    const instructionText = `Bitte wählen Sie im Formular: "Zeitung bitte nicht mehr zustellen!"`;
-    
     try {
-      await navigator.clipboard.writeText(instructionText);
-      // Show toast notification
-      const { toast } = await import("@/hooks/use-toast");
-      toast({
-        title: "Anweisung kopiert",
-        description: "Die Anweisung wurde in die Zwischenablage kopiert. Das Formular wird jetzt geöffnet.",
+      // Call the edge function to get prefilled form
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data, error } = await supabase.functions.invoke('prefill-complaint-form', {
+        body: { userProfile }
       });
+
+      if (error) {
+        console.error('Error calling prefill function:', error);
+        // Fallback to original form
+        window.open('https://www.rag-koeln.de/WebAdRAG/de-de/14/Reklamation', '_blank');
+        return;
+      }
+
+      // Create a blob from the HTML response and open it
+      const blob = new Blob([data], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const newWindow = window.open(url, '_blank');
+      
+      // Clean up the object URL after a delay
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 1000);
+
     } catch (error) {
-      console.log("Clipboard not available");
+      console.error('Error opening prefilled form:', error);
+      // Fallback to original form
+      window.open('https://www.rag-koeln.de/WebAdRAG/de-de/14/Reklamation', '_blank');
     }
-    
-    // Open the complaint form
-    const baseUrl = "https://www.rag-koeln.de/WebAdRAG/de-de/14/Reklamation";
-    window.open(baseUrl, '_blank');
   };
 
   return (
