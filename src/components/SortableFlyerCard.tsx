@@ -73,34 +73,38 @@ export const SortableFlyerCard = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const handleComplaintClick = () => {
+  const handleComplaintClick = async () => {
     if (!userProfile) return;
     
-    // Build URL with parameters
-    const baseUrl = 'https://www.rag-koeln.de/WebAdRAG/de-de/14/Reklamation';
-    const params = new URLSearchParams();
-    
-    if (userProfile.first_name) {
-      params.append('Vorname', userProfile.first_name);
+    try {
+      // Call the edge function to get prefilled form
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data, error } = await supabase.functions.invoke('prefill-complaint-form', {
+        body: { userProfile }
+      });
+
+      if (error) {
+        console.error('Error calling prefill function:', error);
+        // Fallback to original form
+        window.open('https://www.rag-koeln.de/WebAdRAG/de-de/14/Reklamation', '_blank');
+        return;
+      }
+
+      // Create a blob from the HTML response and open it
+      const blob = new Blob([data], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const newWindow = window.open(url, '_blank');
+      
+      // Clean up the object URL after a delay
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error opening prefilled form:', error);
+      // Fallback to original form
+      window.open('https://www.rag-koeln.de/WebAdRAG/de-de/14/Reklamation', '_blank');
     }
-    if (userProfile.last_name) {
-      params.append('Nachname', userProfile.last_name);
-    }
-    if (userProfile.email) {
-      params.append('Email', userProfile.email);
-    }
-    if (userProfile.street) {
-      params.append('Strasse', userProfile.street);
-    }
-    if (userProfile.house_number) {
-      params.append('HsNr', userProfile.house_number);
-    }
-    
-    // Add complaint reason parameter
-    params.append('GewaehlterGrund', '5');
-    
-    const fullUrl = `${baseUrl}?${params.toString()}`;
-    window.open(fullUrl, '_blank');
   };
 
   return (
