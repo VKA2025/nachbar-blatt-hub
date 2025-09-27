@@ -16,6 +16,11 @@ interface Flyer {
   is_external: boolean;
   upload_date: string;
   created_at: string;
+  info_type_id: string | null;
+  info_types?: {
+    id: string;
+    name: string;
+  };
 }
 
 interface SortableFlyerCardProps {
@@ -79,11 +84,18 @@ export const SortableFlyerCard = ({
             <Calendar className="w-4 h-4" />
             <span>{formatUploadDate(flyer.upload_date)}</span>
           </CardDescription>
-          {flyer.is_external && (
-            <Badge variant="secondary" className="text-xs">
-              Externer Link
-            </Badge>
-          )}
+          <div className="flex items-center space-x-2">
+            {flyer.info_types?.name && (
+              <Badge variant="outline" className="text-xs">
+                {flyer.info_types.name}
+              </Badge>
+            )}
+            {flyer.is_external && (
+              <Badge variant="secondary" className="text-xs">
+                Externer Link
+              </Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

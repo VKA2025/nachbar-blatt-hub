@@ -23,6 +23,7 @@ export type Database = {
           file_size: number | null
           file_url: string | null
           id: string
+          info_type_id: string | null
           is_active: boolean
           is_external: boolean
           title: string
@@ -38,6 +39,7 @@ export type Database = {
           file_size?: number | null
           file_url?: string | null
           id?: string
+          info_type_id?: string | null
           is_active?: boolean
           is_external?: boolean
           title: string
@@ -53,12 +55,39 @@ export type Database = {
           file_size?: number | null
           file_url?: string | null
           id?: string
+          info_type_id?: string | null
           is_active?: boolean
           is_external?: boolean
           title?: string
           updated_at?: string
           upload_date?: string
           uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flyers_info_type_id_fkey"
+            columns: ["info_type_id"]
+            isOneToOne: false
+            referencedRelation: "info_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      info_types: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
         }
         Relationships: []
       }

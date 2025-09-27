@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { LogIn, LogOut, Calendar, FileText, Shield, Download, Eye, ExternalLink, ArrowUpDown, GripVertical, Edit, Trash2, User as UserIcon } from "lucide-react";
+import { LogIn, LogOut, Calendar, FileText, Shield, Download, Eye, ExternalLink, ArrowUpDown, GripVertical, Edit, Trash2, User as UserIcon, ChevronDown, Filter } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -41,6 +42,16 @@ interface Flyer {
   is_external: boolean;
   upload_date: string;
   created_at: string;
+  info_type_id: string | null;
+  info_types?: {
+    id: string;
+    name: string;
+  };
+}
+
+interface InfoType {
+  id: string;
+  name: string;
 }
 
 interface SortPreferences {
@@ -54,6 +65,10 @@ const Index = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [flyers, setFlyers] = useState<Flyer[]>([]);
+  const [allFlyers, setAllFlyers] = useState<Flyer[]>([]);
+  const [infoTypes, setInfoTypes] = useState<InfoType[]>([]);
+  const [selectedInfoType, setSelectedInfoType] = useState<string>('all');
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sortPreferences, setSortPreferences] = useState<SortPreferences>({
     field: 'custom',
@@ -94,6 +109,14 @@ const Index = () => {
   useEffect(() => {
     loadFlyers();
   }, [sortPreferences]);
+
+  useEffect(() => {
+    loadInfoTypes();
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [allFlyers, selectedInfoType]);
 
   const checkAdminStatus = async (userId: string) => {
     try {
@@ -163,6 +186,24 @@ const Index = () => {
     }
   };
 
+  const loadInfoTypes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('info_types')
+        .select('id, name')
+        .order('name');
+
+      if (error) {
+        console.error('Error loading info types:', error);
+        return;
+      }
+
+      setInfoTypes(data || []);
+    } catch (error) {
+      console.error('Error loading info types:', error);
+    }
+  };
+
   const loadFlyers = async () => {
     try {
       let { data, error } = await supabase
@@ -177,7 +218,12 @@ const Index = () => {
           external_url,
           is_external,
           upload_date,
-          created_at
+          created_at,
+          info_type_id,
+          info_types (
+            id,
+            name
+          )
         `)
         .eq('is_active', true);
 
@@ -215,12 +261,22 @@ const Index = () => {
         });
       }
 
-      setFlyers(sortedFlyers);
+      setAllFlyers(sortedFlyers);
     } catch (error) {
       console.error('Error loading flyers:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyFilters = () => {
+    let filteredFlyers = allFlyers;
+
+    if (selectedInfoType !== 'all') {
+      filteredFlyers = allFlyers.filter(flyer => flyer.info_type_id === selectedInfoType);
+    }
+
+    setFlyers(filteredFlyers);
   };
 
   const handleSortChange = async (field: string, direction: string) => {
@@ -443,41 +499,81 @@ const Index = () => {
           </Card>
         )}
 
-        {user && flyers.length > 0 && (
-          <div className="flex flex-col sm:flex-row gap-4 mb-6 p-4 bg-muted/30 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <ArrowUpDown className="w-4 h-4" />
-              <span className="text-sm font-medium">Sortierung:</span>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Select
-                value={sortPreferences.field}
-                onValueChange={(field) => handleSortChange(field, sortPreferences.direction)}
-              >
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Sortieren nach" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="upload_date">Upload-Datum</SelectItem>
-                  <SelectItem value="title">Titel</SelectItem>
-                  <SelectItem value="created_at">Erstellungszeit</SelectItem>
-                  <SelectItem value="custom">Benutzerdefiniert</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select
-                value={sortPreferences.direction}
-                onValueChange={(direction) => handleSortChange(sortPreferences.field, direction)}
-              >
-                <SelectTrigger className="w-full sm:w-32">
-                  <SelectValue placeholder="Richtung" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="desc">Absteigend</SelectItem>
-                  <SelectItem value="asc">Aufsteigend</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        {user && allFlyers.length > 0 && (
+          <div className="mb-6">
+            <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" className="mb-4 w-full sm:w-auto">
+                  <Filter className="w-4 h-4 mr-2" />
+                  Sortieren & Filtern
+                  <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${isFiltersOpen ? 'rotate-180' : ''}`} />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="flex flex-col gap-4 p-4 bg-muted/30 rounded-lg">
+                  {/* Filtering */}
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex items-center space-x-2">
+                      <Filter className="w-4 h-4" />
+                      <span className="text-sm font-medium">Filter:</span>
+                    </div>
+                    <Select
+                      value={selectedInfoType}
+                      onValueChange={setSelectedInfoType}
+                    >
+                      <SelectTrigger className="w-full sm:w-48">
+                        <SelectValue placeholder="Info-Typ wählen" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Alle Info-Typen</SelectItem>
+                        {infoTypes.map((type) => (
+                          <SelectItem key={type.id} value={type.id}>
+                            {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Sorting */}
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex items-center space-x-2">
+                      <ArrowUpDown className="w-4 h-4" />
+                      <span className="text-sm font-medium">Sortierung:</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Select
+                        value={sortPreferences.field}
+                        onValueChange={(field) => handleSortChange(field, sortPreferences.direction)}
+                      >
+                        <SelectTrigger className="w-full sm:w-48">
+                          <SelectValue placeholder="Sortieren nach" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="upload_date">Upload-Datum</SelectItem>
+                          <SelectItem value="title">Titel</SelectItem>
+                          <SelectItem value="created_at">Erstellungszeit</SelectItem>
+                          <SelectItem value="custom">Benutzerdefiniert</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select
+                        value={sortPreferences.direction}
+                        onValueChange={(direction) => handleSortChange(sortPreferences.field, direction)}
+                      >
+                        <SelectTrigger className="w-full sm:w-32">
+                          <SelectValue placeholder="Richtung" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="desc">Absteigend</SelectItem>
+                          <SelectItem value="asc">Aufsteigend</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
             
             {sortPreferences.field === 'custom' && (
               <div className="mt-3 p-3 bg-primary/10 rounded-md border border-primary/20">
