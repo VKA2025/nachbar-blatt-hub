@@ -433,7 +433,7 @@ const Index = () => {
     await supabase.auth.signOut();
     toast({
       title: "Abgemeldet",
-      description: "Sie wurden erfolgreich abgemeldet.",
+      description: "Du wurdest erfolgreich abgemeldet.",
     });
   };
 
