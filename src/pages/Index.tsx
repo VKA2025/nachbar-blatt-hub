@@ -572,7 +572,7 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold mb-4 text-primary">Aktuelle Infos aus Deiner Stadt</h2>
+          <h2 className="text-3xl font-bold mb-4 text-primary">Aktuelles aus Brühl</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Entdecke die neuesten Angebote und Informationen aus Deiner Nachbarschaft.
             {!user && " Melde Dich an, um alle Funktionen zu nutzen."}
