@@ -27,6 +27,7 @@ const Auth = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [resetEmail, setResetEmail] = useState("");
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -164,8 +165,16 @@ const Auth = () => {
     }
   };
 
-  const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePasswordReset = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!resetEmail.trim()) {
+      toast({
+        title: "E-Mail erforderlich",
+        description: "Bitte geben Sie Ihre E-Mail-Adresse ein.",
+        variant: "destructive",
+      });
+      return;
+    }
     setResetLoading(true);
 
     try {
@@ -216,10 +225,9 @@ const Auth = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Anmelden</TabsTrigger>
               <TabsTrigger value="signup">Registrieren</TabsTrigger>
-              <TabsTrigger value="reset">Passwort zurücksetzen</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
@@ -249,6 +257,37 @@ const Auth = () => {
                     maxLength={100}
                   />
                 </div>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordReset(!showPasswordReset)}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Passwort vergessen?
+                  </button>
+                </div>
+                {showPasswordReset && (
+                  <div className="space-y-2 p-4 border rounded">
+                    <Label htmlFor="reset-email">E-Mail für Passwort-Reset</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      placeholder="ihre.email@beispiel.de"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      maxLength={255}
+                    />
+                    <Button 
+                      type="button"
+                      onClick={handlePasswordReset}
+                      className="w-full" 
+                      disabled={resetLoading}
+                      size="sm"
+                    >
+                      {resetLoading ? "E-Mail wird gesendet..." : "Passwort zurücksetzen"}
+                    </Button>
+                  </div>
+                )}
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Anmelden..." : "Anmelden"}
                 </Button>
@@ -314,28 +353,6 @@ const Auth = () => {
               </form>
             </TabsContent>
 
-            <TabsContent value="reset">
-              <form onSubmit={handlePasswordReset} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="reset-email">E-Mail-Adresse</Label>
-                  <Input
-                    id="reset-email"
-                    type="email"
-                    placeholder="ihre.email@beispiel.de"
-                    value={resetEmail}
-                    onChange={(e) => setResetEmail(e.target.value)}
-                    required
-                    maxLength={255}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={resetLoading}>
-                  {resetLoading ? "E-Mail wird gesendet..." : "Passwort zurücksetzen"}
-                </Button>
-                <p className="text-sm text-muted-foreground text-center">
-                  Sie erhalten eine E-Mail mit Anweisungen zum Zurücksetzen Ihres Passworts.
-                </p>
-              </form>
-            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
