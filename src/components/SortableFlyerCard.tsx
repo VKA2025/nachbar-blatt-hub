@@ -74,15 +74,17 @@ export const SortableFlyerCard = ({
           )}
           <span className="line-clamp-2">{flyer.title}</span>
         </CardTitle>
-        <CardDescription className="flex items-center space-x-2">
-          <Calendar className="w-4 h-4" />
-          <span>{formatUploadDate(flyer.upload_date)}</span>
+        <div className="flex items-center justify-between">
+          <CardDescription className="flex items-center space-x-2">
+            <Calendar className="w-4 h-4" />
+            <span>{formatUploadDate(flyer.upload_date)}</span>
+          </CardDescription>
           {flyer.is_external && (
             <Badge variant="secondary" className="text-xs">
               Externer Link
             </Badge>
           )}
-        </CardDescription>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {flyer.description && (
