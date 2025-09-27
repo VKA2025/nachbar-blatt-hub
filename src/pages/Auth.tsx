@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
@@ -16,7 +17,14 @@ const authSchema = z.object({
   password: z.string().min(6, "Passwort muss mindestens 6 Zeichen haben").max(100),
   firstName: z.string().trim().min(1, "Vorname ist erforderlich").max(50).optional(),
   lastName: z.string().trim().min(1, "Nachname ist erforderlich").max(50).optional(),
+  street: z.string().optional(),
+  houseNumber: z.string().optional(),
 });
+
+interface Street {
+  id: string;
+  name: string;
+}
 
 const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -27,9 +35,12 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [street, setStreet] = useState("");
+  const [houseNumber, setHouseNumber] = useState("");
   const [resetEmail, setResetEmail] = useState("");
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [captchaValue, setCaptchaValue] = useState<string | null>(null);
+  const [streets, setStreets] = useState<Street[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -56,8 +67,31 @@ const Auth = () => {
       }
     });
 
+    // Load streets
+    loadStreets();
+
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const loadStreets = async () => {
+    try {
+      const { data: streetsData, error } = await supabase
+        .from('streets')
+        .select('id, name')
+        .order('name');
+      
+      if (error) {
+        console.error('Error loading streets:', error);
+      } else {
+        setStreets(streetsData || []);
+      }
+    } catch (error) {
+      console.error('Error loading streets:', error);
+    }
+  };
+
+  // Generate house numbers 1-999
+  const houseNumbers = Array.from({ length: 999 }, (_, i) => (i + 1).toString());
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +113,8 @@ const Auth = () => {
         password,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
+        street: street || undefined,
+        houseNumber: houseNumber || undefined,
       });
 
       const redirectUrl = `${window.location.origin}/`;
@@ -91,6 +127,8 @@ const Auth = () => {
           data: {
             first_name: validatedData.firstName,
             last_name: validatedData.lastName,
+            street: validatedData.street,
+            house_number: validatedData.houseNumber,
           }
         }
       });
@@ -332,6 +370,38 @@ const Auth = () => {
                       required
                       maxLength={50}
                     />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-street">Straße (optional)</Label>
+                    <Select value={street} onValueChange={setStreet}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Straße wählen" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {streets.map((streetOption) => (
+                          <SelectItem key={streetOption.id} value={streetOption.name}>
+                            {streetOption.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-house-number">Hausnummer (optional)</Label>
+                    <Select value={houseNumber} onValueChange={setHouseNumber}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Nr. wählen" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {houseNumbers.map((number) => (
+                          <SelectItem key={number} value={number}>
+                            {number}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="space-y-2">

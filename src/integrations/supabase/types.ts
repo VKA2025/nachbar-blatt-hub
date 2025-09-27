@@ -68,9 +68,11 @@ export type Database = {
           created_at: string
           email: string | null
           first_name: string | null
+          house_number: string | null
           id: string
           last_name: string | null
           sort_preferences: Json | null
+          street: string | null
           updated_at: string
           user_id: string
         }
@@ -79,9 +81,11 @@ export type Database = {
           created_at?: string
           email?: string | null
           first_name?: string | null
+          house_number?: string | null
           id?: string
           last_name?: string | null
           sort_preferences?: Json | null
+          street?: string | null
           updated_at?: string
           user_id: string
         }
@@ -90,11 +94,31 @@ export type Database = {
           created_at?: string
           email?: string | null
           first_name?: string | null
+          house_number?: string | null
           id?: string
           last_name?: string | null
           sort_preferences?: Json | null
+          street?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      streets: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
         }
         Relationships: []
       }
