@@ -73,36 +73,25 @@ export const SortableFlyerCard = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const handleComplaintClick = async () => {
+  const handleComplaintClick = () => {
     if (!userProfile) return;
     
-    try {
-      // Create the URL for the edge function with user data as POST body
-      const functionUrl = `https://kvrxgaxjdpxqlnfhhsrc.supabase.co/functions/v1/prefill-complaint-form`;
-      
-      // Create a form to POST the data to the edge function
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = functionUrl;
-      form.target = '_blank';
-      
-      // Add the user profile data as a hidden input
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'userProfile';
-      input.value = JSON.stringify(userProfile);
-      form.appendChild(input);
-      
-      // Submit the form to open the prefilled page
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-
-    } catch (error) {
-      console.error('Error opening prefilled form:', error);
-      // Fallback to original form
-      window.open('https://www.rag-koeln.de/WebAdRAG/de-de/14/Reklamation', '_blank');
-    }
+    // Build the URL with pre-filled data
+    const baseUrl = "https://www.rag-koeln.de/WebAdRAG/de-de/14/Reklamation";
+    const params = new URLSearchParams();
+    
+    // Pre-fill with profile data using correct field names
+    if (userProfile.first_name) params.append('Vorname', userProfile.first_name);
+    if (userProfile.last_name) params.append('Nachname', userProfile.last_name);
+    if (userProfile.email) params.append('Email', userProfile.email);
+    if (userProfile.street) params.append('Strasse', userProfile.street);
+    if (userProfile.house_number) params.append('HsNr', userProfile.house_number);
+    
+    // Pre-fill the reason with the correct field name and value
+    params.append('GewaehlterGrund', '5');
+    
+    const urlWithParams = `${baseUrl}?${params.toString()}`;
+    window.open(urlWithParams, '_blank');
   };
 
   return (

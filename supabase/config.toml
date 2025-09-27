@@ -1,4 +1,1 @@
 project_id = "kvrxgaxjdpxqlnfhhsrc"
-
-[functions.prefill-complaint-form]
-verify_jwt = false
