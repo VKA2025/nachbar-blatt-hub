@@ -60,7 +60,7 @@ export const SortableFlyerCard = ({
       {...(isCustomSort ? { ...attributes, ...listeners } : {})}
     >
       <CardHeader>
-        <CardTitle className="flex items-start space-x-2">
+        <CardTitle className="flex items-start space-x-2 text-primary">
           {flyer.is_external ? (
             <ExternalLink className="w-5 h-5 mt-0.5 flex-shrink-0" />
           ) : (
@@ -99,7 +99,7 @@ export const SortableFlyerCard = ({
         {user && (
           <div className="flex space-x-2">
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={() => onViewFlyer(flyer)}
               className="flex-1"
@@ -118,7 +118,7 @@ export const SortableFlyerCard = ({
             </Button>
             {!flyer.is_external && (
               <Button
-                variant="outline"
+                variant="default"
                 size="sm"
                 onClick={() => onDownloadFlyer(flyer)}
                 className="flex-1"

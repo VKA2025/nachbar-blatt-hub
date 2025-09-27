@@ -338,7 +338,7 @@ const Index = () => {
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold">Schlossstadt.Info</h1>
+            <h1 className="text-2xl font-bold text-primary">Schlossstadt.Info</h1>
             <Badge variant="secondary">Nachbarschafts-Portal</Badge>
           </div>
           <div className="flex items-center space-x-4">
@@ -370,7 +370,7 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold mb-4">Aktuelle Infos aus Deiner Stadt</h2>
+          <h2 className="text-3xl font-bold mb-4 text-primary">Aktuelle Infos aus Deiner Stadt</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Entdecken Sie die neuesten Angebote und Informationen aus Ihrer Nachbarschaft.
             {!user && " Melden Sie sich an, um alle Funktionen zu nutzen."}
