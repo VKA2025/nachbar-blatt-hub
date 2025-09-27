@@ -56,7 +56,7 @@ export const SortableFlyerCard = ({
     <Card 
       ref={setNodeRef}
       style={style}
-      className={`hover:shadow-lg transition-shadow ${isDragging ? 'z-50' : ''} ${isCustomSort ? 'cursor-grab active:cursor-grabbing select-none' : ''}`}
+      className={`hover:shadow-lg transition-shadow ${isDragging ? 'z-50' : ''} ${isCustomSort ? 'cursor-grab active:cursor-grabbing' : ''}`}
       {...(isCustomSort ? { ...attributes, ...listeners } : {})}
     >
       <CardHeader>

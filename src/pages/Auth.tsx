@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { z } from "zod";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const authSchema = z.object({
   email: z.string().email("Ungültige E-Mail-Adresse").max(255),
@@ -28,6 +29,7 @@ const Auth = () => {
   const [lastName, setLastName] = useState("");
   const [resetEmail, setResetEmail] = useState("");
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [captchaValue, setCaptchaValue] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -60,6 +62,16 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    if (!captchaValue) {
+      toast({
+        title: "Captcha erforderlich",
+        description: "Bitte bestätigen Sie das Captcha.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
       const validatedData = authSchema.parse({
@@ -345,6 +357,13 @@ const Auth = () => {
                     required
                     minLength={6}
                     maxLength={100}
+                  />
+                </div>
+                <div className="flex justify-center">
+                  <ReCAPTCHA
+                    sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+                    onChange={setCaptchaValue}
+                    theme="light"
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
