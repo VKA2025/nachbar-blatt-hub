@@ -177,20 +177,20 @@ const Profile = () => {
           console.error('Error updating email:', emailError);
           toast({
             title: "Warnung",
-            description: "Profil wurde gespeichert, aber E-Mail-Update fehlgeschlagen. Versuchen Sie es später erneut.",
+            description: "Profil wurde gespeichert, aber E-Mail-Update fehlgeschlagen. Versuche es später erneut.",
             variant: "destructive",
           });
         } else {
           toast({
             title: "E-Mail geändert",
-            description: "Bitte bestätigen Sie Ihre neue E-Mail-Adresse über den Link in Ihrer E-Mail.",
+            description: "Bitte bestätige Deine neue E-Mail-Adresse über den Link in Deiner E-Mail.",
           });
         }
       }
 
       toast({
         title: "Profil gespeichert",
-        description: "Ihre Profildaten wurden erfolgreich aktualisiert.",
+        description: "Deine Profildaten wurden erfolgreich aktualisiert.",
       });
 
     } catch (error) {
@@ -289,7 +289,7 @@ const Profile = () => {
                   maxLength={255}
                 />
                 <p className="text-sm text-muted-foreground">
-                  Bei Änderung der E-Mail erhalten Sie eine Bestätigungs-E-Mail
+                  Bei Änderung der E-Mail erhältst Du eine Bestätigungs-E-Mail
                 </p>
               </div>
 
