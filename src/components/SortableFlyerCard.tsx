@@ -93,7 +93,7 @@ export const SortableFlyerCard = ({
         
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           {flyer.is_external ? (
-            <span className="break-all">{flyer.external_url}</span>
+            <span className="break-all line-clamp-2">{flyer.external_url}</span>
           ) : (
             <>
               <span>{flyer.file_name}</span>
