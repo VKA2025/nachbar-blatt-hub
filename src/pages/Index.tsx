@@ -574,8 +574,8 @@ const Index = () => {
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold mb-4 text-primary">Aktuelle Infos aus Deiner Stadt</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Entdecken Sie die neuesten Angebote und Informationen aus Ihrer Nachbarschaft.
-            {!user && " Melden Sie sich an, um alle Funktionen zu nutzen."}
+            Entdecke die neuesten Angebote und Informationen aus Deiner Nachbarschaft.
+            {!user && " Melde Dich an, um alle Funktionen zu nutzen."}
           </p>
         </div>
 
@@ -586,7 +586,7 @@ const Index = () => {
                 <LogIn className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-semibold mb-2">Anmeldung erforderlich</h3>
                 <p className="text-muted-foreground mb-4">
-                  Melden Sie sich an, um alle Werbeblätter anzusehen und herunterzuladen.
+                  Melde Dich an, um alle Informationen anzusehen und herunterzuladen.
                 </p>
                 <Button onClick={() => navigate("/auth")}>
                   Jetzt anmelden
@@ -693,7 +693,7 @@ const Index = () => {
             {sortPreferences.field === 'custom' && (
               <div className="mt-3 p-3 bg-primary/10 rounded-md border border-primary/20">
                 <p className="text-sm text-primary font-medium">
-                  💡 Sortiere deine Informationen durch tippen und ziehen auf die Infokacheln wie du es möchtest
+                  💡 Sortiere deine Informationen durch Tippen und Ziehen der Infokacheln.
                 </p>
               </div>
             )}
@@ -707,7 +707,7 @@ const Index = () => {
                 <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-semibold mb-2">Keine Werbeblätter verfügbar</h3>
                 <p className="text-muted-foreground">
-                  Aktuell sind keine Werbeblätter verfügbar. Schauen Sie später wieder vorbei!
+                  Aktuell sind keine Informationen verfügbar. Pass bitte den Filter an!
                 </p>
               </div>
             </CardContent>
