@@ -574,7 +574,7 @@ const Index = () => {
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold mb-4 text-primary">Informationen aus Deiner Stadt</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Entdecken Sie die neuesten Angebote und Informationen aus Ihrer Nachbarschaft.
+            Entdecke die neuesten Angebote und Informationen aus Deiner Nachbarschaft.
             {!user && " Melden Sie sich an, um alle Funktionen zu nutzen."}
           </p>
         </div>
