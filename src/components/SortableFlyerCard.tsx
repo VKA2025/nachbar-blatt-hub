@@ -87,8 +87,8 @@ export const SortableFlyerCard = ({
     if (userProfile.street) params.append('Strasse', userProfile.street);
     if (userProfile.house_number) params.append('HsNr', userProfile.house_number);
     
-    // Pre-fill the reason
-    params.append('Grund', 'Zeitung bitte nicht mehr zustellen!');
+    // Pre-fill the reason with the correct field name and value
+    params.append('GewaehlterGrund', '5');
     
     const urlWithParams = `${baseUrl}?${params.toString()}`;
     window.open(urlWithParams, '_blank');
