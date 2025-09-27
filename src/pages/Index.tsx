@@ -693,7 +693,7 @@ const Index = () => {
             {sortPreferences.field === 'custom' && (
               <div className="mt-3 p-3 bg-primary/10 rounded-md border border-primary/20">
                 <p className="text-sm text-primary font-medium">
-                  💡 Sortiere deine Informationen durch tippen und ziehen auf die Infokacheln wie du es möchtest
+                  💡 Sortiere deine Informationen durch tippen und ziehen der Infokacheln
                 </p>
               </div>
             )}
