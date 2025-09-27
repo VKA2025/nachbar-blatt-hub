@@ -707,7 +707,7 @@ const Index = () => {
                 <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-semibold mb-2">Keine Informationen verfügbar</h3>
                 <p className="text-muted-foreground">
-                  Aktuell sind keine Informationen verfügbar. Schauen Sie später wieder vorbei!
+                  Es sind keine Informationen verfügbar. Bitte passe den Filter an.
                 </p>
               </div>
             </CardContent>
