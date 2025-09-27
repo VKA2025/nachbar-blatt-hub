@@ -73,25 +73,27 @@ export const SortableFlyerCard = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const handleComplaintClick = () => {
+  const handleComplaintClick = async () => {
     if (!userProfile) return;
     
-    // Build the URL with pre-filled data
+    // Copy instruction text to clipboard
+    const instructionText = `Bitte wählen Sie im Formular: "Zeitung bitte nicht mehr zustellen!"`;
+    
+    try {
+      await navigator.clipboard.writeText(instructionText);
+      // Show toast notification
+      const { toast } = await import("@/hooks/use-toast");
+      toast({
+        title: "Anweisung kopiert",
+        description: "Die Anweisung wurde in die Zwischenablage kopiert. Das Formular wird jetzt geöffnet.",
+      });
+    } catch (error) {
+      console.log("Clipboard not available");
+    }
+    
+    // Open the complaint form
     const baseUrl = "https://www.rag-koeln.de/WebAdRAG/de-de/14/Reklamation";
-    const params = new URLSearchParams();
-    
-    // Pre-fill with profile data using correct field names
-    if (userProfile.first_name) params.append('Vorname', userProfile.first_name);
-    if (userProfile.last_name) params.append('Nachname', userProfile.last_name);
-    if (userProfile.email) params.append('Email', userProfile.email);
-    if (userProfile.street) params.append('Strasse', userProfile.street);
-    if (userProfile.house_number) params.append('HsNr', userProfile.house_number);
-    
-    // Pre-fill the reason with the correct field name and value
-    params.append('GewaehlterGrund', '5');
-    
-    const urlWithParams = `${baseUrl}?${params.toString()}`;
-    window.open(urlWithParams, '_blank');
+    window.open(baseUrl, '_blank');
   };
 
   return (
