@@ -100,7 +100,7 @@ const Auth = () => {
     if (!captchaValue) {
       toast({
         title: "Captcha erforderlich",
-        description: "Bitte bestätigen Sie das Captcha.",
+        description: "Bitte bestätige das Captcha.",
         variant: "destructive",
       });
       setLoading(false);
@@ -137,7 +137,7 @@ const Auth = () => {
         if (error.message.includes("already registered")) {
           toast({
             title: "Benutzer bereits registriert",
-            description: "Ein Benutzer mit dieser E-Mail existiert bereits. Bitte melden Sie sich an.",
+            description: "Ein Benutzer mit dieser E-Mail existiert bereits. Bitte melde Dich an.",
             variant: "destructive",
           });
         } else {
@@ -150,7 +150,7 @@ const Auth = () => {
       } else {
         toast({
           title: "Registrierung erfolgreich",
-          description: "Bitte überprüfen Sie Ihre E-Mail für die Bestätigung.",
+          description: "Bitte überprüfe Deine E-Mail für die Bestätigung.",
         });
       }
     } catch (error) {
@@ -191,7 +191,7 @@ const Auth = () => {
         toast({
           title: "Anmeldung fehlgeschlagen",
           description: error.message === "Invalid login credentials" 
-            ? "Ungültige Anmeldedaten. Bitte überprüfen Sie E-Mail und Passwort."
+            ? "Ungültige Anmeldedaten. Bitte überprüfe E-Mail und Passwort."
             : error.message,
           variant: "destructive",
         });
@@ -220,7 +220,7 @@ const Auth = () => {
     if (!resetEmail.trim()) {
       toast({
         title: "E-Mail erforderlich",
-        description: "Bitte geben Sie Ihre E-Mail-Adresse ein.",
+        description: "Bitte gib Deine E-Mail-Adresse ein.",
         variant: "destructive",
       });
       return;
@@ -243,7 +243,7 @@ const Auth = () => {
       } else {
         toast({
           title: "E-Mail gesendet",
-          description: "Bitte überprüfen Sie Ihre E-Mail für Anweisungen zum Zurücksetzen des Passworts.",
+          description: "Bitte überprüfe Deine E-Mail für Anweisungen zum Zurücksetzen des Passworts.",
         });
         setResetEmail("");
       }
