@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
@@ -67,7 +68,7 @@ const Index = () => {
   const [flyers, setFlyers] = useState<Flyer[]>([]);
   const [allFlyers, setAllFlyers] = useState<Flyer[]>([]);
   const [infoTypes, setInfoTypes] = useState<InfoType[]>([]);
-  const [selectedInfoType, setSelectedInfoType] = useState<string>('all');
+  const [selectedInfoTypes, setSelectedInfoTypes] = useState<string[]>([]);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sortPreferences, setSortPreferences] = useState<SortPreferences>({
@@ -87,8 +88,10 @@ const Index = () => {
         if (session?.user) {
           checkAdminStatus(session.user.id);
           loadSortPreferences(session.user.id);
+          loadFilterPreferences(session.user.id);
         } else {
           setIsAdmin(false);
+          setSelectedInfoTypes([]);
         }
       }
     );
@@ -100,6 +103,7 @@ const Index = () => {
       if (session?.user) {
         checkAdminStatus(session.user.id);
         loadSortPreferences(session.user.id);
+        loadFilterPreferences(session.user.id);
       }
     });
 
@@ -116,7 +120,7 @@ const Index = () => {
 
   useEffect(() => {
     applyFilters();
-  }, [allFlyers, selectedInfoType]);
+  }, [allFlyers, selectedInfoTypes]);
 
   const checkAdminStatus = async (userId: string) => {
     try {
@@ -164,6 +168,27 @@ const Index = () => {
     }
   };
 
+  const loadFilterPreferences = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('filter_preferences')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading filter preferences:', error);
+      } else if (data?.filter_preferences) {
+        const filters = data.filter_preferences as string[];
+        if (Array.isArray(filters)) {
+          setSelectedInfoTypes(filters);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading filter preferences:', error);
+    }
+  };
+
   const saveSortPreferences = async (preferences: SortPreferences) => {
     if (!user) return;
 
@@ -183,6 +208,28 @@ const Index = () => {
       }
     } catch (error) {
       console.error('Error saving sort preferences:', error);
+    }
+  };
+
+  const saveFilterPreferences = async (filters: string[]) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ filter_preferences: filters as any })
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error saving filter preferences:', error);
+        toast({
+          title: "Fehler",
+          description: "Filtereinstellungen konnten nicht gespeichert werden.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error saving filter preferences:', error);
     }
   };
 
@@ -272,11 +319,29 @@ const Index = () => {
   const applyFilters = () => {
     let filteredFlyers = allFlyers;
 
-    if (selectedInfoType !== 'all') {
-      filteredFlyers = allFlyers.filter(flyer => flyer.info_type_id === selectedInfoType);
+    if (selectedInfoTypes.length > 0) {
+      filteredFlyers = allFlyers.filter(flyer => 
+        flyer.info_type_id && selectedInfoTypes.includes(flyer.info_type_id)
+      );
     }
 
     setFlyers(filteredFlyers);
+  };
+
+  const handleFilterChange = async (infoTypeId: string, checked: boolean) => {
+    let newSelectedTypes: string[];
+    
+    if (checked) {
+      newSelectedTypes = [...selectedInfoTypes, infoTypeId];
+    } else {
+      newSelectedTypes = selectedInfoTypes.filter(id => id !== infoTypeId);
+    }
+    
+    setSelectedInfoTypes(newSelectedTypes);
+    
+    if (user) {
+      await saveFilterPreferences(newSelectedTypes);
+    }
   };
 
   const handleSortChange = async (field: string, direction: string) => {
@@ -512,27 +577,45 @@ const Index = () => {
               <CollapsibleContent>
                 <div className="flex flex-col gap-4 p-4 bg-muted/30 rounded-lg">
                   {/* Filtering */}
-                  <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex flex-col gap-4">
                     <div className="flex items-center space-x-2">
                       <Filter className="w-4 h-4" />
-                      <span className="text-sm font-medium">Filter:</span>
+                      <span className="text-sm font-medium">Filter nach Info-Typen:</span>
                     </div>
-                    <Select
-                      value={selectedInfoType}
-                      onValueChange={setSelectedInfoType}
-                    >
-                      <SelectTrigger className="w-full sm:w-48">
-                        <SelectValue placeholder="Info-Typ wählen" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Alle Info-Typen</SelectItem>
-                        {infoTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.id}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {infoTypes.map((type) => (
+                        <div key={type.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`filter-${type.id}`}
+                            checked={selectedInfoTypes.includes(type.id)}
+                            onCheckedChange={(checked) => handleFilterChange(type.id, checked as boolean)}
+                          />
+                          <label
+                            htmlFor={`filter-${type.id}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
                             {type.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    {selectedInfoTypes.length > 0 && (
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <span>{selectedInfoTypes.length} Filter aktiv</span>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={async () => {
+                            setSelectedInfoTypes([]);
+                            if (user) {
+                              await saveFilterPreferences([]);
+                            }
+                          }}
+                        >
+                          Alle Filter entfernen
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Sorting */}
