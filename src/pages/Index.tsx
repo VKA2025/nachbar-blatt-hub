@@ -747,8 +747,41 @@ const Index = () => {
 
       <footer className="border-t bg-card mt-16">
         <div className="container mx-auto px-4 py-8">
-          <div className="text-center text-muted-foreground">
-            <p>&copy; 2024 Schlossstadt.Info - Ihr Nachbarschafts-Portal</p>
+          <div className="max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="font-semibold mb-4">Impressum</h3>
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p>
+                    <strong>Verantwortlich für den Inhalt:</strong><br />
+                    Schlossstadt.Info<br />
+                    Musterstraße 123<br />
+                    12345 Schlossstadt
+                  </p>
+                  <p>
+                    <strong>Kontakt:</strong><br />
+                    E-Mail: info@schlossstadt.info<br />
+                    Telefon: +49 (0) 123 456789
+                  </p>
+                </div>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-4">Rechtliches</h3>
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p>
+                    <strong>Haftungsausschluss:</strong><br />
+                    Trotz sorgfältiger inhaltlicher Kontrolle übernehmen wir keine Haftung für die Inhalte externer Links. Für den Inhalt der verlinkten Seiten sind ausschließlich deren Betreiber verantwortlich.
+                  </p>
+                  <p>
+                    <strong>Datenschutz:</strong><br />
+                    Die Nutzung unserer Webseite ist in der Regel ohne Angabe personenbezogener Daten möglich. Soweit auf unseren Seiten personenbezogene Daten erhoben werden, erfolgt dies stets auf freiwilliger Basis.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="text-center text-muted-foreground mt-8 pt-8 border-t">
+              <p>&copy; 2024 Schlossstadt.Info - Ihr Nachbarschafts-Portal</p>
+            </div>
           </div>
         </div>
       </footer>
