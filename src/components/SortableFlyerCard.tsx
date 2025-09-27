@@ -3,7 +3,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, FileText, Download, Eye, ExternalLink, GripVertical } from "lucide-react";
+import { Calendar, FileText, Download, Eye, ExternalLink, GripVertical, Edit, Trash2 } from "lucide-react";
 
 interface Flyer {
   id: string;
@@ -22,8 +22,11 @@ interface SortableFlyerCardProps {
   flyer: Flyer;
   isCustomSort: boolean;
   user: any;
+  isAdmin: boolean;
   onViewFlyer: (flyer: Flyer) => void;
   onDownloadFlyer: (flyer: Flyer) => void;
+  onEditFlyer?: (flyer: Flyer) => void;
+  onDeleteFlyer?: (flyer: Flyer) => void;
   formatFileSize: (bytes: number | null) => string;
   formatUploadDate: (dateString: string) => string;
 }
@@ -32,8 +35,11 @@ export const SortableFlyerCard = ({
   flyer, 
   isCustomSort, 
   user, 
+  isAdmin,
   onViewFlyer, 
   onDownloadFlyer, 
+  onEditFlyer,
+  onDeleteFlyer,
   formatFileSize, 
   formatUploadDate 
 }: SortableFlyerCardProps) => {
@@ -97,35 +103,60 @@ export const SortableFlyerCard = ({
         </div>
 
         {user && (
-          <div className="flex space-x-2">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => onViewFlyer(flyer)}
-              className="flex-1"
-            >
-              {flyer.is_external ? (
-                <>
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Link öffnen
-                </>
-              ) : (
-                <>
-                  <Eye className="w-4 h-4 mr-2" />
-                  Anzeigen
-                </>
-              )}
-            </Button>
-            {!flyer.is_external && (
+          <div className="space-y-2">
+            <div className="flex space-x-2">
               <Button
                 variant="default"
                 size="sm"
-                onClick={() => onDownloadFlyer(flyer)}
+                onClick={() => onViewFlyer(flyer)}
                 className="flex-1"
               >
-                <Download className="w-4 h-4 mr-2" />
-                Download
+                {flyer.is_external ? (
+                  <>
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Link öffnen
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-4 h-4 mr-2" />
+                    Anzeigen
+                  </>
+                )}
               </Button>
+              {!flyer.is_external && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => onDownloadFlyer(flyer)}
+                  className="flex-1"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download
+                </Button>
+              )}
+            </div>
+            
+            {isAdmin && (
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEditFlyer?.(flyer)}
+                  className="flex-1"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Bearbeiten
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onDeleteFlyer?.(flyer)}
+                  className="flex-1"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Löschen
+                </Button>
+              </div>
             )}
           </div>
         )}

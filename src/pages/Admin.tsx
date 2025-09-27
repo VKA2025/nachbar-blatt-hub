@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { Upload, LogOut, Home, FileText, Link } from "lucide-react";
+import { Upload, LogOut, Home, FileText, Link, Edit } from "lucide-react";
 import { z } from "zod";
 
 const flyerSchema = z.object({
@@ -34,7 +34,9 @@ const Admin = () => {
   const [file, setFile] = useState<File | null>(null);
   const [externalUrl, setExternalUrl] = useState("");
   const [uploadType, setUploadType] = useState<"file" | "url">("file");
+  const [editingFlyer, setEditingFlyer] = useState<any>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -64,6 +66,20 @@ const Admin = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  useEffect(() => {
+    // Check if we're editing a flyer
+    const editFlyer = location.state?.editFlyer;
+    if (editFlyer) {
+      setEditingFlyer(editFlyer);
+      setTitle(editFlyer.title);
+      setDescription(editFlyer.description || "");
+      setUploadType(editFlyer.is_external ? "url" : "file");
+      if (editFlyer.is_external) {
+        setExternalUrl(editFlyer.external_url || "");
+      }
+    }
+  }, [location.state]);
 
   const checkAdminStatus = async (userId: string) => {
     try {
@@ -134,13 +150,89 @@ const Admin = () => {
     
     if (!user) return;
     
-    if (uploadType === "file" && !file) return;
+    if (uploadType === "file" && !file && !editingFlyer) return;
     if (uploadType === "url" && !externalUrl.trim()) return;
     
     setUploading(true);
 
     try {
-      if (uploadType === "file") {
+      if (editingFlyer) {
+        // Update existing flyer
+        const updateData: any = {
+          title: title.trim(),
+          description: description.trim() || null,
+        };
+
+        if (uploadType === "url") {
+          const validatedData = urlSchema.parse({
+            title: title.trim(),
+            description: description.trim() || undefined,
+            external_url: externalUrl.trim(),
+          });
+          
+          updateData.external_url = validatedData.external_url;
+          updateData.is_external = true;
+          updateData.file_url = null;
+          updateData.file_name = null;
+          updateData.file_size = null;
+        } else if (file) {
+          // Handle file update
+          const validatedData = flyerSchema.parse({
+            title: title.trim(),
+            description: description.trim() || undefined,
+          });
+
+          // Upload new file
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('flyers')
+            .upload(filePath, file);
+
+          if (uploadError) {
+            throw uploadError;
+          }
+
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('flyers')
+            .getPublicUrl(filePath);
+
+          // Delete old file if it exists
+          if (!editingFlyer.is_external && editingFlyer.file_url) {
+            const oldFilePath = editingFlyer.file_url.split('/').pop();
+            if (oldFilePath) {
+              await supabase.storage.from('flyers').remove([oldFilePath]);
+            }
+          }
+
+          updateData.file_url = publicUrl;
+          updateData.file_name = file.name;
+          updateData.file_size = file.size;
+          updateData.is_external = false;
+          updateData.external_url = null;
+        }
+
+        const { error: dbError } = await supabase
+          .from('flyers')
+          .update(updateData)
+          .eq('id', editingFlyer.id);
+
+        if (dbError) {
+          throw dbError;
+        }
+
+        toast({
+          title: "Werbeblatt aktualisiert",
+          description: "Das Werbeblatt wurde erfolgreich aktualisiert.",
+        });
+
+        // Reset form and navigate back
+        setEditingFlyer(null);
+        navigate("/", { replace: true });
+      } else if (uploadType === "file") {
         const validatedData = flyerSchema.parse({
           title: title.trim(),
           description: description.trim() || undefined,
@@ -221,13 +313,15 @@ const Admin = () => {
       }
 
       // Reset form
-      setTitle("");
-      setDescription("");
-      setFile(null);
-      setExternalUrl("");
-      // Reset file input
-      const fileInput = document.getElementById('file-input') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
+      if (!editingFlyer) {
+        setTitle("");
+        setDescription("");
+        setFile(null);
+        setExternalUrl("");
+        // Reset file input
+        const fileInput = document.getElementById('file-input') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+      }
 
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -301,10 +395,13 @@ const Admin = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <Upload className="w-5 h-5 mr-2" />
-              Werbeblatt hinzufügen
+              {editingFlyer ? "Werbeblatt bearbeiten" : "Werbeblatt hinzufügen"}
             </CardTitle>
             <CardDescription>
-              Laden Sie Dateien hoch oder verlinken Sie zu externen Dokumenten.
+              {editingFlyer 
+                ? "Bearbeiten Sie die Details des Werbeblatts."
+                : "Laden Sie Dateien hoch oder verlinken Sie zu externen Dokumenten."
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -348,7 +445,7 @@ const Admin = () => {
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png,.webp"
                       onChange={handleFileChange}
-                      required={uploadType === "file"}
+                      required={uploadType === "file" && !editingFlyer}
                     />
                     <p className="text-sm text-muted-foreground">
                       Erlaubte Formate: PDF, JPEG, PNG, WebP (max. 20MB)
@@ -398,16 +495,21 @@ const Admin = () => {
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={uploading || (uploadType === "file" && !file) || (uploadType === "url" && !externalUrl.trim())}
+                  disabled={uploading || (uploadType === "file" && !file && !editingFlyer) || (uploadType === "url" && !externalUrl.trim())}
                 >
                   {uploading ? (
                     <>
                       <Upload className="w-4 h-4 mr-2 animate-spin" />
-                      {uploadType === "file" ? "Hochladen..." : "Speichern..."}
+                      {editingFlyer ? "Aktualisieren..." : (uploadType === "file" ? "Hochladen..." : "Speichern...")}
                     </>
                   ) : (
                     <>
-                      {uploadType === "file" ? (
+                      {editingFlyer ? (
+                        <>
+                          <Edit className="w-4 h-4 mr-2" />
+                          Werbeblatt aktualisieren
+                        </>
+                      ) : uploadType === "file" ? (
                         <>
                           <Upload className="w-4 h-4 mr-2" />
                           Werbeblatt hochladen

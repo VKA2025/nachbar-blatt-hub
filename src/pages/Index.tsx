@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { LogIn, LogOut, Calendar, FileText, Shield, Download, Eye, ExternalLink, ArrowUpDown, GripVertical } from "lucide-react";
+import { LogIn, LogOut, Calendar, FileText, Shield, Download, Eye, ExternalLink, ArrowUpDown, GripVertical, Edit, Trash2 } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -28,6 +28,7 @@ import {
   CSS,
 } from '@dnd-kit/utilities';
 import { SortableFlyerCard } from "@/components/SortableFlyerCard";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface Flyer {
   id: string;
@@ -323,6 +324,50 @@ const Index = () => {
     }
   };
 
+  const handleEditFlyer = (flyer: Flyer) => {
+    // Navigate to admin page with flyer data for editing
+    navigate("/admin", { state: { editFlyer: flyer } });
+  };
+
+  const handleDeleteFlyer = async (flyer: Flyer) => {
+    try {
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from('flyers')
+        .delete()
+        .eq('id', flyer.id);
+
+      if (dbError) {
+        throw dbError;
+      }
+
+      // Delete file from storage if it's not external
+      if (!flyer.is_external && flyer.file_url) {
+        const filePath = flyer.file_url.split('/').pop();
+        if (filePath) {
+          await supabase.storage
+            .from('flyers')
+            .remove([filePath]);
+        }
+      }
+
+      toast({
+        title: "Werbeblatt gelöscht",
+        description: "Das Werbeblatt wurde erfolgreich gelöscht.",
+      });
+
+      // Reload flyers
+      await loadFlyers();
+    } catch (error) {
+      console.error('Error deleting flyer:', error);
+      toast({
+        title: "Fehler beim Löschen",
+        description: "Das Werbeblatt konnte nicht gelöscht werden.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -469,8 +514,11 @@ const Index = () => {
                     flyer={flyer}
                     isCustomSort={sortPreferences.field === 'custom'}
                     user={user}
+                    isAdmin={isAdmin}
                     onViewFlyer={handleViewFlyer}
                     onDownloadFlyer={handleDownloadFlyer}
+                    onEditFlyer={handleEditFlyer}
+                    onDeleteFlyer={handleDeleteFlyer}
                     formatFileSize={formatFileSize}
                     formatUploadDate={formatUploadDate}
                   />
