@@ -505,8 +505,8 @@ const Index = () => {
       }
 
       toast({
-        title: "Werbeblatt gelöscht",
-        description: "Das Werbeblatt wurde erfolgreich gelöscht.",
+        title: "Infokachel gelöscht",
+        description: "Die Infokachel wurde erfolgreich gelöscht.",
       });
 
       // Reload flyers
@@ -515,7 +515,7 @@ const Index = () => {
       console.error('Error deleting flyer:', error);
       toast({
         title: "Fehler beim Löschen",
-        description: "Das Werbeblatt konnte nicht gelöscht werden.",
+        description: "Die Infokachel konnte nicht gelöscht werden.",
         variant: "destructive",
       });
     }
@@ -525,7 +525,7 @@ const Index = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <h2 className="text-xl font-semibold">Lade Werbeblätter...</h2>
+          <h2 className="text-xl font-semibold">Lade Infokacheln...</h2>
         </div>
       </div>
     );
@@ -536,7 +536,7 @@ const Index = () => {
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold text-primary">Schlossstadt.Info</h1>
+            <h1 className="text-2xl font-bold text-primary">Schlossstadt.info</h1>
             <Badge variant="secondary">Nachbarschafts-Portal</Badge>
           </div>
           <div className="flex items-center space-x-4">
@@ -755,13 +755,13 @@ const Index = () => {
                   <p>
                     <strong>Verantwortlich für den Inhalt:</strong><br />
                     Schlossstadt.Info<br />
-                    Musterstraße 123<br />
-                    12345 Schlossstadt
+                    Zur Gabjei 97<br />
+                    50321 Brühl
                   </p>
                   <p>
                     <strong>Kontakt:</strong><br />
                     E-Mail: info@schlossstadt.info<br />
-                    Telefon: +49 (0) 123 456789
+                    Telefon: 
                   </p>
                 </div>
               </div>
@@ -780,7 +780,7 @@ const Index = () => {
               </div>
             </div>
             <div className="text-center text-muted-foreground mt-8 pt-8 border-t">
-              <p>&copy; 2024 Schlossstadt.Info - Ihr Nachbarschafts-Portal</p>
+              <p>&copy; 2025 Schlossstadt.info - Ihr Nachbarschafts-Portal</p>
             </div>
           </div>
         </div>
