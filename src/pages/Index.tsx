@@ -55,7 +55,7 @@ const Index = () => {
   const [flyers, setFlyers] = useState<Flyer[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortPreferences, setSortPreferences] = useState<SortPreferences>({
-    field: 'upload_date',
+    field: 'custom',
     direction: 'desc',
     custom_order: []
   });
@@ -129,7 +129,7 @@ const Index = () => {
         const prefs = data.sort_preferences as any;
         if (prefs && typeof prefs === 'object' && 'field' in prefs && 'direction' in prefs) {
           setSortPreferences({
-            field: prefs.field || 'upload_date',
+            field: prefs.field || 'custom',
             direction: prefs.direction || 'desc',
             custom_order: prefs.custom_order || []
           });
@@ -429,6 +429,14 @@ const Index = () => {
                 </SelectContent>
               </Select>
             </div>
+            
+            {sortPreferences.field === 'custom' && (
+              <div className="mt-3 p-3 bg-primary/10 rounded-md border border-primary/20">
+                <p className="text-sm text-primary font-medium">
+                  💡 Sortiere deine Informationen durch tippen und ziehen auf die Infokacheln wie du es möchtest
+                </p>
+              </div>
+            )}
           </div>
         )}
 

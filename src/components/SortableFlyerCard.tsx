@@ -56,19 +56,11 @@ export const SortableFlyerCard = ({
     <Card 
       ref={setNodeRef}
       style={style}
-      className={`hover:shadow-lg transition-shadow ${isDragging ? 'z-50' : ''} ${isCustomSort ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      className={`hover:shadow-lg transition-shadow ${isDragging ? 'z-50' : ''} ${isCustomSort ? 'cursor-grab active:cursor-grabbing select-none' : ''}`}
+      {...(isCustomSort ? { ...attributes, ...listeners } : {})}
     >
       <CardHeader>
         <CardTitle className="flex items-start space-x-2">
-          {isCustomSort && (
-            <div 
-              className="flex-shrink-0 mt-0.5 p-1 hover:bg-muted rounded cursor-grab active:cursor-grabbing"
-              {...attributes}
-              {...listeners}
-            >
-              <GripVertical className="w-4 h-4 text-muted-foreground" />
-            </div>
-          )}
           {flyer.is_external ? (
             <ExternalLink className="w-5 h-5 mt-0.5 flex-shrink-0" />
           ) : (
