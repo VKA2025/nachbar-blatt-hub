@@ -780,7 +780,7 @@ const Index = () => {
               </div>
             </div>
             <div className="text-center text-muted-foreground mt-8 pt-8 border-t">
-              <p>&copy; 2025 Schlossstadt.info - Ihr Nachbarschafts-Portal</p>
+              <p>&copy; 2025 Schlossstadt.info - Dein Nachbarschafts-Portal</p>
             </div>
           </div>
         </div>
