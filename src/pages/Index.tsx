@@ -301,6 +301,7 @@ const Index = () => {
           upload_date,
           created_at,
           info_type_id,
+          background_image_url,
           info_types (
             id,
             name
