@@ -74,6 +74,23 @@ export const SortableFlyerCard = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  // Generate preview URL for external links without background image
+  const getPreviewImageUrl = (flyer: Flyer) => {
+    if (flyer.background_image_url) {
+      return flyer.background_image_url;
+    }
+    
+    if (flyer.is_external && flyer.external_url) {
+      // Use a screenshot service to generate preview
+      const encodedUrl = encodeURIComponent(flyer.external_url);
+      return `https://api.screenshotmachine.com/?key=demo&url=${encodedUrl}&dimension=1024x768&format=png&cacheLimit=0`;
+    }
+    
+    return null;
+  };
+
+  const previewImageUrl = getPreviewImageUrl(flyer);
+
   const handleComplaintClick = () => {
     if (!userProfile) return;
     
@@ -103,10 +120,10 @@ export const SortableFlyerCard = ({
       {...(isCustomSort ? { ...attributes, ...listeners } : {})}
     >
       {/* Background Image */}
-      {flyer.background_image_url && (
+      {previewImageUrl && (
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
-          style={{ backgroundImage: `url(${flyer.background_image_url})` }}
+          style={{ backgroundImage: `url(${previewImageUrl})` }}
         />
       )}
       
