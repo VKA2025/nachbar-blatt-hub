@@ -11,8 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { Upload, LogOut, Home, FileText, Link, Edit, Users, Trash2 } from "lucide-react";
+import { Upload, LogOut, Home, FileText, Link, Edit, Users, Trash2, Database } from "lucide-react";
 import { z } from "zod";
+import { importStreetData } from "@/utils/importStreetData";
 
 const flyerSchema = z.object({
   title: z.string().trim().min(1, "Titel ist erforderlich").max(100),
@@ -46,6 +47,8 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState("flyers");
   const [users, setUsers] = useState<any[]>([]);
   const [editingUser, setEditingUser] = useState<any>(null);
+  const [importingStreets, setImportingStreets] = useState(false);
+  const [importResult, setImportResult] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -143,6 +146,38 @@ const Admin = () => {
       setIsAdmin(false);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImportStreetData = async () => {
+    setImportingStreets(true);
+    setImportResult(null);
+    
+    try {
+      // Read the CSV file from public/data
+      const response = await fetch('/data/strassen_Bezirke.csv');
+      const csvContent = await response.text();
+      
+      const recordCount = await importStreetData(csvContent);
+      
+      setImportResult(`Erfolgreich ${recordCount} Straßen-Bezirk-Zuordnungen importiert!`);
+      
+      toast({
+        title: "Import erfolgreich",
+        description: `${recordCount} Datensätze wurden importiert.`,
+      });
+    } catch (error) {
+      console.error('Import error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
+      setImportResult(`Import fehlgeschlagen: ${errorMessage}`);
+      
+      toast({
+        title: "Import fehlgeschlagen",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setImportingStreets(false);
     }
   };
 
@@ -645,9 +680,10 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="flyers">Werbeblätter</TabsTrigger>
             <TabsTrigger value="users">Benutzer</TabsTrigger>
+            <TabsTrigger value="streets">Straßendaten</TabsTrigger>
           </TabsList>
 
           <TabsContent value="flyers">
@@ -1017,6 +1053,70 @@ const Admin = () => {
                     </Table>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="streets">
+            <Card className="max-w-2xl mx-auto">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Database className="w-5 h-5 mr-2" />
+                  Straßendaten importieren
+                </CardTitle>
+                <CardDescription>
+                  Importieren Sie die Grunddatentabelle Straße-Bezirke für das Jahr 2025.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="p-4 bg-muted rounded-lg">
+                  <h3 className="font-medium mb-2">CSV-Datei Format</h3>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Die CSV-Datei sollte folgende Spalten enthalten:
+                  </p>
+                  <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                    <li><code>Strasse</code> - Name der Straße</li>
+                    <li><code>Bemerkung</code> - Zusätzliche Hinweise (optional)</li>
+                    <li><code>Bezirk</code> - Bezirks-Code (Zahl oder Buchstabe)</li>
+                  </ul>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Das Jahr 2025 wird automatisch zu allen Einträgen hinzugefügt.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <Button 
+                    onClick={handleImportStreetData}
+                    disabled={importingStreets}
+                    className="w-full"
+                  >
+                    {importingStreets ? (
+                      <>
+                        <Database className="w-4 h-4 mr-2 animate-spin" />
+                        Importiere Daten...
+                      </>
+                    ) : (
+                      <>
+                        <Database className="w-4 h-4 mr-2" />
+                        Straßendaten importieren
+                      </>
+                    )}
+                  </Button>
+
+                  {importResult && (
+                    <div className={`p-4 rounded-lg border ${
+                      importResult.includes('Erfolgreich') 
+                        ? 'bg-green-50 border-green-200 text-green-800' 
+                        : 'bg-red-50 border-red-200 text-red-800'
+                    }`}>
+                      <p className="text-sm font-medium">{importResult}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-xs text-muted-foreground">
+                  <p><strong>Hinweis:</strong> Der Import kann nur einmal durchgeführt werden. Bereits existierende Daten werden nicht überschrieben.</p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

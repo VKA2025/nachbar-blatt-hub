@@ -139,6 +139,36 @@ export type Database = {
         }
         Relationships: []
       }
+      street_districts: {
+        Row: {
+          created_at: string
+          district: string
+          id: string
+          notes: string | null
+          street_name: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          district: string
+          id?: string
+          notes?: string | null
+          street_name: string
+          updated_at?: string
+          year?: number
+        }
+        Update: {
+          created_at?: string
+          district?: string
+          id?: string
+          notes?: string | null
+          street_name?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       streets: {
         Row: {
           created_at: string
