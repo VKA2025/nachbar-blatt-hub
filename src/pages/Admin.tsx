@@ -37,6 +37,7 @@ const Admin = () => {
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [backgroundImageFile, setBackgroundImageFile] = useState<File | null>(null);
+  const [removeBackgroundImage, setRemoveBackgroundImage] = useState(false);
   const [externalUrl, setExternalUrl] = useState("");
   const [uploadType, setUploadType] = useState<"file" | "url">("file");
   const [editingFlyer, setEditingFlyer] = useState<any>(null);
@@ -107,6 +108,7 @@ const Admin = () => {
       setDescription(editFlyer.description || "");
       setSelectedInfoType(editFlyer.info_type_id || "");
       setUploadType(editFlyer.is_external ? "url" : "file");
+      setRemoveBackgroundImage(false);
       if (editFlyer.is_external) {
         setExternalUrl(editFlyer.external_url || "");
       }
@@ -258,6 +260,14 @@ const Admin = () => {
             }
           }
           updateData.background_image_url = backgroundImageUrl;
+        } 
+        // Remove background image if requested
+        else if (removeBackgroundImage && editingFlyer.background_image_url) {
+          const oldBgPath = editingFlyer.background_image_url.split('/').pop();
+          if (oldBgPath) {
+            await supabase.storage.from('flyers').remove([`backgrounds/${oldBgPath}`]);
+          }
+          updateData.background_image_url = null;
         }
 
         if (uploadType === "url") {
@@ -330,6 +340,7 @@ const Admin = () => {
 
         // Reset form and navigate back
         setEditingFlyer(null);
+        setRemoveBackgroundImage(false);
         navigate("/", { replace: true });
       } else if (uploadType === "file") {
         const validatedData = flyerSchema.parse({
@@ -724,11 +735,36 @@ const Admin = () => {
                           </div>
                         </div>
                       )}
-                      {editingFlyer?.background_image_url && !backgroundImageFile && (
+                      {editingFlyer?.background_image_url && !backgroundImageFile && !removeBackgroundImage && (
                         <div className="p-4 bg-muted rounded-lg">
-                          <div className="flex items-center space-x-2">
-                            <FileText className="w-4 h-4" />
-                            <span className="text-sm font-medium">Aktuelles Hintergrundbild</span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <FileText className="w-4 h-4" />
+                              <span className="text-sm font-medium">Aktuelles Hintergrundbild</span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setRemoveBackgroundImage(true)}
+                            >
+                              Löschen
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      {removeBackgroundImage && (
+                        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-destructive">Hintergrundbild wird beim Speichern entfernt</span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setRemoveBackgroundImage(false)}
+                            >
+                              Rückgängig
+                            </Button>
                           </div>
                         </div>
                       )}
