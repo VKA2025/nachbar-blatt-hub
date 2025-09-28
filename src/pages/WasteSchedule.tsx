@@ -170,8 +170,7 @@ const WasteSchedule = () => {
         .in('waste_type', wasteTypeFilter)
         .gte('collection_date', format(fromDate, 'yyyy-MM-dd'))
         .lte('collection_date', format(endDate, 'yyyy-MM-dd'))
-        .order('collection_date')
-        .order('notes');
+        .order('collection_date');
 
       const { data: wasteData, error: wasteError } = await query;
 
@@ -185,11 +184,22 @@ const WasteSchedule = () => {
         return;
       }
 
-      // Add notes to collections
+      // Add notes to collections and sort by date and notes
       const collectionsWithNotes = (wasteData || []).map(collection => ({
         ...collection,
         notes: districtNotes[collection.district]
-      }));
+      })).sort((a, b) => {
+        // First sort by collection_date
+        const dateA = new Date(a.collection_date);
+        const dateB = new Date(b.collection_date);
+        if (dateA < dateB) return -1;
+        if (dateA > dateB) return 1;
+        
+        // Then sort by notes (secondary)
+        const notesA = a.notes || '';
+        const notesB = b.notes || '';
+        return notesA.localeCompare(notesB);
+      });
 
       setCollections(collectionsWithNotes);
     } catch (error) {
