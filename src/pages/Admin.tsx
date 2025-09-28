@@ -7,10 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { Upload, LogOut, Home, FileText, Link, Edit } from "lucide-react";
+import { Upload, LogOut, Home, FileText, Link, Edit, Users, Trash2 } from "lucide-react";
 import { z } from "zod";
 
 const flyerSchema = z.object({
@@ -40,6 +41,9 @@ const Admin = () => {
   const [editingFlyer, setEditingFlyer] = useState<any>(null);
   const [infoTypes, setInfoTypes] = useState<Array<{id: string, name: string}>>([]);
   const [selectedInfoType, setSelectedInfoType] = useState("");
+  const [activeTab, setActiveTab] = useState("flyers");
+  const [users, setUsers] = useState<any[]>([]);
+  const [editingUser, setEditingUser] = useState<any>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -89,6 +93,11 @@ const Admin = () => {
 
     loadInfoTypes();
 
+    // Load users for admin management
+    if (activeTab === "users") {
+      loadUsers();
+    }
+
     // Check if we're editing a flyer
     const editFlyer = location.state?.editFlyer;
     if (editFlyer) {
@@ -101,7 +110,7 @@ const Admin = () => {
         setExternalUrl(editFlyer.external_url || "");
       }
     }
-  }, [location.state]);
+  }, [location.state, activeTab]);
 
   const checkAdminStatus = async (userId: string) => {
     try {
@@ -375,6 +384,124 @@ const Admin = () => {
     }
   };
 
+  const loadUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          *,
+          user_roles (role)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading users:', error);
+        toast({
+          title: "Fehler",
+          description: "Benutzer konnten nicht geladen werden.",
+          variant: "destructive",
+        });
+      } else {
+        setUsers(data || []);
+      }
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  };
+
+  const handleUpdateUserRole = async (userId: string, newRole: string) => {
+    try {
+      // First, remove existing role
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
+
+      // Then add new role
+      const { error } = await supabase
+        .from('user_roles')
+        .insert([{ user_id: userId, role: newRole as any }]);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Rolle aktualisiert",
+        description: "Die Benutzerrolle wurde erfolgreich aktualisiert.",
+      });
+
+      loadUsers(); // Reload users
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      toast({
+        title: "Fehler",
+        description: "Rolle konnte nicht aktualisiert werden.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateUserProfile = async (userId: string, profileData: any) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(profileData)
+        .eq('user_id', userId);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Profil aktualisiert",
+        description: "Das Benutzerprofil wurde erfolgreich aktualisiert.",
+      });
+
+      setEditingUser(null);
+      loadUsers(); // Reload users
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      toast({
+        title: "Fehler",
+        description: "Profil konnte nicht aktualisiert werden.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm("Sind Sie sicher, dass Sie diesen Benutzer löschen möchten?")) {
+      return;
+    }
+
+    try {
+      // Delete user profile (this will also cascade to user_roles due to foreign key)
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', userId);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Benutzer gelöscht",
+        description: "Der Benutzer wurde erfolgreich gelöscht.",
+      });
+
+      loadUsers(); // Reload users
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Fehler",
+        description: "Benutzer konnte nicht gelöscht werden.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -421,158 +548,326 @@ const Admin = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Upload className="w-5 h-5 mr-2" />
-              {editingFlyer ? "Werbeblatt bearbeiten" : "Werbeblatt hinzufügen"}
-            </CardTitle>
-            <CardDescription>
-              {editingFlyer 
-                ? "Bearbeiten Sie die Details des Werbeblatts."
-                : "Laden Sie Dateien hoch oder verlinken Sie zu externen Dokumenten."
-              }
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={uploadType} onValueChange={(value) => setUploadType(value as "file" | "url")}>
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="file">Datei hochladen</TabsTrigger>
-                <TabsTrigger value="url">Externe URL</TabsTrigger>
-              </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="flyers">Werbeblätter</TabsTrigger>
+            <TabsTrigger value="users">Benutzer</TabsTrigger>
+          </TabsList>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Titel *</Label>
-                  <Input
-                    id="title"
-                    type="text"
-                    placeholder="z.B. Wochenangebote KW 38"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                    maxLength={100}
-                  />
-                </div>
+          <TabsContent value="flyers">
+            <Card className="max-w-2xl mx-auto">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Upload className="w-5 h-5 mr-2" />
+                  {editingFlyer ? "Werbeblatt bearbeiten" : "Werbeblatt hinzufügen"}
+                </CardTitle>
+                <CardDescription>
+                  {editingFlyer 
+                    ? "Bearbeiten Sie die Details des Werbeblatts."
+                    : "Laden Sie Dateien hoch oder verlinken Sie zu externen Dokumenten."
+                  }
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Tabs value={uploadType} onValueChange={(value) => setUploadType(value as "file" | "url")}>
+                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsTrigger value="file">Datei hochladen</TabsTrigger>
+                    <TabsTrigger value="url">Externe URL</TabsTrigger>
+                  </TabsList>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">Beschreibung (optional)</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Kurze Beschreibung..."
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    maxLength={500}
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="info-type">Info-Art *</Label>
-                  <Select value={selectedInfoType} onValueChange={setSelectedInfoType} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Wählen Sie eine Info-Art..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {infoTypes.map((infoType) => (
-                        <SelectItem key={infoType.id} value={infoType.id}>
-                          {infoType.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <TabsContent value="file" className="space-y-4 mt-0">
-                  <div className="space-y-2">
-                    <Label htmlFor="file-input">Datei auswählen *</Label>
-                    <Input
-                      id="file-input"
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png,.webp"
-                      onChange={handleFileChange}
-                      required={uploadType === "file" && !editingFlyer}
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Erlaubte Formate: PDF, JPEG, PNG, WebP (max. 20MB)
-                    </p>
-                  </div>
-
-                  {file && (
-                    <div className="p-4 bg-muted rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <FileText className="w-4 h-4" />
-                        <span className="text-sm font-medium">{file.name}</span>
-                        <span className="text-sm text-muted-foreground">
-                          ({Math.round(file.size / 1024)} KB)
-                        </span>
-                      </div>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Titel *</Label>
+                      <Input
+                        id="title"
+                        type="text"
+                        placeholder="z.B. Wochenangebote KW 38"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        required
+                        maxLength={100}
+                      />
                     </div>
-                  )}
-                </TabsContent>
 
-                <TabsContent value="url" className="space-y-4 mt-0">
-                  <div className="space-y-2">
-                    <Label htmlFor="external-url">URL zum Dokument *</Label>
-                    <Input
-                      id="external-url"
-                      type="url"
-                      placeholder="https://beispiel.de/werbeblatt.pdf"
-                      value={externalUrl}
-                      onChange={(e) => setExternalUrl(e.target.value)}
-                      required={uploadType === "url"}
-                      maxLength={500}
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Geben Sie eine direkte URL zum Dokument ein
-                    </p>
-                  </div>
-
-                  {externalUrl && (
-                    <div className="p-4 bg-muted rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <Link className="w-4 h-4" />
-                        <span className="text-sm font-medium break-all">{externalUrl}</span>
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Beschreibung (optional)</Label>
+                      <Textarea
+                        id="description"
+                        placeholder="Kurze Beschreibung..."
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        maxLength={500}
+                        rows={3}
+                      />
                     </div>
-                  )}
-                </TabsContent>
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={uploading || !selectedInfoType || (uploadType === "file" && !file && !editingFlyer) || (uploadType === "url" && !externalUrl.trim())}
-                >
-                  {uploading ? (
-                    <>
-                      <Upload className="w-4 h-4 mr-2 animate-spin" />
-                      {editingFlyer ? "Aktualisieren..." : (uploadType === "file" ? "Hochladen..." : "Speichern...")}
-                    </>
-                  ) : (
-                    <>
-                      {editingFlyer ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="info-type">Info-Art *</Label>
+                      <Select value={selectedInfoType} onValueChange={setSelectedInfoType} required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Wählen Sie eine Info-Art..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {infoTypes.map((infoType) => (
+                            <SelectItem key={infoType.id} value={infoType.id}>
+                              {infoType.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <TabsContent value="file" className="space-y-4 mt-0">
+                      <div className="space-y-2">
+                        <Label htmlFor="file-input">Datei auswählen *</Label>
+                        <Input
+                          id="file-input"
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png,.webp"
+                          onChange={handleFileChange}
+                          required={uploadType === "file" && !editingFlyer}
+                        />
+                        <p className="text-sm text-muted-foreground">
+                          Erlaubte Formate: PDF, JPEG, PNG, WebP (max. 20MB)
+                        </p>
+                      </div>
+
+                      {file && (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <FileText className="w-4 h-4" />
+                            <span className="text-sm font-medium">{file.name}</span>
+                            <span className="text-sm text-muted-foreground">
+                              ({Math.round(file.size / 1024)} KB)
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="url" className="space-y-4 mt-0">
+                      <div className="space-y-2">
+                        <Label htmlFor="external-url">URL zum Dokument *</Label>
+                        <Input
+                          id="external-url"
+                          type="url"
+                          placeholder="https://beispiel.de/werbeblatt.pdf"
+                          value={externalUrl}
+                          onChange={(e) => setExternalUrl(e.target.value)}
+                          required={uploadType === "url"}
+                          maxLength={500}
+                        />
+                        <p className="text-sm text-muted-foreground">
+                          Geben Sie eine direkte URL zum Dokument ein
+                        </p>
+                      </div>
+
+                      {externalUrl && (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <Link className="w-4 h-4" />
+                            <span className="text-sm font-medium break-all">{externalUrl}</span>
+                          </div>
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={uploading || !selectedInfoType || (uploadType === "file" && !file && !editingFlyer) || (uploadType === "url" && !externalUrl.trim())}
+                    >
+                      {uploading ? (
                         <>
-                          <Edit className="w-4 h-4 mr-2" />
-                          Werbeblatt aktualisieren
-                        </>
-                      ) : uploadType === "file" ? (
-                        <>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Werbeblatt hochladen
+                          <Upload className="w-4 h-4 mr-2 animate-spin" />
+                          {editingFlyer ? "Aktualisieren..." : (uploadType === "file" ? "Hochladen..." : "Speichern...")}
                         </>
                       ) : (
                         <>
-                          <Link className="w-4 h-4 mr-2" />
-                          Link hinzufügen
+                          {editingFlyer ? (
+                            <>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Werbeblatt aktualisieren
+                            </>
+                          ) : uploadType === "file" ? (
+                            <>
+                              <Upload className="w-4 h-4 mr-2" />
+                              Werbeblatt hochladen
+                            </>
+                          ) : (
+                            <>
+                              <Link className="w-4 h-4 mr-2" />
+                              Link hinzufügen
+                            </>
+                          )}
                         </>
                       )}
-                    </>
-                  )}
-                </Button>
-              </form>
-            </Tabs>
-          </CardContent>
-        </Card>
+                    </Button>
+                  </form>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="users">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Users className="w-5 h-5 mr-2" />
+                  Benutzerverwaltung
+                </CardTitle>
+                <CardDescription>
+                  Verwalten Sie Benutzer und deren Rollen
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {editingUser ? (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Benutzer bearbeiten</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Vorname</Label>
+                        <Input
+                          value={editingUser.first_name || ""}
+                          onChange={(e) => setEditingUser({...editingUser, first_name: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label>Nachname</Label>
+                        <Input
+                          value={editingUser.last_name || ""}
+                          onChange={(e) => setEditingUser({...editingUser, last_name: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label>E-Mail</Label>
+                        <Input
+                          value={editingUser.email || ""}
+                          onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label>Straße</Label>
+                        <Input
+                          value={editingUser.street || ""}
+                          onChange={(e) => setEditingUser({...editingUser, street: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label>Hausnummer</Label>
+                        <Input
+                          value={editingUser.house_number || ""}
+                          onChange={(e) => setEditingUser({...editingUser, house_number: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label>Status</Label>
+                        <Select 
+                          value={editingUser.status || "active"}
+                          onValueChange={(value) => setEditingUser({...editingUser, status: value})}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Aktiv</SelectItem>
+                            <SelectItem value="inactive">Inaktiv</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button 
+                        onClick={() => handleUpdateUserProfile(editingUser.user_id, {
+                          first_name: editingUser.first_name,
+                          last_name: editingUser.last_name,
+                          email: editingUser.email,
+                          street: editingUser.street,
+                          house_number: editingUser.house_number,
+                          status: editingUser.status
+                        })}
+                      >
+                        Speichern
+                      </Button>
+                      <Button variant="outline" onClick={() => setEditingUser(null)}>
+                        Abbrechen
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>E-Mail</TableHead>
+                          <TableHead>Straße</TableHead>
+                          <TableHead>Rolle</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Aktionen</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {users.map((userRecord) => (
+                          <TableRow key={userRecord.id}>
+                            <TableCell>
+                              {userRecord.first_name || ""} {userRecord.last_name || ""}
+                            </TableCell>
+                            <TableCell>{userRecord.email}</TableCell>
+                            <TableCell>
+                              {userRecord.street} {userRecord.house_number}
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                value={userRecord.user_roles?.[0]?.role || "user"}
+                                onValueChange={(value) => handleUpdateUserRole(userRecord.user_id, value)}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="user">Benutzer</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                userRecord.status === 'active' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {userRecord.status === 'active' ? 'Aktiv' : 'Inaktiv'}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setEditingUser(userRecord)}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteUser(userRecord.user_id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
