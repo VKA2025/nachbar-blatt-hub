@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_user_id: string
+          created_at: string | null
+          details: Json | null
+          id: string
+        }
+        Insert: {
+          action: string
+          admin_user_id: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+        }
+        Relationships: []
+      }
       flyers: {
         Row: {
           background_image_url: string | null
@@ -246,12 +270,43 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_management_data: {
+        Args: { limit_count?: number }
+        Returns: {
+          created_at: string
+          has_street: boolean
+          last_updated: string
+          notifications_enabled: boolean
+          user_id: string
+        }[]
+      }
+      get_user_statistics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          recent_signups: number
+          total_users: number
+          users_with_addresses: number
+          users_with_notifications: number
+        }[]
+      }
+      get_users_by_street: {
+        Args: { street_name: string }
+        Returns: {
+          notifications_enabled: number
+          street: string
+          user_count: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      log_admin_action: {
+        Args: { action_details?: Json; action_type: string }
+        Returns: string
       }
     }
     Enums: {
