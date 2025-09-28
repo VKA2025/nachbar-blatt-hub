@@ -36,6 +36,7 @@ const Admin = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [backgroundImageFile, setBackgroundImageFile] = useState<File | null>(null);
   const [externalUrl, setExternalUrl] = useState("");
   const [uploadType, setUploadType] = useState<"file" | "url">("file");
   const [editingFlyer, setEditingFlyer] = useState<any>(null);
@@ -176,6 +177,34 @@ const Admin = () => {
     }
   };
 
+  const handleBackgroundImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      // Check file size (max 10MB for background images)
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        toast({
+          title: "Datei zu groß",
+          description: "Das Hintergrundbild darf maximal 10MB groß sein.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Check file type - only images allowed for background
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(selectedFile.type)) {
+        toast({
+          title: "Ungültiger Dateityp",
+          description: "Nur JPEG, PNG und WebP Bilder sind für Hintergrundbilder erlaubt.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setBackgroundImageFile(selectedFile);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -187,6 +216,30 @@ const Admin = () => {
     setUploading(true);
 
     try {
+      let backgroundImageUrl = null;
+      
+      // Handle background image upload if provided
+      if (backgroundImageFile) {
+        const bgFileExt = backgroundImageFile.name.split('.').pop();
+        const bgFileName = `bg_${Date.now()}_${Math.random().toString(36).substring(2)}.${bgFileExt}`;
+        const bgFilePath = `backgrounds/${bgFileName}`;
+
+        const { error: bgUploadError } = await supabase.storage
+          .from('flyers')
+          .upload(bgFilePath, backgroundImageFile);
+
+        if (bgUploadError) {
+          throw bgUploadError;
+        }
+
+        // Get public URL for background image
+        const { data: { publicUrl } } = supabase.storage
+          .from('flyers')
+          .getPublicUrl(bgFilePath);
+
+        backgroundImageUrl = publicUrl;
+      }
+
       if (editingFlyer) {
         // Update existing flyer
         const updateData: any = {
@@ -194,6 +247,18 @@ const Admin = () => {
           description: description.trim() || null,
           info_type_id: selectedInfoType || null,
         };
+
+        // Update background image if new one was uploaded
+        if (backgroundImageUrl) {
+          // Delete old background image if it exists
+          if (editingFlyer.background_image_url) {
+            const oldBgPath = editingFlyer.background_image_url.split('/').pop();
+            if (oldBgPath) {
+              await supabase.storage.from('flyers').remove([`backgrounds/${oldBgPath}`]);
+            }
+          }
+          updateData.background_image_url = backgroundImageUrl;
+        }
 
         if (uploadType === "url") {
           const validatedData = urlSchema.parse({
@@ -304,6 +369,7 @@ const Admin = () => {
             is_external: false,
             external_url: null,
             info_type_id: validatedData.info_type_id,
+            background_image_url: backgroundImageUrl,
           });
 
         if (dbError) {
@@ -338,6 +404,7 @@ const Admin = () => {
             file_name: null,
             file_size: null,
             info_type_id: validatedData.info_type_id,
+            background_image_url: backgroundImageUrl,
           });
 
         if (dbError) {
@@ -355,11 +422,14 @@ const Admin = () => {
         setTitle("");
         setDescription("");
         setFile(null);
+        setBackgroundImageFile(null);
         setExternalUrl("");
         setSelectedInfoType("");
-        // Reset file input
+        // Reset file inputs
         const fileInput = document.getElementById('file-input') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
+        const bgInput = document.getElementById('background-image') as HTMLInputElement;
+        if (bgInput) bgInput.value = '';
       }
 
     } catch (error) {
@@ -630,6 +700,38 @@ const Admin = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="background-image">Hintergrundbild (optional)</Label>
+                      <Input
+                        id="background-image"
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp"
+                        onChange={handleBackgroundImageChange}
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        Hintergrundbild für die Infokachel. Erlaubte Formate: JPEG, PNG, WebP (max. 10MB)
+                      </p>
+                      {backgroundImageFile && (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <FileText className="w-4 h-4" />
+                            <span className="text-sm font-medium">{backgroundImageFile.name}</span>
+                            <span className="text-sm text-muted-foreground">
+                              ({Math.round(backgroundImageFile.size / 1024)} KB)
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      {editingFlyer?.background_image_url && !backgroundImageFile && (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <FileText className="w-4 h-4" />
+                            <span className="text-sm font-medium">Aktuelles Hintergrundbild</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <TabsContent value="file" className="space-y-4 mt-0">
