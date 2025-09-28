@@ -81,9 +81,9 @@ export const SortableFlyerCard = ({
     }
     
     if (flyer.is_external && flyer.external_url) {
-      // Use a screenshot service to generate preview
+      // Use a free screenshot service without API key requirement
       const encodedUrl = encodeURIComponent(flyer.external_url);
-      return `https://api.screenshotmachine.com/?key=demo&url=${encodedUrl}&dimension=1024x768&format=png&cacheLimit=0`;
+      return `https://image.thum.io/get/width/400/crop/800/allowJPG/wait/20/noanimate/${flyer.external_url}`;
     }
     
     return null;
