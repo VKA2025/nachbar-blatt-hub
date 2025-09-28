@@ -386,26 +386,41 @@ const Admin = () => {
 
   const loadUsers = async () => {
     try {
-      const { data, error } = await supabase
+      // Load profiles first
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          user_roles (role)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error loading users:', error);
-        toast({
-          title: "Fehler",
-          description: "Benutzer konnten nicht geladen werden.",
-          variant: "destructive",
-        });
-      } else {
-        setUsers(data || []);
+      if (profilesError) {
+        throw profilesError;
       }
+
+      // Load user roles separately
+      const userIds = profilesData?.map(profile => profile.user_id) || [];
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('user_id', userIds);
+
+      if (rolesError) {
+        throw rolesError;
+      }
+
+      // Combine the data
+      const usersWithRoles = profilesData?.map(profile => ({
+        ...profile,
+        user_roles: rolesData?.filter(role => role.user_id === profile.user_id) || []
+      })) || [];
+
+      setUsers(usersWithRoles);
     } catch (error) {
       console.error('Error loading users:', error);
+      toast({
+        title: "Fehler",
+        description: "Benutzer konnten nicht geladen werden.",
+        variant: "destructive",
+      });
     }
   };
 
