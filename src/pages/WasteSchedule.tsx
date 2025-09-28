@@ -301,25 +301,25 @@ const WasteSchedule = () => {
                 ) : collections.length > 0 ? (
                   <div className="border rounded-lg">
                     <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Abholdatum</TableHead>
-                          <TableHead>Abfallart</TableHead>
-                          <TableHead>Bezirk</TableHead>
-                          <TableHead>Bemerkung</TableHead>
-                        </TableRow>
-                      </TableHeader>
+                       <TableHeader>
+                         <TableRow>
+                           <TableHead>Abholdatum</TableHead>
+                           <TableHead>Abfallart</TableHead>
+                           <TableHead>Bemerkung</TableHead>
+                           <TableHead>Bezirk</TableHead>
+                         </TableRow>
+                       </TableHeader>
                       <TableBody>
-                        {collections.map((collection, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-medium">
-                              {format(new Date(collection.collection_date), "EEEE, dd.MM.yyyy", { locale: de })}
-                            </TableCell>
-                            <TableCell>{collection.waste_type}</TableCell>
-                            <TableCell>{collection.district}</TableCell>
-                            <TableCell>{collection.notes || "-"}</TableCell>
-                          </TableRow>
-                        ))}
+                         {collections.map((collection, index) => (
+                           <TableRow key={index}>
+                             <TableCell className="font-medium">
+                               {format(new Date(collection.collection_date), "EEEE, dd.MM.yyyy", { locale: de })}
+                             </TableCell>
+                             <TableCell>{collection.waste_type}</TableCell>
+                             <TableCell>{collection.notes || "-"}</TableCell>
+                             <TableCell>{collection.district}</TableCell>
+                           </TableRow>
+                         ))}
                       </TableBody>
                     </Table>
                   </div>
