@@ -184,22 +184,24 @@ const WasteSchedule = () => {
         return;
       }
 
-      // Add notes to collections and sort by date and notes
+      // Add notes to collections and sort by notes first, then by date
       const collectionsWithNotes = (wasteData || []).map(collection => ({
         ...collection,
         notes: districtNotes[collection.district]
       })).sort((a, b) => {
-        // First sort by collection_date
-        const dateA = new Date(a.collection_date);
-        const dateB = new Date(b.collection_date);
-        if (dateA.getTime() !== dateB.getTime()) {
-          return dateA.getTime() - dateB.getTime();
-        }
-        
-        // Then sort by notes (secondary) - handle null/undefined values
+        // First sort by notes (primary) - handle null/undefined values
         const notesA = (a.notes || '').toString().trim();
         const notesB = (b.notes || '').toString().trim();
-        return notesA.localeCompare(notesB, 'de', { numeric: true, sensitivity: 'base' });
+        const notesComparison = notesA.localeCompare(notesB, 'de', { numeric: true, sensitivity: 'base' });
+        
+        if (notesComparison !== 0) {
+          return notesComparison;
+        }
+        
+        // Then sort by collection_date (secondary)
+        const dateA = new Date(a.collection_date);
+        const dateB = new Date(b.collection_date);
+        return dateA.getTime() - dateB.getTime();
       });
 
       setCollections(collectionsWithNotes);
