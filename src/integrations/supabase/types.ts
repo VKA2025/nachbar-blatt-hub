@@ -98,6 +98,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string | null
+          email_notifications: boolean
           filter_preferences: Json | null
           first_name: string | null
           house_number: string | null
@@ -112,6 +113,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email?: string | null
+          email_notifications?: boolean
           filter_preferences?: Json | null
           first_name?: string | null
           house_number?: string | null
@@ -126,6 +128,7 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string | null
+          email_notifications?: boolean
           filter_preferences?: Json | null
           first_name?: string | null
           house_number?: string | null

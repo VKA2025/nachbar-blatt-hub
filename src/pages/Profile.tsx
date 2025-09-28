@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -19,6 +20,7 @@ const profileSchema = z.object({
   email: z.string().email("Ungültige E-Mail-Adresse").max(255),
   street: z.string().optional(),
   houseNumber: z.string().optional(),
+  emailNotifications: z.boolean().default(false),
 });
 
 interface Street {
@@ -32,6 +34,7 @@ interface Profile {
   email: string | null;
   street: string | null;
   house_number: string | null;
+  email_notifications: boolean | null;
 }
 
 const Profile = () => {
@@ -44,6 +47,7 @@ const Profile = () => {
   const [email, setEmail] = useState("");
   const [street, setStreet] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
+  const [emailNotifications, setEmailNotifications] = useState(false);
   const [streets, setStreets] = useState<Street[]>([]);
   const [streetOpen, setStreetOpen] = useState(false);
   const [houseNumberOpen, setHouseNumberOpen] = useState(false);
@@ -103,7 +107,7 @@ const Profile = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('profiles')
-        .select('first_name, last_name, email, street, house_number')
+        .select('first_name, last_name, email, street, house_number, email_notifications')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -120,6 +124,7 @@ const Profile = () => {
         setEmail(data.email || "");
         setStreet(data.street || "");
         setHouseNumber(data.house_number || "");
+        setEmailNotifications(data.email_notifications || false);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -149,6 +154,7 @@ const Profile = () => {
         email: email.trim(),
         street: street || undefined,
         houseNumber: houseNumber || undefined,
+        emailNotifications: emailNotifications,
       });
 
       // Update profile in database
@@ -160,6 +166,7 @@ const Profile = () => {
           email: validatedData.email,
           street: validatedData.street,
           house_number: validatedData.houseNumber,
+          email_notifications: validatedData.emailNotifications,
         })
         .eq('user_id', user.id);
 
@@ -291,6 +298,20 @@ const Profile = () => {
                 <p className="text-sm text-muted-foreground">
                   Bei Änderung der E-Mail erhältst Du eine Bestätigungs-E-Mail
                 </p>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="emailNotifications"
+                  checked={emailNotifications}
+                  onCheckedChange={(checked) => setEmailNotifications(!!checked)}
+                />
+                <Label 
+                  htmlFor="emailNotifications"
+                  className="text-sm font-normal leading-5 cursor-pointer"
+                >
+                  Benachrichtigungen per E-Mail erhalten (z.B. Abholtermine aus Abfallkalender für meine Straße)
+                </Label>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
