@@ -122,7 +122,7 @@ export const SortableFlyerCard = ({
       {/* Background Image */}
       {previewImageUrl && (
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
           style={{ backgroundImage: `url(${previewImageUrl})` }}
         />
       )}
