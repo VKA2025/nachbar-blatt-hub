@@ -208,6 +208,36 @@ export type Database = {
         }
         Relationships: []
       }
+      waste_collection_schedule: {
+        Row: {
+          collection_date: string
+          created_at: string
+          day_of_week: string
+          district: string
+          id: string
+          updated_at: string
+          waste_type: string
+        }
+        Insert: {
+          collection_date: string
+          created_at?: string
+          day_of_week: string
+          district: string
+          id?: string
+          updated_at?: string
+          waste_type: string
+        }
+        Update: {
+          collection_date?: string
+          created_at?: string
+          day_of_week?: string
+          district?: string
+          id?: string
+          updated_at?: string
+          waste_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

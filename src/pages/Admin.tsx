@@ -14,6 +14,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { Upload, LogOut, Home, FileText, Link, Edit, Users, Trash2, Database } from "lucide-react";
 import { z } from "zod";
 import { importStreetData } from "@/utils/importStreetData";
+import { importWasteSchedule } from "@/utils/importWasteSchedule";
 
 const flyerSchema = z.object({
   title: z.string().trim().min(1, "Titel ist erforderlich").max(100),
@@ -49,6 +50,8 @@ const Admin = () => {
   const [editingUser, setEditingUser] = useState<any>(null);
   const [importingStreets, setImportingStreets] = useState(false);
   const [importResult, setImportResult] = useState<string | null>(null);
+  const [importingWaste, setImportingWaste] = useState(false);
+  const [wasteImportResult, setWasteImportResult] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -178,6 +181,38 @@ const Admin = () => {
       });
     } finally {
       setImportingStreets(false);
+    }
+  };
+
+  const handleImportWasteSchedule = async () => {
+    setImportingWaste(true);
+    setWasteImportResult(null);
+    
+    try {
+      // Read the CSV file from public/data
+      const response = await fetch('/data/Abholdatum_Bezirke.csv');
+      const csvContent = await response.text();
+      
+      const recordCount = await importWasteSchedule(csvContent);
+      
+      setWasteImportResult(`Erfolgreich ${recordCount} Abfallkalender-Einträge importiert!`);
+      
+      toast({
+        title: "Import erfolgreich",
+        description: `${recordCount} Abfallkalender-Einträge wurden importiert.`,
+      });
+    } catch (error) {
+      console.error('Waste schedule import error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
+      setWasteImportResult(`Import fehlgeschlagen: ${errorMessage}`);
+      
+      toast({
+        title: "Import fehlgeschlagen",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setImportingWaste(false);
     }
   };
 
@@ -680,10 +715,11 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="flyers">Werbeblätter</TabsTrigger>
             <TabsTrigger value="users">Benutzer</TabsTrigger>
             <TabsTrigger value="streets">Straßendaten</TabsTrigger>
+            <TabsTrigger value="waste">Abfallkalender</TabsTrigger>
           </TabsList>
 
           <TabsContent value="flyers">
@@ -1116,6 +1152,73 @@ const Admin = () => {
 
                 <div className="text-xs text-muted-foreground">
                   <p><strong>Hinweis:</strong> Der Import kann nur einmal durchgeführt werden. Bereits existierende Daten werden nicht überschrieben.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="waste">
+            <Card className="max-w-2xl mx-auto">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Database className="w-5 h-5 mr-2" />
+                  Abfallkalender importieren
+                </CardTitle>
+                <CardDescription>
+                  Importieren Sie die Abholdaten nach Bezirken und Abfallarten für 2025.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="p-4 bg-muted rounded-lg">
+                  <h3 className="font-medium mb-2">CSV-Datei Format</h3>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Die CSV-Datei sollte folgende Spalten enthalten:
+                  </p>
+                  <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                    <li><code>Abholdatum</code> - Datum im Format DD.MM.YYYY</li>
+                    <li><code>Wochentag</code> - Wochentag der Abholung</li>
+                    <li><code>Restmülltonne</code> - Bezirke für Restmüll</li>
+                    <li><code>Gelber Sack</code> - Bezirke für Gelben Sack</li>
+                    <li><code>Papiertonne</code> - Bezirke für Papiertonne</li>
+                    <li><code>Biotonne</code> - Bezirke für Biotonne</li>
+                  </ul>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Die Bezirke in den Spalten 3-6 werden mit der street_districts-Tabelle verknüpft.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <Button 
+                    onClick={handleImportWasteSchedule}
+                    disabled={importingWaste}
+                    className="w-full"
+                  >
+                    {importingWaste ? (
+                      <>
+                        <Database className="w-4 h-4 mr-2 animate-spin" />
+                        Importiere Daten...
+                      </>
+                    ) : (
+                      <>
+                        <Database className="w-4 h-4 mr-2" />
+                        Abfallkalender importieren
+                      </>
+                    )}
+                  </Button>
+
+                  {wasteImportResult && (
+                    <div className={`p-4 rounded-lg border ${
+                      wasteImportResult.includes('Erfolgreich') 
+                        ? 'bg-green-50 border-green-200 text-green-800' 
+                        : 'bg-red-50 border-red-200 text-red-800'
+                    }`}>
+                      <p className="text-sm font-medium">{wasteImportResult}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-xs text-muted-foreground">
+                  <p><strong>Hinweis:</strong> Bestehende Abfallkalender-Daten werden vor dem Import gelöscht und durch die neuen Daten ersetzt.</p>
                 </div>
               </CardContent>
             </Card>
