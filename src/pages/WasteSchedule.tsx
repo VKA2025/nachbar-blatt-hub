@@ -170,7 +170,8 @@ const WasteSchedule = () => {
         .in('waste_type', wasteTypeFilter)
         .gte('collection_date', format(fromDate, 'yyyy-MM-dd'))
         .lte('collection_date', format(endDate, 'yyyy-MM-dd'))
-        .order('collection_date');
+        .order('collection_date')
+        .order('notes');
 
       const { data: wasteData, error: wasteError } = await query;
 
