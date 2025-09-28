@@ -192,13 +192,14 @@ const WasteSchedule = () => {
         // First sort by collection_date
         const dateA = new Date(a.collection_date);
         const dateB = new Date(b.collection_date);
-        if (dateA < dateB) return -1;
-        if (dateA > dateB) return 1;
+        if (dateA.getTime() !== dateB.getTime()) {
+          return dateA.getTime() - dateB.getTime();
+        }
         
-        // Then sort by notes (secondary)
-        const notesA = a.notes || '';
-        const notesB = b.notes || '';
-        return notesA.localeCompare(notesB);
+        // Then sort by notes (secondary) - handle null/undefined values
+        const notesA = (a.notes || '').toString().trim();
+        const notesB = (b.notes || '').toString().trim();
+        return notesA.localeCompare(notesB, 'de', { numeric: true, sensitivity: 'base' });
       });
 
       setCollections(collectionsWithNotes);
