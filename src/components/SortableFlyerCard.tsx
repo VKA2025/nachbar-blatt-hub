@@ -130,7 +130,7 @@ export const SortableFlyerCard = ({
       {/* Content overlay */}
       <div className="relative z-10">
         <CardHeader>
-          <CardTitle className="flex items-start space-x-2 text-primary">
+          <CardTitle className="flex items-start space-x-2 text-primary-dark">
             {flyer.is_external ? (
               <ExternalLink className="w-5 h-5 mt-0.5 flex-shrink-0" />
             ) : (
@@ -159,7 +159,7 @@ export const SortableFlyerCard = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {flyer.description && (
-            <p className="text-sm text-muted-foreground line-clamp-3">
+            <p className="text-sm text-primary-dark line-clamp-3">
               {flyer.description}
             </p>
           )}
