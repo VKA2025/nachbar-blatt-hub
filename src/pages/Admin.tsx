@@ -537,18 +537,16 @@ const Admin = () => {
 
   const loadUsers = async () => {
     try {
-      // Load profiles first
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Use secure function to get user management data (no personal info)
+      const { data: userManagementData, error: managementError } = await supabase
+        .rpc('get_user_management_data', { limit_count: 100 });
 
-      if (profilesError) {
-        throw profilesError;
+      if (managementError) {
+        throw managementError;
       }
 
       // Load user roles separately
-      const userIds = profilesData?.map(profile => profile.user_id) || [];
+      const userIds = userManagementData?.map(userData => userData.user_id) || [];
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role')
@@ -558,11 +556,25 @@ const Admin = () => {
         throw rolesError;
       }
 
-      // Combine the data
-      const usersWithRoles = profilesData?.map(profile => ({
-        ...profile,
-        user_roles: rolesData?.filter(role => role.user_id === profile.user_id) || []
-      })) || [];
+      // Combine secure user data with roles (no sensitive data exposed)
+      const usersWithRoles = userManagementData?.map(userData => {
+        const userRole = rolesData?.find(role => role.user_id === userData.user_id);
+        return {
+          user_id: userData.user_id,
+          created_at: userData.created_at,
+          updated_at: userData.last_updated,
+          // Security: Personal data is protected and not displayed
+          first_name: '[PROTECTED]',
+          last_name: '[PROTECTED]', 
+          email: '[PROTECTED]',
+          street: userData.has_street ? '[HAS_STREET]' : null,
+          house_number: '[PROTECTED]',
+          email_notifications: userData.notifications_enabled,
+          // Role information
+          user_roles: userRole ? [userRole] : [],
+          role: userRole?.role || 'user'
+        };
+      }) || [];
 
       setUsers(usersWithRoles);
     } catch (error) {
@@ -610,22 +622,31 @@ const Admin = () => {
 
   const handleUpdateUserProfile = async (userId: string, profileData: any) => {
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update(profileData)
-        .eq('user_id', userId);
+      // Use secure function to update user profile with audit logging
+      const { data, error } = await supabase
+        .rpc('admin_update_profile', {
+          target_user_id: userId,
+          new_first_name: profileData.first_name,
+          new_last_name: profileData.last_name,
+          new_email: profileData.email,
+          new_street: profileData.street,
+          new_house_number: profileData.house_number,
+          new_email_notifications: profileData.email_notifications
+        });
 
       if (error) {
         throw error;
       }
 
-      toast({
-        title: "Profil aktualisiert",
-        description: "Das Benutzerprofil wurde erfolgreich aktualisiert.",
-      });
-
-      setEditingUser(null);
-      loadUsers(); // Reload users
+      if (data) {
+        toast({
+          title: "Profil aktualisiert",
+          description: "Das Benutzerprofil wurde erfolgreich aktualisiert.",
+        });
+        loadUsers(); // Reload users
+      } else {
+        throw new Error('Update failed - no changes made');
+      }
     } catch (error) {
       console.error('Error updating user profile:', error);
       toast({

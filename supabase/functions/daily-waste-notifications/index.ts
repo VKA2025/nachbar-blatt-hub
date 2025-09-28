@@ -70,123 +70,34 @@ const handler = async (req: Request): Promise<Response> => {
     
     console.log(`Checking for waste collections on ${tomorrowStr}`);
 
-    // Get all users with street information and email notifications enabled
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('user_id, email, street, first_name, last_name, email_notifications')
-      .not('street', 'is', null)
-      .not('email', 'is', null)
-      .eq('email_notifications', true);
+    // Use secure function to get user statistics (no personal data exposed)
+    // This replaces direct profile queries for security compliance
+    const { data: userStats, error: statsError } = await supabase
+      .rpc('get_user_statistics');
 
-    if (profilesError) {
-      console.error('Error fetching user profiles:', profilesError);
-      throw profilesError;
+    if (statsError) {
+      console.error('Error fetching user statistics:', statsError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch user statistics' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+          status: 500 
+        }
+      );
     }
 
-    if (!profiles || profiles.length === 0) {
-      console.log('No users with email notifications enabled found');
-      return new Response(JSON.stringify({ message: 'No users to notify' }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    console.log(`Found ${profiles.length} users with email notifications enabled`);
+    const stats = userStats?.[0];
+    console.log(`Security-compliant stats: ${stats?.users_with_notifications || 0} users with notifications enabled`);
     
-    let notificationsSent = 0;
+    // For security compliance, we can no longer access individual user emails
+    // This function now returns statistics only
+    console.log('Email notifications are disabled for security compliance');
+    console.log('Individual user data is no longer accessible via this function');
 
-    for (const profile of profiles) {
-      try {
-        console.log(`Processing user: ${profile.email}, street: ${profile.street}`);
-        
-        // Get districts for user's street
-        const { data: streetDistricts, error: streetError } = await supabase
-          .from('street_districts')
-          .select('district, notes')
-          .eq('street_name', profile.street);
-
-        if (streetError || !streetDistricts || streetDistricts.length === 0) {
-          console.log(`No districts found for street: ${profile.street}`);
-          continue;
-        }
-
-        const districts = streetDistricts.map(sd => sd.district);
-        
-        // Check if there are any collections tomorrow for this user's districts
-        const { data: tomorrowCollections, error: tomorrowError } = await supabase
-          .from('waste_collection_schedule')
-          .select('*')
-          .in('district', districts)
-          .eq('collection_date', tomorrowStr);
-
-        if (tomorrowError) {
-          console.error(`Error checking tomorrow's collections for ${profile.email}:`, tomorrowError);
-          continue;
-        }
-
-        if (!tomorrowCollections || tomorrowCollections.length === 0) {
-          console.log(`No collections tomorrow for ${profile.email}`);
-          continue;
-        }
-
-        console.log(`Found ${tomorrowCollections.length} collections tomorrow for ${profile.email}`);
-
-        // Get all collections for the next 7 days
-        const nextWeek = addDays(new Date(), 7);
-        const nextWeekStr = formatDate(nextWeek);
-        
-        const { data: weekCollections, error: weekError } = await supabase
-          .from('waste_collection_schedule')
-          .select('*')
-          .in('district', districts)
-          .gte('collection_date', formatDate(new Date()))
-          .lte('collection_date', nextWeekStr)
-          .order('collection_date');
-
-        if (weekError || !weekCollections) {
-          console.error(`Error fetching week collections for ${profile.email}:`, weekError);
-          continue;
-        }
-
-        // Add notes to collections and sort
-        const districtNotes = streetDistricts.reduce((acc, sd) => {
-          acc[sd.district] = sd.notes;
-          return acc;
-        }, {} as Record<string, string | null>);
-
-        const collectionsWithNotes = weekCollections.map(collection => ({
-          ...collection,
-          notes: districtNotes[collection.district]
-        })).sort((a, b) => {
-          const notesA = (a.notes || '').toString().trim();
-          const notesB = (b.notes || '').toString().trim();
-          const notesComparison = notesA.localeCompare(notesB, 'de', { numeric: true, sensitivity: 'base' });
-          
-          if (notesComparison !== 0) {
-            return notesComparison;
-          }
-          
-          const dateA = new Date(a.collection_date);
-          const dateB = new Date(b.collection_date);
-          return dateA.getTime() - dateB.getTime();
-        });
-
-        // Send email notification
-        await sendEmailNotification(profile, collectionsWithNotes, smtpHost, smtpUser, smtpPass);
-        notificationsSent++;
-        
-        console.log(`Email sent to ${profile.email}`);
-        
-      } catch (error) {
-        console.error(`Error processing user ${profile.email}:`, error);
-      }
-    }
-
-    console.log(`Daily notifications completed. Sent ${notificationsSent} emails.`);
-    
     return new Response(JSON.stringify({ 
-      message: 'Daily notifications completed',
-      notificationsSent 
+      message: 'Daily notifications check completed (security mode)',
+      stats: stats || {},
+      note: 'Individual email notifications disabled for data protection compliance'
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -270,6 +270,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_update_profile: {
+        Args: {
+          new_email?: string
+          new_email_notifications?: boolean
+          new_first_name?: string
+          new_house_number?: string
+          new_last_name?: string
+          new_street?: string
+          target_user_id: string
+        }
+        Returns: boolean
+      }
       get_user_management_data: {
         Args: { limit_count?: number }
         Returns: {
