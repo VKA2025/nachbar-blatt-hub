@@ -154,8 +154,8 @@ const WasteSchedule = () => {
         return acc;
       }, {} as Record<string, string | null>);
 
-      // Calculate date range (2 weeks from selected date)
-      const endDate = addDays(fromDate, 14);
+      // Calculate date range (4 weeks from selected date)
+      const endDate = addDays(fromDate, 28);
 
       // Build waste type filter
       let wasteTypeFilter = selectedWasteType === 'alle' 
@@ -233,7 +233,7 @@ const WasteSchedule = () => {
               Meine Abholtermine
             </CardTitle>
             <CardDescription>
-              Finden Sie Ihre persönlichen Müllabholtermine für die nächsten zwei Wochen
+              Finden Sie Ihre persönlichen Müllabholtermine für die nächsten vier Wochen
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -305,7 +305,7 @@ const WasteSchedule = () => {
             {/* Results Table */}
             {selectedStreet && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Abholtermine für die nächsten 2 Wochen</h3>
+                <h3 className="text-lg font-semibold">Abholtermine für die nächsten 4 Wochen</h3>
                 
                 {loading ? (
                   <div className="text-center py-8">
