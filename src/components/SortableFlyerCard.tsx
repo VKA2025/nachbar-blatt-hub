@@ -17,6 +17,7 @@ interface Flyer {
   upload_date: string;
   created_at: string;
   info_type_id: string | null;
+  background_image_url: string | null;
   info_types?: {
     id: string;
     name: string;
@@ -98,125 +99,136 @@ export const SortableFlyerCard = ({
     <Card 
       ref={setNodeRef}
       style={style}
-      className={`hover:shadow-lg transition-shadow ${isDragging ? 'z-50' : ''} ${isCustomSort ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      className={`relative overflow-hidden hover:shadow-lg transition-shadow ${isDragging ? 'z-50' : ''} ${isCustomSort ? 'cursor-grab active:cursor-grabbing' : ''}`}
       {...(isCustomSort ? { ...attributes, ...listeners } : {})}
     >
-      <CardHeader>
-        <CardTitle className="flex items-start space-x-2 text-primary">
-          {flyer.is_external ? (
-            <ExternalLink className="w-5 h-5 mt-0.5 flex-shrink-0" />
-          ) : (
-            <FileText className="w-5 h-5 mt-0.5 flex-shrink-0" />
-          )}
-          <span className="line-clamp-2">{flyer.title}</span>
-        </CardTitle>
-        <div className="flex items-center justify-between">
-          <CardDescription className="flex items-center space-x-2">
-            <Calendar className="w-4 h-4" />
-            <span>{formatUploadDate(flyer.upload_date)}</span>
-          </CardDescription>
-          <div className="flex items-center space-x-2">
-            {flyer.info_types?.name && (
-              <Badge variant="outline" className="text-xs">
-                {flyer.info_types.name}
-              </Badge>
+      {/* Background Image */}
+      {flyer.background_image_url && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+          style={{ backgroundImage: `url(${flyer.background_image_url})` }}
+        />
+      )}
+      
+      {/* Content overlay */}
+      <div className="relative z-10">
+        <CardHeader>
+          <CardTitle className="flex items-start space-x-2 text-primary">
+            {flyer.is_external ? (
+              <ExternalLink className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            ) : (
+              <FileText className="w-5 h-5 mt-0.5 flex-shrink-0" />
             )}
-            {flyer.is_external && (
-              <Badge variant="secondary" className="text-xs">
-                Externer Link
-              </Badge>
+            <span className="line-clamp-2">{flyer.title}</span>
+          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardDescription className="flex items-center space-x-2">
+              <Calendar className="w-4 h-4" />
+              <span>{formatUploadDate(flyer.upload_date)}</span>
+            </CardDescription>
+            <div className="flex items-center space-x-2">
+              {flyer.info_types?.name && (
+                <Badge variant="outline" className="text-xs">
+                  {flyer.info_types.name}
+                </Badge>
+              )}
+              {flyer.is_external && (
+                <Badge variant="secondary" className="text-xs">
+                  Externer Link
+                </Badge>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {flyer.description && (
+            <p className="text-sm text-muted-foreground line-clamp-3">
+              {flyer.description}
+            </p>
+          )}
+          
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            {flyer.is_external ? (
+              <span className="break-all line-clamp-2">{flyer.external_url}</span>
+            ) : (
+              <>
+                <span>{flyer.file_name}</span>
+                <span>{formatFileSize(flyer.file_size)}</span>
+              </>
             )}
           </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {flyer.description && (
-          <p className="text-sm text-muted-foreground line-clamp-3">
-            {flyer.description}
-          </p>
-        )}
-        
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          {flyer.is_external ? (
-            <span className="break-all line-clamp-2">{flyer.external_url}</span>
-          ) : (
-            <>
-              <span>{flyer.file_name}</span>
-              <span>{formatFileSize(flyer.file_size)}</span>
-            </>
-          )}
-        </div>
 
-        {user && (
-          <div className="space-y-2">
-            <div className="flex space-x-2">
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => onViewFlyer(flyer)}
-                className="flex-1"
-              >
-                {flyer.is_external ? (
-                  <>
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Link öffnen
-                  </>
-                ) : (
-                  <>
-                    <Eye className="w-4 h-4 mr-2" />
-                    Anzeigen
-                  </>
-                )}
-              </Button>
-              {!flyer.is_external && (
+          {user && (
+            <div className="space-y-2">
+              <div className="flex space-x-2">
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => onDownloadFlyer(flyer)}
+                  onClick={() => onViewFlyer(flyer)}
                   className="flex-1"
                 >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download
+                  {flyer.is_external ? (
+                    <>
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Link öffnen
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-4 h-4 mr-2" />
+                      Anzeigen
+                    </>
+                  )}
                 </Button>
-              )}
-            </div>
-            
-            {flyer.info_types?.name === 'Zeitung' && userProfile && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleComplaintClick}
-                className="w-full"
-              >
-                Papierversion abbestellen
-              </Button>
-            )}
-            
-            {isAdmin && (
-              <div className="flex space-x-2">
+                {!flyer.is_external && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => onDownloadFlyer(flyer)}
+                    className="flex-1"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                )}
+              </div>
+              
+              {flyer.info_types?.name === 'Zeitung' && userProfile && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onEditFlyer?.(flyer)}
-                  className="flex-1"
+                  onClick={handleComplaintClick}
+                  className="w-full"
                 >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Bearbeiten
+                  Papierversion abbestellen
                 </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => onDeleteFlyer?.(flyer)}
-                  className="flex-1"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Löschen
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-      </CardContent>
+              )}
+              
+              {isAdmin && (
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEditFlyer?.(flyer)}
+                    className="flex-1"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Bearbeiten
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => onDeleteFlyer?.(flyer)}
+                    className="flex-1"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Löschen
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </div>
     </Card>
   );
 };

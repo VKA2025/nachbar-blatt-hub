@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       flyers: {
         Row: {
+          background_image_url: string | null
           created_at: string
           description: string | null
           external_url: string | null
@@ -32,6 +33,7 @@ export type Database = {
           uploaded_by: string
         }
         Insert: {
+          background_image_url?: string | null
           created_at?: string
           description?: string | null
           external_url?: string | null
@@ -48,6 +50,7 @@ export type Database = {
           uploaded_by: string
         }
         Update: {
+          background_image_url?: string | null
           created_at?: string
           description?: string | null
           external_url?: string | null
@@ -101,6 +104,7 @@ export type Database = {
           id: string
           last_name: string | null
           sort_preferences: Json | null
+          status: string | null
           street: string | null
           updated_at: string
           user_id: string
@@ -114,6 +118,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           sort_preferences?: Json | null
+          status?: string | null
           street?: string | null
           updated_at?: string
           user_id: string
@@ -127,6 +132,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           sort_preferences?: Json | null
+          status?: string | null
           street?: string | null
           updated_at?: string
           user_id?: string

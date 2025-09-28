@@ -45,6 +45,7 @@ interface Flyer {
   upload_date: string;
   created_at: string;
   info_type_id: string | null;
+  background_image_url: string | null;
   info_types?: {
     id: string;
     name: string;
