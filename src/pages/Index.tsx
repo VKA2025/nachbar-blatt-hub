@@ -30,6 +30,7 @@ import {
   CSS,
 } from '@dnd-kit/utilities';
 import { SortableFlyerCard } from "@/components/SortableFlyerCard";
+import bannerImage from '@/assets/banner-lake.jpg';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface Flyer {
@@ -570,14 +571,22 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold mb-4 text-primary">Aktuelles aus Brühl</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+      {/* Hero Banner */}
+      <div 
+        className="relative h-96 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${bannerImage})` }}
+      >
+        <div className="absolute inset-0 bg-background/60"></div>
+        <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">Aktuelles aus Brühl</h2>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
             Entdecke die neuesten Angebote und Informationen aus Deiner Nachbarschaft.
             {!user && " Melde Dich an, um alle Funktionen zu nutzen."}
           </p>
         </div>
+      </div>
+
+      <main className="container mx-auto px-4 py-8">
 
         {!user && (
           <Card className="mb-8 bg-muted/50">
