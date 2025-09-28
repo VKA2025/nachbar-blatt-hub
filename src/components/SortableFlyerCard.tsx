@@ -81,9 +81,9 @@ export const SortableFlyerCard = ({
     }
     
     if (flyer.is_external && flyer.external_url) {
-      // Use a free screenshot service without API key requirement
+      // Use screenshot.guru service with cookie and ad blocking
       const encodedUrl = encodeURIComponent(flyer.external_url);
-      return `https://image.thum.io/get/width/400/crop/800/allowJPG/wait/20/noanimate/${flyer.external_url}`;
+      return `https://api.screenshot.guru/screenshot?url=${encodedUrl}&width=400&height=300&format=jpeg&block_ads=true&block_popups=true&block_trackers=true&full_page=false&wait=3000`;
     }
     
     return null;
