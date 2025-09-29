@@ -431,7 +431,7 @@ const Auth = () => {
                 </div>
                 <div className="flex justify-center">
                   <ReCAPTCHA
-                    sitekey="6LeUuNgrAAAAALj1H08EDCF45eg8w6IsBzL1oo1s"
+                    sitekey="6Le9HNkrAAAAANxF9Kn-UehyH6JOMQgH3qQ2ccDN"
                     onChange={setCaptchaValue}
                     theme="light"
                   />
