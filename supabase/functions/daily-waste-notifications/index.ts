@@ -70,15 +70,17 @@ const handler = async (req: Request): Promise<Response> => {
     
     console.log(`Checking for waste collections on ${tomorrowStr}`);
 
-    // Use secure function to get user statistics (no personal data exposed)
-    // This replaces direct profile queries for security compliance
-    const { data: userStats, error: statsError } = await supabase
-      .rpc('get_user_statistics');
+    // Get users with email notifications enabled
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('user_id, email, street, house_number, first_name, last_name')
+      .eq('email_notifications', true)
+      .not('street', 'is', null);
 
-    if (statsError) {
-      console.error('Error fetching user statistics:', statsError);
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch user statistics' }),
+        JSON.stringify({ error: 'Failed to fetch profiles' }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
           status: 500 
@@ -86,18 +88,70 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const stats = userStats?.[0];
-    console.log(`Security-compliant stats: ${stats?.users_with_notifications || 0} users with notifications enabled`);
-    
-    // For security compliance, we can no longer access individual user emails
-    // This function now returns statistics only
-    console.log('Email notifications are disabled for security compliance');
-    console.log('Individual user data is no longer accessible via this function');
+    console.log(`Found ${profiles?.length || 0} users with notifications enabled`);
+
+    if (!profiles || profiles.length === 0) {
+      return new Response(JSON.stringify({ 
+        message: 'No users with notifications enabled',
+        sentEmails: 0
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    let emailsSent = 0;
+    const errors: string[] = [];
+
+    // Process each user
+    for (const profile of profiles) {
+      try {
+        // Get the district for this street
+        const { data: streetDistrict, error: districtError } = await supabase
+          .from('street_districts')
+          .select('district')
+          .eq('street_name', profile.street)
+          .maybeSingle();
+
+        if (districtError || !streetDistrict) {
+          console.log(`No district found for street: ${profile.street}`);
+          continue;
+        }
+
+        // Get waste collections for tomorrow in this district
+        const { data: collections, error: collectionsError } = await supabase
+          .from('waste_collection_schedule')
+          .select('collection_date, waste_type, district')
+          .eq('district', streetDistrict.district)
+          .eq('collection_date', tomorrowStr);
+
+        if (collectionsError) {
+          console.error(`Error fetching collections for ${profile.email}:`, collectionsError);
+          errors.push(`${profile.email}: ${collectionsError.message}`);
+          continue;
+        }
+
+        if (!collections || collections.length === 0) {
+          console.log(`No collections tomorrow for ${profile.email} (${streetDistrict.district})`);
+          continue;
+        }
+
+        // Send email notification
+        await sendEmailNotification(profile, collections, smtpHost, smtpUser, smtpPass);
+        emailsSent++;
+        console.log(`Email sent to ${profile.email}`);
+
+      } catch (error: any) {
+        console.error(`Error processing ${profile.email}:`, error);
+        errors.push(`${profile.email}: ${error.message}`);
+      }
+    }
 
     return new Response(JSON.stringify({ 
-      message: 'Daily notifications check completed (security mode)',
-      stats: stats || {},
-      note: 'Individual email notifications disabled for data protection compliance'
+      message: 'Daily notifications completed',
+      sentEmails: emailsSent,
+      totalUsers: profiles.length,
+      errors: errors.length > 0 ? errors : undefined
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -195,25 +249,89 @@ async function sendEmailNotification(
     </html>
   `;
 
-  // Simple SMTP implementation using basic authentication
-  const message = `From: ${smtpUser}\r\n` +
-    `To: ${profile.email}\r\n` +
-    `Subject: =?UTF-8?B?${btoa(`🗑️ Abholtermine für ${profile.street} - Morgen ist Abholtag!`)}?=\r\n` +
-    `MIME-Version: 1.0\r\n` +
-    `Content-Type: text/html; charset=UTF-8\r\n` +
-    `Content-Transfer-Encoding: base64\r\n\r\n` +
-    btoa(emailHtml);
-
-  // Connect to SMTP server (this is a simplified version)
-  console.log(`Sending email to ${profile.email} via ${smtpHost}`);
+  // Send email via SMTP
+  const encoder = new TextEncoder();
+  const subject = `🗑️ Abholtermine für ${profile.street} - Morgen ist Abholtag!`;
   
-  // For demonstration purposes, we'll log the email content
-  // In a production environment, you would implement actual SMTP sending
-  console.log('Email content prepared:', {
-    to: profile.email,
-    subject: `🗑️ Abholtermine für ${profile.street} - Morgen ist Abholtag!`,
-    collectionsCount: collections.length
-  });
+  try {
+    // Connect to SMTP server
+    const conn = await Deno.connect({
+      hostname: smtpHost,
+      port: 587,
+    });
+
+    const reader = conn.readable.getReader();
+    const writer = conn.writable.getWriter();
+
+    // Read server greeting
+    await reader.read();
+
+    // EHLO
+    await writer.write(encoder.encode(`EHLO ${smtpHost}\r\n`));
+    await reader.read();
+
+    // STARTTLS
+    await writer.write(encoder.encode('STARTTLS\r\n'));
+    await reader.read();
+
+    // Upgrade to TLS
+    const tlsConn = await Deno.startTls(conn, { hostname: smtpHost });
+    const tlsReader = tlsConn.readable.getReader();
+    const tlsWriter = tlsConn.writable.getWriter();
+
+    // EHLO again
+    await tlsWriter.write(encoder.encode(`EHLO ${smtpHost}\r\n`));
+    await tlsReader.read();
+
+    // AUTH LOGIN
+    await tlsWriter.write(encoder.encode('AUTH LOGIN\r\n'));
+    await tlsReader.read();
+
+    // Send username
+    await tlsWriter.write(encoder.encode(`${btoa(smtpUser)}\r\n`));
+    await tlsReader.read();
+
+    // Send password
+    await tlsWriter.write(encoder.encode(`${btoa(smtpPass)}\r\n`));
+    await tlsReader.read();
+
+    // MAIL FROM
+    await tlsWriter.write(encoder.encode(`MAIL FROM:<${smtpUser}>\r\n`));
+    await tlsReader.read();
+
+    // RCPT TO
+    await tlsWriter.write(encoder.encode(`RCPT TO:<${profile.email}>\r\n`));
+    await tlsReader.read();
+
+    // DATA
+    await tlsWriter.write(encoder.encode('DATA\r\n'));
+    await tlsReader.read();
+
+    // Send email headers and body
+    const emailMessage = 
+      `From: ${smtpUser}\r\n` +
+      `To: ${profile.email}\r\n` +
+      `Subject: =?UTF-8?B?${btoa(subject)}?=\r\n` +
+      `MIME-Version: 1.0\r\n` +
+      `Content-Type: text/html; charset=UTF-8\r\n` +
+      `\r\n` +
+      emailHtml +
+      `\r\n.\r\n`;
+
+    await tlsWriter.write(encoder.encode(emailMessage));
+    await tlsReader.read();
+
+    // QUIT
+    await tlsWriter.write(encoder.encode('QUIT\r\n'));
+    await tlsReader.read();
+
+    tlsConn.close();
+
+    console.log(`Email successfully sent to ${profile.email}`);
+  } catch (error: any) {
+    console.error(`Failed to send email to ${profile.email}:`, error);
+    throw error;
+  }
 }
 
 serve(handler);
