@@ -64,11 +64,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Get tomorrow's date
-    const tomorrow = addDays(new Date(), 1);
-    const tomorrowStr = formatDate(tomorrow);
+    // Get date range for the next 7 days
+    const today = new Date();
+    const endDate = addDays(today, 7);
+    const todayStr = formatDate(today);
+    const endDateStr = formatDate(endDate);
     
-    console.log(`Checking for waste collections on ${tomorrowStr}`);
+    console.log(`Checking for waste collections from ${todayStr} to ${endDateStr}`);
 
     // Get users with email notifications enabled
     const { data: profiles, error: profilesError } = await supabase
@@ -118,12 +120,14 @@ const handler = async (req: Request): Promise<Response> => {
           continue;
         }
 
-        // Get waste collections for tomorrow in this district
+        // Get waste collections for the next 7 days in this district
         const { data: collections, error: collectionsError } = await supabase
           .from('waste_collection_schedule')
           .select('collection_date, waste_type, district')
           .eq('district', streetDistrict.district)
-          .eq('collection_date', tomorrowStr);
+          .gte('collection_date', todayStr)
+          .lte('collection_date', endDateStr)
+          .order('collection_date', { ascending: true });
 
         if (collectionsError) {
           console.error(`Error fetching collections for ${profile.email}:`, collectionsError);
@@ -309,7 +313,7 @@ async function sendEmailNotification(
 
     // Send email headers and body
     const emailMessage = 
-      `From: ${smtpUser}\r\n` +
+      `From: Schlossstadt.Info <${smtpUser}>\r\n` +
       `To: ${profile.email}\r\n` +
       `Subject: =?UTF-8?B?${btoa(subject)}?=\r\n` +
       `MIME-Version: 1.0\r\n` +
