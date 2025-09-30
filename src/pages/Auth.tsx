@@ -372,37 +372,20 @@ const Auth = () => {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-street">Straße (optional)</Label>
-                    <Select value={street} onValueChange={setStreet}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Straße wählen" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {streets.map((streetOption) => (
-                          <SelectItem key={streetOption.id} value={streetOption.name}>
-                            {streetOption.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-house-number">Hausnummer (optional)</Label>
-                    <Select value={houseNumber} onValueChange={setHouseNumber}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Nr. wählen" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {houseNumbers.map((number) => (
-                          <SelectItem key={number} value={number}>
-                            {number}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-street">Straße (optional)</Label>
+                  <Select value={street} onValueChange={setStreet}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Straße wählen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {streets.map((streetOption) => (
+                        <SelectItem key={streetOption.id} value={streetOption.name}>
+                          {streetOption.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">E-Mail</Label>
