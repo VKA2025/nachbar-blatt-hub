@@ -108,23 +108,26 @@ const handler = async (req: Request): Promise<Response> => {
     // Process each user
     for (const profile of profiles) {
       try {
-        // Get the district for this street
-        const { data: streetDistrict, error: districtError } = await supabase
+        // Get all districts for this street (a street can have multiple districts)
+        const { data: streetDistricts, error: districtError } = await supabase
           .from('street_districts')
           .select('district')
-          .eq('street_name', profile.street)
-          .maybeSingle();
+          .eq('street_name', profile.street);
 
-        if (districtError || !streetDistrict) {
-          console.log(`No district found for street: ${profile.street}`);
+        if (districtError || !streetDistricts || streetDistricts.length === 0) {
+          console.log(`No districts found for street: ${profile.street}`);
           continue;
         }
 
-        // Get waste collections for the next 7 days in this district
+        // Get the unique districts
+        const districts = [...new Set(streetDistricts.map(sd => sd.district))];
+        console.log(`Found ${districts.length} district(s) for ${profile.street}: ${districts.join(', ')}`);
+
+        // Get waste collections for all districts
         const { data: collections, error: collectionsError } = await supabase
           .from('waste_collection_schedule')
           .select('collection_date, waste_type, district')
-          .eq('district', streetDistrict.district)
+          .in('district', districts)
           .gte('collection_date', todayStr)
           .lte('collection_date', endDateStr)
           .order('collection_date', { ascending: true });
@@ -136,9 +139,11 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         if (!collections || collections.length === 0) {
-          console.log(`No collections tomorrow for ${profile.email} (${streetDistrict.district})`);
+          console.log(`No collections in next 7 days for ${profile.email} (districts: ${districts.join(', ')})`);
           continue;
         }
+
+        console.log(`Found ${collections.length} collection(s) for ${profile.email}`);
 
         // Send email notification
         await sendEmailNotification(profile, collections, smtpHost, smtpUser, smtpPass);
