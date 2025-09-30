@@ -262,6 +262,13 @@ async function sendEmailNotification(
   const encoder = new TextEncoder();
   const subject = `🗑️ Abholtermine für ${profile.street} - Morgen ist Abholtag!`;
   
+  // Helper function for UTF-8 safe base64 encoding
+  function utf8ToBase64(str: string): string {
+    const bytes = encoder.encode(str);
+    const binString = Array.from(bytes, (byte) => String.fromCodePoint(byte)).join("");
+    return btoa(binString);
+  }
+  
   try {
     // Connect to SMTP server
     const conn = await Deno.connect({
@@ -296,12 +303,12 @@ async function sendEmailNotification(
     await tlsWriter.write(encoder.encode('AUTH LOGIN\r\n'));
     await tlsReader.read();
 
-    // Send username
-    await tlsWriter.write(encoder.encode(`${btoa(smtpUser)}\r\n`));
+    // Send username (base64 encoded)
+    await tlsWriter.write(encoder.encode(`${utf8ToBase64(smtpUser)}\r\n`));
     await tlsReader.read();
 
-    // Send password
-    await tlsWriter.write(encoder.encode(`${btoa(smtpPass)}\r\n`));
+    // Send password (base64 encoded)
+    await tlsWriter.write(encoder.encode(`${utf8ToBase64(smtpPass)}\r\n`));
     await tlsReader.read();
 
     // MAIL FROM
@@ -320,7 +327,7 @@ async function sendEmailNotification(
     const emailMessage = 
       `From: Schlossstadt.Info <${smtpUser}>\r\n` +
       `To: ${profile.email}\r\n` +
-      `Subject: =?UTF-8?B?${btoa(subject)}?=\r\n` +
+      `Subject: =?UTF-8?B?${utf8ToBase64(subject)}?=\r\n` +
       `MIME-Version: 1.0\r\n` +
       `Content-Type: text/html; charset=UTF-8\r\n` +
       `\r\n` +
