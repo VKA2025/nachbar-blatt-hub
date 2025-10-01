@@ -41,8 +41,16 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Build confirmation URL
-    const confirmationUrl = `${email_data.site_url}/auth/v1/verify?token=${email_data.token_hash}&type=${email_data.email_action_type}&redirect_to=${encodeURIComponent(email_data.redirect_to)}`;
+    // Build confirmation URL - use production URL instead of localhost
+    const baseUrl = email_data.site_url.includes('localhost') 
+      ? 'https://kvrxgaxjdpxqlnfhhsrc.supabase.co'
+      : email_data.site_url;
+    
+    const redirectUrl = email_data.redirect_to.includes('localhost')
+      ? 'https://schlossstadt.info'
+      : email_data.redirect_to;
+    
+    const confirmationUrl = `${baseUrl}/auth/v1/verify?token=${email_data.token_hash}&type=${email_data.email_action_type}&redirect_to=${encodeURIComponent(redirectUrl)}`;
 
     // German email content based on action type
     let subject: string;
@@ -244,7 +252,7 @@ async function sendEmailSMTP(
 
     // Email content
     const emailContent = [
-      `From: Schlossstadt.Info <${smtpUser}>`,
+      `From: Schlossstadt.Info <info@schlossstadt.info>`,
       `To: ${toEmail}`,
       `Subject: ${subject}`,
       'MIME-Version: 1.0',
