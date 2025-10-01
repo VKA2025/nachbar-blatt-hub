@@ -41,6 +41,21 @@ const WasteSchedule = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const getWasteTypeColor = (wasteType: string): string => {
+    switch (wasteType) {
+      case "Papiertonne":
+        return "border-l-blue-600";
+      case "Restmülltonne":
+        return "border-l-gray-300";
+      case "Gelber Sack":
+        return "border-l-yellow-500";
+      case "Biotonne":
+        return "border-l-amber-700";
+      default:
+        return "border-l-gray-400";
+    }
+  };
+
   const wasteTypes = [
     { value: "alle", label: "Alle" },
     { value: "Restmülltonne", label: "Restmülltonne" },
@@ -322,18 +337,20 @@ const WasteSchedule = () => {
                            <TableHead>Bezirk</TableHead>
                          </TableRow>
                        </TableHeader>
-                      <TableBody>
+                       <TableBody>
                          {collections.map((collection, index) => (
                            <TableRow key={index}>
                              <TableCell className="font-medium">
                                {format(new Date(collection.collection_date), "EEEE, dd.MM.yyyy", { locale: de })}
                              </TableCell>
-                             <TableCell>{collection.waste_type}</TableCell>
+                             <TableCell className={cn("border-l-4", getWasteTypeColor(collection.waste_type))}>
+                               {collection.waste_type}
+                             </TableCell>
                              <TableCell>{collection.notes || "-"}</TableCell>
                              <TableCell>{collection.district}</TableCell>
                            </TableRow>
                          ))}
-                      </TableBody>
+                       </TableBody>
                     </Table>
                   </div>
                 ) : (
