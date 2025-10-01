@@ -44,13 +44,13 @@ const WasteSchedule = () => {
   const getWasteTypeColor = (wasteType: string): string => {
     switch (wasteType) {
       case "Papiertonne":
-        return "border-l-[12px] border-r-[12px] border-l-blue-600 border-r-blue-600";
+        return "border-l-[12px] border-r-[12px] border-l-blue-400 border-r-blue-400";
       case "Restmülltonne":
         return "border-l-[12px] border-r-[12px] border-l-gray-300 border-r-gray-300";
       case "Gelber Sack":
-        return "border-l-[12px] border-r-[12px] border-l-yellow-500 border-r-yellow-500";
+        return "border-l-[12px] border-r-[12px] border-l-yellow-300 border-r-yellow-300";
       case "Biotonne":
-        return "border-l-[12px] border-r-[12px] border-l-amber-700 border-r-amber-700";
+        return "border-l-[12px] border-r-[12px] border-l-amber-500 border-r-amber-500";
       default:
         return "border-l-[12px] border-r-[12px] border-l-gray-400 border-r-gray-400";
     }
