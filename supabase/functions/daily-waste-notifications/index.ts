@@ -64,10 +64,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Get date range for the next 7 days
+    // Get date range
     const today = new Date();
+    const tomorrow = addDays(today, 1);
     const endDate = addDays(today, 7);
     const todayStr = formatDate(today);
+    const tomorrowStr = formatDate(tomorrow);
     const endDateStr = formatDate(endDate);
     
     console.log(`Checking for waste collections from ${todayStr} to ${endDateStr}`);
@@ -123,7 +125,27 @@ const handler = async (req: Request): Promise<Response> => {
         const districts = [...new Set(streetDistricts.map(sd => sd.district))];
         console.log(`Found ${districts.length} district(s) for ${profile.street}: ${districts.join(', ')}`);
 
-        // Get waste collections for all districts
+        // First check if there's a collection tomorrow
+        const { data: tomorrowCollections, error: tomorrowError } = await supabase
+          .from('waste_collection_schedule')
+          .select('collection_date, waste_type, district')
+          .in('district', districts)
+          .eq('collection_date', tomorrowStr);
+
+        if (tomorrowError) {
+          console.error(`Error fetching tomorrow's collections for ${profile.email}:`, tomorrowError);
+          errors.push(`${profile.email}: ${tomorrowError.message}`);
+          continue;
+        }
+
+        if (!tomorrowCollections || tomorrowCollections.length === 0) {
+          console.log(`No collection tomorrow for ${profile.email} (districts: ${districts.join(', ')})`);
+          continue;
+        }
+
+        console.log(`Found ${tomorrowCollections.length} collection(s) tomorrow for ${profile.email}`);
+
+        // Get all collections for the next 7 days (for display in email)
         const { data: collections, error: collectionsError } = await supabase
           .from('waste_collection_schedule')
           .select('collection_date, waste_type, district')
@@ -143,10 +165,14 @@ const handler = async (req: Request): Promise<Response> => {
           continue;
         }
 
-        console.log(`Found ${collections.length} collection(s) for ${profile.email}`);
+        console.log(`Found ${collections.length} total collection(s) in next 7 days for ${profile.email}`);
+
+        // Build subject with tomorrow's waste types
+        const tomorrowWasteTypes = tomorrowCollections.map(c => c.waste_type).join(', ');
+        const emailSubject = `Abholtermin ${tomorrowWasteTypes} - Morgen ist Abholtag!`;
 
         // Send email notification
-        await sendEmailNotification(profile, collections, smtpHost, smtpUser, smtpPass);
+        await sendEmailNotification(profile, collections, emailSubject, smtpHost, smtpUser, smtpPass);
         emailsSent++;
         console.log(`Email sent to ${profile.email}`);
 
@@ -181,6 +207,7 @@ const handler = async (req: Request): Promise<Response> => {
 async function sendEmailNotification(
   profile: UserProfile,
   collections: WasteCollection[],
+  subject: string,
   smtpHost: string,
   smtpUser: string,
   smtpPass: string
@@ -260,7 +287,7 @@ async function sendEmailNotification(
 
   // Send email via SMTP
   const encoder = new TextEncoder();
-  const subject = `🗑️ Abholtermine für ${profile.street} - Morgen ist Abholtag!`;
+  const finalSubject = `🗑️ ${subject}`;
   
   // Helper function for UTF-8 safe base64 encoding
   function utf8ToBase64(str: string): string {
@@ -327,7 +354,7 @@ async function sendEmailNotification(
     const emailMessage = 
       `From: Schlossstadt.Info <${smtpUser}>\r\n` +
       `To: ${profile.email}\r\n` +
-      `Subject: =?UTF-8?B?${utf8ToBase64(subject)}?=\r\n` +
+      `Subject: =?UTF-8?B?${utf8ToBase64(finalSubject)}?=\r\n` +
       `MIME-Version: 1.0\r\n` +
       `Content-Type: text/html; charset=UTF-8\r\n` +
       `\r\n` +
