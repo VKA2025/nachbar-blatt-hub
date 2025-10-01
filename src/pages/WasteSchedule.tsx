@@ -44,15 +44,15 @@ const WasteSchedule = () => {
   const getWasteTypeColor = (wasteType: string): string => {
     switch (wasteType) {
       case "Papiertonne":
-        return "border-l-blue-600";
+        return "border-l-[12px] border-r-[12px] border-l-blue-600 border-r-blue-600";
       case "Restmülltonne":
-        return "border-l-gray-300";
+        return "border-l-[12px] border-r-[12px] border-l-gray-300 border-r-gray-300";
       case "Gelber Sack":
-        return "border-l-yellow-500";
+        return "border-l-[12px] border-r-[12px] border-l-yellow-500 border-r-yellow-500";
       case "Biotonne":
-        return "border-l-amber-700";
+        return "border-l-[12px] border-r-[12px] border-l-amber-700 border-r-amber-700";
       default:
-        return "border-l-gray-400";
+        return "border-l-[12px] border-r-[12px] border-l-gray-400 border-r-gray-400";
     }
   };
 
@@ -343,7 +343,7 @@ const WasteSchedule = () => {
                              <TableCell className="font-medium">
                                {format(new Date(collection.collection_date), "EEEE, dd.MM.yyyy", { locale: de })}
                              </TableCell>
-                             <TableCell className={cn("border-l-4", getWasteTypeColor(collection.waste_type))}>
+                             <TableCell className={cn(getWasteTypeColor(collection.waste_type))}>
                                {collection.waste_type}
                              </TableCell>
                              <TableCell>{collection.notes || "-"}</TableCell>
