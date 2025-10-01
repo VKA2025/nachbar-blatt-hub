@@ -208,12 +208,12 @@ async function sendEmailNotification(
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Ihre Abholtermine</title>
+      <title>Deine Abholtermine</title>
     </head>
     <body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f9fa; color: #333;">
       <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         <div style="padding: 30px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px 8px 0 0;">
-          <h1 style="margin: 0; font-size: 24px; font-weight: bold;">📅 Ihre Abholtermine</h1>
+          <h1 style="margin: 0; font-size: 24px; font-weight: bold;">📅 Deine Abholtermine</h1>
           <p style="margin: 10px 0 0 0; opacity: 0.9;">Müllabholung für ${profile.street}</p>
         </div>
         
@@ -221,7 +221,7 @@ async function sendEmailNotification(
           <p style="margin: 0 0 20px 0; font-size: 16px;">Hallo ${displayName},</p>
           
           <p style="margin: 0 0 25px 0; line-height: 1.6;">
-            morgen ist Abholtag! Hier sind Ihre Abholtermine für die nächsten 7 Tage:
+            morgen ist Abholtag! Hier sind die Abholtermine für die nächsten 7 Tage:
           </p>
           
           <div style="overflow-x: auto; margin: 25px 0;">
@@ -242,15 +242,15 @@ async function sendEmailNotification(
           
           <div style="margin: 25px 0; padding: 15px; background-color: #e7f3ff; border-left: 4px solid #007bff; border-radius: 4px;">
             <p style="margin: 0; color: #004085; font-size: 14px;">
-              💡 <strong>Tipp:</strong> Stellen Sie Ihre Tonnen am Vorabend bereit, damit Sie nichts verpassen!
+              💡 <strong>Tipp:</strong> Stelle die Tonnen am Vorabend bereit, damit Du nichts verpasst!
             </p>
           </div>
         </div>
         
         <div style="padding: 20px 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e5e5;">
           <p style="margin: 0; font-size: 12px; color: #6c757d; text-align: center;">
-            Sie erhalten diese E-Mail, weil Sie Benachrichtigungen für Ihre Abholtermine aktiviert haben.<br>
-            Sie können diese Einstellung in Ihrem Profil ändern.
+            Du erhältst diese E-Mail, weil Du Benachrichtigungen aktiviert hast.<br>
+            Du kannst diese Einstellung jederzeit in Deinem Profil ändern.
           </p>
         </div>
       </div>
