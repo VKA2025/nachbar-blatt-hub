@@ -50,7 +50,7 @@ const WasteSchedule = () => {
       case "Gelber Sack":
         return "border-l-[12px] border-r-[12px] border-l-yellow-300 border-r-yellow-300";
       case "Biotonne":
-        return "border-l-[12px] border-r-[12px] border-l-amber-500 border-r-amber-500";
+        return "border-l-[12px] border-r-[12px] border-l-amber-700 border-r-amber-700";
       default:
         return "border-l-[12px] border-r-[12px] border-l-gray-400 border-r-gray-400";
     }
