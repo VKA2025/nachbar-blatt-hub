@@ -52,6 +52,8 @@ const Admin = () => {
   const [importResult, setImportResult] = useState<string | null>(null);
   const [importingWaste, setImportingWaste] = useState(false);
   const [wasteImportResult, setWasteImportResult] = useState<string | null>(null);
+  const [testingEmail, setTestingEmail] = useState(false);
+  const [emailTestResult, setEmailTestResult] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -213,6 +215,35 @@ const Admin = () => {
       });
     } finally {
       setImportingWaste(false);
+    }
+  };
+
+  const handleTestEmailNotifications = async () => {
+    try {
+      setTestingEmail(true);
+      setEmailTestResult(null);
+      
+      const { data, error } = await supabase.functions.invoke('daily-waste-notifications');
+      
+      if (error) throw error;
+      
+      const successMsg = 'Test-E-Mails wurden erfolgreich versendet!';
+      setEmailTestResult(successMsg);
+      toast({
+        title: "Test erfolgreich",
+        description: successMsg,
+      });
+    } catch (error) {
+      console.error('Error testing email notifications:', error);
+      const errorMsg = `Fehler beim Versand: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`;
+      setEmailTestResult(errorMsg);
+      toast({
+        title: "Test fehlgeschlagen",
+        description: errorMsg,
+        variant: "destructive",
+      });
+    } finally {
+      setTestingEmail(false);
     }
   };
 
@@ -1234,6 +1265,44 @@ const Admin = () => {
                         : 'bg-red-50 border-red-200 text-red-800'
                     }`}>
                       <p className="text-sm font-medium">{wasteImportResult}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t pt-6 space-y-4">
+                  <div className="p-4 bg-muted rounded-lg">
+                    <h3 className="font-medium mb-2">E-Mail-Benachrichtigungen testen</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Sendet Test-E-Mails für die heutigen Abholtermine an alle Benutzer mit aktivierten E-Mail-Benachrichtigungen.
+                    </p>
+                  </div>
+
+                  <Button 
+                    onClick={handleTestEmailNotifications}
+                    disabled={testingEmail}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {testingEmail ? (
+                      <>
+                        <Upload className="w-4 h-4 mr-2 animate-spin" />
+                        Sende Test-E-Mails...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Test-E-Mails versenden
+                      </>
+                    )}
+                  </Button>
+
+                  {emailTestResult && (
+                    <div className={`p-4 rounded-lg border ${
+                      emailTestResult.includes('erfolgreich') 
+                        ? 'bg-green-50 border-green-200 text-green-800' 
+                        : 'bg-red-50 border-red-200 text-red-800'
+                    }`}>
+                      <p className="text-sm font-medium">{emailTestResult}</p>
                     </div>
                   )}
                 </div>
