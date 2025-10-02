@@ -18,13 +18,93 @@ interface EmailData {
   };
 }
 
+// Constants for validation
+const MAX_REQUEST_SIZE = 10000; // 10KB
+const VALID_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const VALID_EMAIL_ACTION_TYPES = ['signup', 'recovery', 'invite', 'magiclink'];
+
+// HTML escape function to prevent XSS
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
+// Validate email format
+function isValidEmail(email: string): boolean {
+  return VALID_EMAIL_REGEX.test(email) && email.length <= 255;
+}
+
+// Validate EmailData structure
+function validateEmailData(payload: any): { valid: boolean; error?: string } {
+  if (!payload || typeof payload !== 'object') {
+    return { valid: false, error: 'Invalid payload structure' };
+  }
+
+  if (!payload.user || !payload.user.email || !isValidEmail(payload.user.email)) {
+    return { valid: false, error: 'Invalid or missing email address' };
+  }
+
+  if (!payload.email_data || typeof payload.email_data !== 'object') {
+    return { valid: false, error: 'Missing email_data' };
+  }
+
+  const { token, token_hash, redirect_to, email_action_type, site_url } = payload.email_data;
+
+  if (!token || typeof token !== 'string' || token.length > 500) {
+    return { valid: false, error: 'Invalid token' };
+  }
+
+  if (!token_hash || typeof token_hash !== 'string' || token_hash.length > 500) {
+    return { valid: false, error: 'Invalid token_hash' };
+  }
+
+  if (!redirect_to || typeof redirect_to !== 'string' || redirect_to.length > 2000) {
+    return { valid: false, error: 'Invalid redirect_to URL' };
+  }
+
+  if (!email_action_type || !VALID_EMAIL_ACTION_TYPES.includes(email_action_type)) {
+    return { valid: false, error: 'Invalid email_action_type' };
+  }
+
+  if (!site_url || typeof site_url !== 'string' || site_url.length > 2000) {
+    return { valid: false, error: 'Invalid site_url' };
+  }
+
+  return { valid: true };
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Check Content-Length to prevent large payloads
+    const contentLength = req.headers.get('content-length');
+    if (contentLength && parseInt(contentLength) > MAX_REQUEST_SIZE) {
+      return new Response(
+        JSON.stringify({ error: 'Request too large' }),
+        { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const payload: EmailData = await req.json();
+    
+    // Validate input
+    const validation = validateEmailData(payload);
+    if (!validation.valid) {
+      console.error('Validation failed:', validation.error);
+      return new Response(
+        JSON.stringify({ error: validation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     const { user, email_data } = payload;
     
     console.log('Auth email triggered for:', user.email, 'Action:', email_data.email_action_type);

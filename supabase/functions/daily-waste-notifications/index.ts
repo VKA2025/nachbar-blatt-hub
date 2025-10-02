@@ -204,6 +204,30 @@ const handler = async (req: Request): Promise<Response> => {
   }
 };
 
+// HTML escape function to prevent XSS
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
+// Validate email format
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 255;
+}
+
+// Validate district name format (alphanumeric and common separators only)
+function isValidDistrict(district: string): boolean {
+  const districtRegex = /^[a-zA-Z0-9äöüÄÖÜß\s\-_]+$/;
+  return districtRegex.test(district) && district.length <= 100;
+}
+
 async function sendEmailNotification(
   profile: UserProfile,
   collections: WasteCollection[],
@@ -212,19 +236,37 @@ async function sendEmailNotification(
   smtpUser: string,
   smtpPass: string
 ): Promise<void> {
-  const displayName = profile.first_name && profile.last_name 
-    ? `${profile.first_name} ${profile.last_name}`
-    : profile.first_name || 'Lieber Nutzer';
+  // Validate email before sending
+  if (!isValidEmail(profile.email)) {
+    console.error(`Invalid email format: ${profile.email}`);
+    throw new Error('Invalid email format');
+  }
 
-  // Generate HTML table
+  // Sanitize user-provided data to prevent XSS
+  const sanitizedFirstName = profile.first_name ? escapeHtml(profile.first_name) : '';
+  const sanitizedLastName = profile.last_name ? escapeHtml(profile.last_name) : '';
+  const sanitizedStreet = escapeHtml(profile.street);
+
+  const displayName = sanitizedFirstName && sanitizedLastName 
+    ? `${sanitizedFirstName} ${sanitizedLastName}`
+    : sanitizedFirstName || 'Lieber Nutzer';
+
+  // Generate HTML table with sanitized data
   const tableRows = collections.map(collection => {
+    // Validate and sanitize all collection data
     const formattedDate = formatDisplayDate(collection.collection_date);
+    const sanitizedWasteType = escapeHtml(collection.waste_type);
+    const sanitizedNotes = collection.notes ? escapeHtml(collection.notes) : "-";
+    const sanitizedDistrict = isValidDistrict(collection.district) 
+      ? escapeHtml(collection.district) 
+      : 'Unbekannt';
+    
     return `
       <tr style="border-bottom: 1px solid #e5e5e5;">
         <td style="padding: 12px; text-align: left; font-weight: 500;">${formattedDate}</td>
-        <td style="padding: 12px; text-align: left;">${collection.waste_type}</td>
-        <td style="padding: 12px; text-align: left;">${collection.notes || "-"}</td>
-        <td style="padding: 12px; text-align: left;">${collection.district}</td>
+        <td style="padding: 12px; text-align: left;">${sanitizedWasteType}</td>
+        <td style="padding: 12px; text-align: left;">${sanitizedNotes}</td>
+        <td style="padding: 12px; text-align: left;">${sanitizedDistrict}</td>
       </tr>
     `;
   }).join('');
@@ -241,7 +283,7 @@ async function sendEmailNotification(
       <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         <div style="padding: 30px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px 8px 0 0;">
           <h1 style="margin: 0; font-size: 24px; font-weight: bold;">📅 Deine Abholtermine</h1>
-          <p style="margin: 10px 0 0 0; opacity: 0.9;">Müllabholung für ${profile.street}</p>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">Müllabholung für ${sanitizedStreet}</p>
         </div>
         
         <div style="padding: 30px;">
