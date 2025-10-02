@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { z } from "zod";
 import ReCAPTCHA from "react-google-recaptcha";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const authSchema = z.object({
   email: z.string().email("Ungültige E-Mail-Adresse").max(255),
@@ -19,6 +20,7 @@ const authSchema = z.object({
   lastName: z.string().trim().min(1, "Nachname ist erforderlich").max(50).optional(),
   street: z.string().optional(),
   houseNumber: z.string().optional(),
+  emailNotifications: z.boolean().default(false),
 });
 
 interface Street {
@@ -40,6 +42,7 @@ const Auth = () => {
   const [resetEmail, setResetEmail] = useState("");
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [captchaValue, setCaptchaValue] = useState<string | null>(null);
+  const [emailNotifications, setEmailNotifications] = useState(false);
   const [streets, setStreets] = useState<Street[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -115,6 +118,7 @@ const Auth = () => {
         lastName: lastName.trim(),
         street: street || undefined,
         houseNumber: houseNumber || undefined,
+        emailNotifications: emailNotifications,
       });
 
       const redirectUrl = `${window.location.origin}/`;
@@ -129,6 +133,7 @@ const Auth = () => {
             last_name: validatedData.lastName,
             street: validatedData.street,
             house_number: validatedData.houseNumber,
+            email_notifications: validatedData.emailNotifications,
           }
         }
       });
@@ -398,6 +403,19 @@ const Auth = () => {
                     required
                     maxLength={255}
                   />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="signup-emailNotifications"
+                    checked={emailNotifications}
+                    onCheckedChange={(checked) => setEmailNotifications(!!checked)}
+                  />
+                  <Label 
+                    htmlFor="signup-emailNotifications"
+                    className="text-sm font-normal leading-5 cursor-pointer"
+                  >
+                    Benachrichtigungen per E-Mail erhalten (z.B. Abholtermine aus Abfallkalender für meine Straße)
+                  </Label>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Passwort</Label>
