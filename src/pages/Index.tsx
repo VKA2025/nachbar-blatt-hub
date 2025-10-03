@@ -98,6 +98,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [imprintData, setImprintData] = useState<ImprintData | null>(null);
+  const [flyerToDelete, setFlyerToDelete] = useState<Flyer | null>(null);
   const [sortPreferences, setSortPreferences] = useState<SortPreferences>({
     field: 'custom',
     direction: 'desc',
@@ -520,21 +521,27 @@ const Index = () => {
     navigate("/admin", { state: { editFlyer: flyer } });
   };
 
-  const handleDeleteFlyer = async (flyer: Flyer) => {
+  const handleDeleteFlyer = (flyer: Flyer) => {
+    setFlyerToDelete(flyer);
+  };
+
+  const confirmDeleteFlyer = async () => {
+    if (!flyerToDelete) return;
+
     try {
       // Delete from database
       const { error: dbError } = await supabase
         .from('flyers')
         .delete()
-        .eq('id', flyer.id);
+        .eq('id', flyerToDelete.id);
 
       if (dbError) {
         throw dbError;
       }
 
       // Delete file from storage if it's not external
-      if (!flyer.is_external && flyer.file_url) {
-        const filePath = flyer.file_url.split('/').pop();
+      if (!flyerToDelete.is_external && flyerToDelete.file_url) {
+        const filePath = flyerToDelete.file_url.split('/').pop();
         if (filePath) {
           await supabase.storage
             .from('flyers')
@@ -556,6 +563,8 @@ const Index = () => {
         description: "Die Infokachel konnte nicht gelöscht werden.",
         variant: "destructive",
       });
+    } finally {
+      setFlyerToDelete(null);
     }
   };
 
@@ -838,6 +847,23 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      <AlertDialog open={!!flyerToDelete} onOpenChange={(open) => !open && setFlyerToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Infokachel löschen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Möchten Sie die Infokachel "{flyerToDelete?.title}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteFlyer} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
