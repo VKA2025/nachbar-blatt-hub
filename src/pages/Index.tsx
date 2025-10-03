@@ -766,13 +766,14 @@ const Index = () => {
                   <p>
                     <strong>Verantwortlich für den Inhalt:</strong><br />
                     Schlossstadt.Info<br />
+                    Volkan Kayrak<br />
                     Zur Gabjei 97<br />
                     50321 Brühl
                   </p>
                   <p>
                     <strong>Kontakt:</strong><br />
                     E-Mail: info@schlossstadt.info<br />
-                    Telefon: 
+                    Telefon: (02232) 7690238
                   </p>
                 </div>
               </div>
