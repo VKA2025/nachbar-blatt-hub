@@ -349,7 +349,7 @@ const Index = () => {
         console.error('Error loading flyers:', error);
         toast({
           title: "Fehler beim Laden",
-          description: "Die Werbeblätter konnten nicht geladen werden.",
+          description: "Die Info-Kacheln konnten nicht geladen werden.",
           variant: "destructive",
         });
         return;
@@ -667,7 +667,7 @@ const Index = () => {
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center space-x-2">
                       <Filter className="w-4 h-4" />
-                      <span className="text-sm font-medium">Filter nach Info-Typen:</span>
+                      <span className="text-sm font-medium">Filter:</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {infoTypes.map((type) => (
@@ -760,7 +760,7 @@ const Index = () => {
             <CardContent className="pt-6">
               <div className="text-center">
                 <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">Keine Werbeblätter verfügbar</h3>
+                <h3 className="text-lg font-semibold mb-2">Keine Info-Kacheln verfügbar</h3>
                 <p className="text-muted-foreground">
                   Aktuell sind keine Informationen verfügbar. Pass bitte den Filter an!
                 </p>
