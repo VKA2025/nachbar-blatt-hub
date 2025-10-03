@@ -100,6 +100,51 @@ export type Database = {
           },
         ]
       }
+      imprint_data: {
+        Row: {
+          city: string
+          created_at: string
+          email: string
+          first_name: string
+          house_number: string
+          id: string
+          last_name: string
+          phone: string | null
+          postal_code: string
+          site_name: string
+          street: string
+          updated_at: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          email: string
+          first_name: string
+          house_number: string
+          id?: string
+          last_name: string
+          phone?: string | null
+          postal_code: string
+          site_name?: string
+          street: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          email?: string
+          first_name?: string
+          house_number?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          postal_code?: string
+          site_name?: string
+          street?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       info_types: {
         Row: {
           created_at: string

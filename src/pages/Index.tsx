@@ -73,6 +73,19 @@ interface UserProfile {
   house_number: string | null;
 }
 
+interface ImprintData {
+  id: string;
+  site_name: string;
+  first_name: string;
+  last_name: string;
+  street: string;
+  house_number: string;
+  postal_code: string;
+  city: string;
+  email: string;
+  phone: string | null;
+}
+
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -84,6 +97,7 @@ const Index = () => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [imprintData, setImprintData] = useState<ImprintData | null>(null);
   const [sortPreferences, setSortPreferences] = useState<SortPreferences>({
     field: 'custom',
     direction: 'desc',
@@ -132,6 +146,7 @@ const Index = () => {
 
   useEffect(() => {
     loadInfoTypes();
+    loadImprintData();
   }, []);
 
   useEffect(() => {
@@ -282,6 +297,26 @@ const Index = () => {
       setInfoTypes(data || []);
     } catch (error) {
       console.error('Error loading info types:', error);
+    }
+  };
+
+  const loadImprintData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('imprint_data')
+        .select('*')
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading imprint data:', error);
+        return;
+      }
+
+      if (data) {
+        setImprintData(data);
+      }
+    } catch (error) {
+      console.error('Error loading imprint data:', error);
     }
   };
 
@@ -763,18 +798,24 @@ const Index = () => {
               <div>
                 <h3 className="font-semibold mb-4">Impressum</h3>
                 <div className="text-sm text-muted-foreground space-y-2">
-                  <p>
-                    <strong>Verantwortlich für den Inhalt:</strong><br />
-                    Schlossstadt.Info<br />
-                    Volkan Kayrak<br />
-                    Zur Gabjei 97<br />
-                    50321 Brühl
-                  </p>
-                  <p>
-                    <strong>Kontakt:</strong><br />
-                    E-Mail: info@schlossstadt.info<br />
-                    Telefon: (02232) 7690238
-                  </p>
+                  {imprintData ? (
+                    <>
+                      <p>
+                        <strong>Verantwortlich für den Inhalt:</strong><br />
+                        {imprintData.site_name}<br />
+                        {imprintData.first_name} {imprintData.last_name}<br />
+                        {imprintData.street} {imprintData.house_number}<br />
+                        {imprintData.postal_code} {imprintData.city}
+                      </p>
+                      <p>
+                        <strong>Kontakt:</strong><br />
+                        E-Mail: {imprintData.email}<br />
+                        {imprintData.phone && `Telefon: ${imprintData.phone}`}
+                      </p>
+                    </>
+                  ) : (
+                    <p>Impressum wird geladen...</p>
+                  )}
                 </div>
               </div>
               <div>
