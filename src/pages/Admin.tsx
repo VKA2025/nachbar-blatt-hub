@@ -779,7 +779,7 @@ const Admin = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Upload className="w-5 h-5 mr-2" />
-                  {editingFlyer ? "Info-Kachel bearbeiten" : "Werbeblatt hinzufügen"}
+                  {editingFlyer ? "Info-Kachel bearbeiten" : "Information hinzufügen"}
                 </CardTitle>
                 <CardDescription>
                   {editingFlyer 
