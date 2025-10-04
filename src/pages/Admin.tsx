@@ -435,8 +435,8 @@ const Admin = () => {
         }
 
         toast({
-          title: "Werbeblatt aktualisiert",
-          description: "Das Werbeblatt wurde erfolgreich aktualisiert.",
+          title: "Info-Kachel aktualisiert",
+          description: "Die Info-Kachel wurde erfolgreich aktualisiert.",
         });
 
         // Reset form and navigate back
@@ -491,8 +491,8 @@ const Admin = () => {
         }
 
         toast({
-          title: "Werbeblatt hochgeladen",
-          description: "Das Werbeblatt wurde erfolgreich hochgeladen.",
+          title: "Info-Kachel hochgeladen",
+          description: "Die Info-Kachel wurde erfolgreich hochgeladen.",
         });
       } else {
         // Handle external URL
@@ -556,7 +556,7 @@ const Admin = () => {
         toast({
           title: uploadType === "file" ? "Upload fehlgeschlagen" : "Speichern fehlgeschlagen",
           description: uploadType === "file" 
-            ? "Das Werbeblatt konnte nicht hochgeladen werden."
+            ? "Die Info-Kachel konnte nicht hochgeladen werden."
             : "Der Link konnte nicht gespeichert werden.",
           variant: "destructive",
         });
@@ -768,7 +768,7 @@ const Admin = () => {
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="flyers">Werbeblätter</TabsTrigger>
+            <TabsTrigger value="flyers">Info-Kacheln</TabsTrigger>
             <TabsTrigger value="users">Benutzer</TabsTrigger>
             <TabsTrigger value="streets">Straßendaten</TabsTrigger>
             <TabsTrigger value="waste">Abfallkalender</TabsTrigger>
@@ -779,11 +779,11 @@ const Admin = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Upload className="w-5 h-5 mr-2" />
-                  {editingFlyer ? "Werbeblatt bearbeiten" : "Werbeblatt hinzufügen"}
+                  {editingFlyer ? "Info-Kachel bearbeiten" : "Werbeblatt hinzufügen"}
                 </CardTitle>
                 <CardDescription>
                   {editingFlyer 
-                    ? "Bearbeiten Sie die Details des Werbeblatts."
+                    ? "Bearbeiten Sie die Details der Info-Kachel."
                     : "Laden Sie Dateien hoch oder verlinken Sie zu externen Dokumenten."
                   }
                 </CardDescription>
@@ -964,12 +964,12 @@ const Admin = () => {
                           {editingFlyer ? (
                             <>
                               <Edit className="w-4 h-4 mr-2" />
-                              Werbeblatt aktualisieren
+                              Info-Kachel aktualisieren
                             </>
                           ) : uploadType === "file" ? (
                             <>
                               <Upload className="w-4 h-4 mr-2" />
-                              Werbeblatt hochladen
+                              Info-Kachel hochladen
                             </>
                           ) : (
                             <>
