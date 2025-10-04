@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, FileText, Download, Eye, ExternalLink, GripVertical, Edit, Trash2 } from "lucide-react";
+import { Calendar, FileText, Download, Eye, ExternalLink, GripVertical, Edit, Trash2, Info } from "lucide-react";
 
 interface Flyer {
   id: string;
@@ -59,6 +60,8 @@ export const SortableFlyerCard = ({
   formatFileSize, 
   formatUploadDate 
 }: SortableFlyerCardProps) => {
+  const [showUnsubscribeInfo, setShowUnsubscribeInfo] = useState(false);
+  
   const {
     attributes,
     listeners,
@@ -210,14 +213,31 @@ export const SortableFlyerCard = ({
               </div>
               
               {flyer.info_types?.name === 'Zeitung' && userProfile && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleComplaintClick}
-                  className="w-full"
-                >
-                  Papierversion abbestellen
-                </Button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleComplaintClick}
+                      className="flex-1"
+                    >
+                      Papierversion abbestellen
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowUnsubscribeInfo(!showUnsubscribeInfo)}
+                      className="px-3"
+                    >
+                      <Info className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {showUnsubscribeInfo && (
+                    <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+                      Weiterleitung auf die Zustellerseite. Bitte dort den Grund "Zeitung bitte nicht mehr zustellen!" auswählen.
+                    </div>
+                  )}
+                </div>
               )}
               
               {flyer.info_types?.name === 'Abfallkalender' && userProfile && (
