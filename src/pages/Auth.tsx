@@ -5,13 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { z } from "zod";
 import ReCAPTCHA from "react-google-recaptcha";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const authSchema = z.object({
   email: z.string().email("Ungültige E-Mail-Adresse").max(255),
@@ -44,6 +47,7 @@ const Auth = () => {
   const [captchaValue, setCaptchaValue] = useState<string | null>(null);
   const [emailNotifications, setEmailNotifications] = useState(false);
   const [streets, setStreets] = useState<Street[]>([]);
+  const [streetOpen, setStreetOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -379,18 +383,64 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-street">Straße (optional)</Label>
-                  <Select value={street} onValueChange={setStreet}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Straße wählen" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {streets.map((streetOption) => (
-                        <SelectItem key={streetOption.id} value={streetOption.name}>
-                          {streetOption.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={streetOpen} onOpenChange={setStreetOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={streetOpen}
+                        className="w-full justify-between"
+                      >
+                        {street
+                          ? streets.find((streetOption) => streetOption.name === street)?.name || street
+                          : "Straße wählen..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Straße suchen..." />
+                        <CommandList>
+                          <CommandEmpty>Keine Straße gefunden.</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem
+                              value=""
+                              onSelect={() => {
+                                setStreet("");
+                                setStreetOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  street === "" ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              Keine Straße
+                            </CommandItem>
+                            {streets.map((streetOption) => (
+                              <CommandItem
+                                key={streetOption.id}
+                                value={streetOption.name}
+                                onSelect={(currentValue) => {
+                                  setStreet(currentValue === street ? "" : currentValue);
+                                  setStreetOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    street === streetOption.name ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {streetOption.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">E-Mail</Label>
