@@ -62,6 +62,7 @@ export const SortableFlyerCard = ({
 }: SortableFlyerCardProps) => {
   const [showUnsubscribeInfo, setShowUnsubscribeInfo] = useState(false);
   const [showPickupInfo, setShowPickupInfo] = useState(false);
+  const [showExternalUrl, setShowExternalUrl] = useState(false);
   
   const {
     attributes,
@@ -168,39 +169,53 @@ export const SortableFlyerCard = ({
             </p>
           )}
           
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            {flyer.is_external ? (
-              <span className="break-all line-clamp-2">{flyer.external_url}</span>
-            ) : (
-              <>
-                <span>{flyer.file_name}</span>
-                <span>{formatFileSize(flyer.file_size)}</span>
-              </>
-            )}
-          </div>
+          {!flyer.is_external && (
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>{flyer.file_name}</span>
+              <span>{formatFileSize(flyer.file_size)}</span>
+            </div>
+          )}
 
           {user && (
             <div className="space-y-2">
-              <div className="flex space-x-2">
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => onViewFlyer(flyer)}
-                  className="flex-1"
-                >
-                  {flyer.is_external ? (
-                    <>
+              {flyer.is_external ? (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => onViewFlyer(flyer)}
+                      className="flex-1"
+                    >
                       <ExternalLink className="w-4 h-4 mr-2" />
                       Link öffnen
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="w-4 h-4 mr-2" />
-                      Anzeigen
-                    </>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowExternalUrl(!showExternalUrl)}
+                      className="px-3"
+                    >
+                      <Info className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {showExternalUrl && (
+                    <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md break-all">
+                      {flyer.external_url}
+                    </div>
                   )}
-                </Button>
-                {!flyer.is_external && (
+                </div>
+              ) : (
+                <div className="flex space-x-2">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => onViewFlyer(flyer)}
+                    className="flex-1"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    Anzeigen
+                  </Button>
                   <Button
                     variant="default"
                     size="sm"
@@ -210,8 +225,8 @@ export const SortableFlyerCard = ({
                     <Download className="w-4 h-4 mr-2" />
                     Download
                   </Button>
-                )}
-              </div>
+                </div>
+              )}
               
               {flyer.info_types?.name === 'Zeitung' && userProfile && (
                 <div className="space-y-2">
