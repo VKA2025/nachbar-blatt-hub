@@ -61,6 +61,7 @@ export const SortableFlyerCard = ({
   formatUploadDate 
 }: SortableFlyerCardProps) => {
   const [showUnsubscribeInfo, setShowUnsubscribeInfo] = useState(false);
+  const [showPickupInfo, setShowPickupInfo] = useState(false);
   
   const {
     attributes,
@@ -241,14 +242,31 @@ export const SortableFlyerCard = ({
               )}
               
               {flyer.info_types?.name === 'Abfallkalender' && userProfile && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open('/abholtermine', '_self')}
-                  className="w-full"
-                >
-                  Meine Abholtermine
-                </Button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open('/abholtermine', '_self')}
+                      className="flex-1"
+                    >
+                      Meine Abholtermine
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowPickupInfo(!showPickupInfo)}
+                      className="px-3"
+                    >
+                      <Info className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {showPickupInfo && (
+                    <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+                      Anzeige der Müllabfuhrtermine Deiner Straße für die nächsten vier Wochen.
+                    </div>
+                  )}
+                </div>
               )}
               
               {isAdmin && (
