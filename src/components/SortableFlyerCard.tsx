@@ -200,7 +200,7 @@ export const SortableFlyerCard = ({
                     </Button>
                   </div>
                   {showExternalUrl && (
-                    <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md break-all">
+                    <div className="text-sm text-foreground bg-muted/50 p-3 rounded-md break-all">
                       {flyer.external_url}
                     </div>
                   )}
@@ -249,7 +249,7 @@ export const SortableFlyerCard = ({
                     </Button>
                   </div>
                   {showUnsubscribeInfo && (
-                    <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+                    <div className="text-sm text-foreground bg-muted/50 p-3 rounded-md">
                       Weiterleitung auf die Zustellerseite. Bitte dort den Grund "Zeitung bitte nicht mehr zustellen!" auswählen.
                     </div>
                   )}
@@ -277,7 +277,7 @@ export const SortableFlyerCard = ({
                     </Button>
                   </div>
                   {showPickupInfo && (
-                    <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+                    <div className="text-sm text-foreground bg-muted/50 p-3 rounded-md">
                       Anzeige der Müllabfuhrtermine Deiner Straße für die nächsten vier Wochen.
                     </div>
                   )}
