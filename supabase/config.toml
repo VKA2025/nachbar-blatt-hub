@@ -5,6 +5,3 @@ verify_jwt = false
 
 [functions.send-auth-email]
 verify_jwt = false
-
-[functions.notify-admin-new-user]
-verify_jwt = false
