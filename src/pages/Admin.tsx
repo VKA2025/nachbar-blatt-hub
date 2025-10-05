@@ -931,6 +931,7 @@ const Admin = () => {
                           placeholder="https://beispiel.de/werbeblatt.pdf"
                           value={externalUrl}
                           onChange={(e) => setExternalUrl(e.target.value)}
+                          onFocus={() => setExternalUrl("")}
                           required={uploadType === "url"}
                           maxLength={500}
                         />
