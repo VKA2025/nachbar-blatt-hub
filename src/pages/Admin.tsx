@@ -45,7 +45,7 @@ const Admin = () => {
   const [editingFlyer, setEditingFlyer] = useState<any>(null);
   const [infoTypes, setInfoTypes] = useState<Array<{id: string, name: string}>>([]);
   const [selectedInfoType, setSelectedInfoType] = useState("");
-  const [activeTab, setActiveTab] = useState("flyers");
+  const [activeTab, setActiveTab] = useState("users");
   const [users, setUsers] = useState<any[]>([]);
   const [editingUser, setEditingUser] = useState<any>(null);
   const [importingStreets, setImportingStreets] = useState(false);
