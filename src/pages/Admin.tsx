@@ -1131,6 +1131,7 @@ const Admin = () => {
                                   size="sm"
                                   variant="destructive"
                                   onClick={() => handleDeleteUser(userRecord.user_id)}
+                                  disabled
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
