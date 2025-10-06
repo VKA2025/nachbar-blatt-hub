@@ -1140,6 +1140,9 @@ const Admin = () => {
                         ))}
                       </TableBody>
                     </Table>
+                    <div className="mt-4 text-sm text-muted-foreground">
+                      Anzahl der Einträge: {users.length}
+                    </div>
                   </div>
                 )}
               </CardContent>
