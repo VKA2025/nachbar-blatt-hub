@@ -54,6 +54,8 @@ const Admin = () => {
   const [wasteImportResult, setWasteImportResult] = useState<string | null>(null);
   const [testingEmail, setTestingEmail] = useState(false);
   const [emailTestResult, setEmailTestResult] = useState<string | null>(null);
+  const [userEmails, setUserEmails] = useState<string[]>([]);
+  const [selectedEmail, setSelectedEmail] = useState<string>("alle");
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -106,6 +108,11 @@ const Admin = () => {
     // Load users for admin management
     if (activeTab === "users") {
       loadUsers();
+    }
+
+    // Load user emails for waste notifications
+    if (activeTab === "waste") {
+      loadUserEmails();
     }
 
     // Check if we're editing a flyer
@@ -218,16 +225,43 @@ const Admin = () => {
     }
   };
 
+  const loadUserEmails = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email_notifications', true)
+        .not('email', 'is', null)
+        .order('email');
+
+      if (error) {
+        console.error('Error loading user emails:', error);
+        return;
+      }
+
+      const emails = data?.map(p => p.email).filter(Boolean) || [];
+      setUserEmails(emails);
+    } catch (error) {
+      console.error('Error loading user emails:', error);
+    }
+  };
+
   const handleTestEmailNotifications = async () => {
     try {
       setTestingEmail(true);
       setEmailTestResult(null);
       
-      const { data, error } = await supabase.functions.invoke('daily-waste-notifications');
+      const body = selectedEmail !== "alle" ? { testEmail: selectedEmail } : {};
+      
+      const { data, error } = await supabase.functions.invoke('daily-waste-notifications', {
+        body
+      });
       
       if (error) throw error;
       
-      const successMsg = 'Test-E-Mails wurden erfolgreich versendet!';
+      const successMsg = selectedEmail !== "alle" 
+        ? `Test-E-Mail wurde erfolgreich an ${selectedEmail} versendet!`
+        : 'Test-E-Mails wurden erfolgreich versendet!';
       setEmailTestResult(successMsg);
       toast({
         title: "Test erfolgreich",
@@ -1278,11 +1312,28 @@ const Admin = () => {
                   <div className="p-4 bg-muted rounded-lg">
                     <h3 className="font-medium mb-2">E-Mail-Benachrichtigungen testen</h3>
                     <p className="text-sm text-muted-foreground">
-                      Sendet Test-E-Mails für die heutigen Abholtermine an alle Benutzer mit aktivierten E-Mail-Benachrichtigungen.
+                      Sendet Test-E-Mails für die heutigen Abholtermine an alle Benutzer oder eine spezifische E-Mail-Adresse mit aktivierten E-Mail-Benachrichtigungen.
                     </p>
                   </div>
 
-                  <Button 
+                  <div className="space-y-2">
+                    <Label htmlFor="email-select">E-Mail-Adresse auswählen</Label>
+                    <Select value={selectedEmail} onValueChange={setSelectedEmail}>
+                      <SelectTrigger id="email-select">
+                        <SelectValue placeholder="E-Mail auswählen..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="alle">alle</SelectItem>
+                        {userEmails.map((email) => (
+                          <SelectItem key={email} value={email}>
+                            {email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button
                     onClick={handleTestEmailNotifications}
                     disabled={testingEmail}
                     variant="outline"

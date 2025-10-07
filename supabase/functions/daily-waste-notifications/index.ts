@@ -56,6 +56,18 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log('Starting daily waste notifications check...');
     
+    // Parse request body for optional testEmail parameter
+    let testEmail: string | null = null;
+    try {
+      const body = await req.json();
+      testEmail = body?.testEmail || null;
+      if (testEmail) {
+        console.log(`Test mode: sending only to ${testEmail}`);
+      }
+    } catch {
+      // No body or invalid JSON, continue with all users
+    }
+    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const smtpHost = Deno.env.get('SMTP_HOST')!;
@@ -75,11 +87,18 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Checking for waste collections from ${todayStr} to ${endDateStr}`);
 
     // Get users with email notifications enabled
-    const { data: profiles, error: profilesError } = await supabase
+    let profileQuery = supabase
       .from('profiles')
       .select('user_id, email, street, house_number, first_name, last_name')
       .eq('email_notifications', true)
       .not('street', 'is', null);
+    
+    // If testEmail is provided, filter for that specific email
+    if (testEmail) {
+      profileQuery = profileQuery.eq('email', testEmail);
+    }
+    
+    const { data: profiles, error: profilesError } = await profileQuery;
 
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError);
