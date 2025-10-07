@@ -230,9 +230,9 @@ const Admin = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('email')
-        .eq('email_notifications', true)
         .not('email', 'is', null)
-        .order('email');
+        .order('email')
+        .limit(35);
 
       if (error) {
         console.error('Error loading user emails:', error);
