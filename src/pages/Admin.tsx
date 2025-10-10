@@ -118,6 +118,7 @@ const Admin = () => {
     // Check if we're editing a flyer
     const editFlyer = location.state?.editFlyer;
     if (editFlyer) {
+      setActiveTab("flyers");
       setEditingFlyer(editFlyer);
       setTitle(editFlyer.title);
       setDescription(editFlyer.description || "");
