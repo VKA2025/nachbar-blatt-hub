@@ -338,7 +338,7 @@ export const SortableFlyerCard = ({
                   </div>
                   {showMyOffersInfo && (
                     <div className="text-sm text-black bg-muted/50 p-3 rounded-md">
-                      Übersicht über meine Angebote für Nachbarn
+                      Angebote für Nachbarn einstellen
                     </div>
                   )}
                   
