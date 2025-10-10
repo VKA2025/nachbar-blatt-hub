@@ -350,7 +350,7 @@ export const SortableFlyerCard = ({
                       className="flex-1"
                     >
                       <FileQuestion className="w-4 h-4 mr-2" />
-                      Meine Anfragen
+                      Mein Bereich
                     </Button>
                     <Button
                       variant="outline"
@@ -363,7 +363,7 @@ export const SortableFlyerCard = ({
                   </div>
                   {showMyRequestsInfo && (
                     <div className="text-sm text-black bg-muted/50 p-3 rounded-md">
-                      Verwalte Anfragen.
+                      Meine Angebote und Anfragen dazu verwalten.
                     </div>
                   )}
                 </div>
