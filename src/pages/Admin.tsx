@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +42,7 @@ const Admin = () => {
   const [backgroundImageFile, setBackgroundImageFile] = useState<File | null>(null);
   const [removeBackgroundImage, setRemoveBackgroundImage] = useState(false);
   const [externalUrl, setExternalUrl] = useState("");
-  const [uploadType, setUploadType] = useState<"file" | "url">("file");
+  const [uploadType, setUploadType] = useState<"file" | "url" | "none">("file");
   const [editingFlyer, setEditingFlyer] = useState<any>(null);
   const [infoTypes, setInfoTypes] = useState<Array<{id: string, name: string}>>([]);
   const [selectedInfoType, setSelectedInfoType] = useState("");
@@ -123,11 +124,16 @@ const Admin = () => {
       setTitle(editFlyer.title);
       setDescription(editFlyer.description || "");
       setSelectedInfoType(editFlyer.info_type_id || "");
-      setUploadType(editFlyer.is_external ? "url" : "file");
-      setRemoveBackgroundImage(false);
+      // Determine upload type based on flyer properties
       if (editFlyer.is_external) {
+        setUploadType("url");
         setExternalUrl(editFlyer.external_url || "");
+      } else if (editFlyer.file_url) {
+        setUploadType("file");
+      } else {
+        setUploadType("none");
       }
+      setRemoveBackgroundImage(false);
     }
   }, [location.state, activeTab]);
 
@@ -350,6 +356,7 @@ const Admin = () => {
     
     if (uploadType === "file" && !file && !editingFlyer) return;
     if (uploadType === "url" && !externalUrl.trim()) return;
+    // uploadType "none" requires no file or URL
     
     setUploading(true);
 
@@ -416,6 +423,13 @@ const Admin = () => {
           
           updateData.external_url = validatedData.external_url;
           updateData.is_external = true;
+          updateData.file_url = null;
+          updateData.file_name = null;
+          updateData.file_size = null;
+        } else if (uploadType === "none") {
+          // Clear any file or URL data
+          updateData.external_url = null;
+          updateData.is_external = false;
           updateData.file_url = null;
           updateData.file_name = null;
           updateData.file_size = null;
@@ -529,7 +543,7 @@ const Admin = () => {
           title: "Info-Kachel hochgeladen",
           description: "Die Info-Kachel wurde erfolgreich hochgeladen.",
         });
-      } else {
+      } else if (uploadType === "url") {
         // Handle external URL
         const validatedData = urlSchema.parse({
           title: title.trim(),
@@ -561,6 +575,38 @@ const Admin = () => {
         toast({
           title: "Link hinzugefügt",
           description: "Der externe Link wurde erfolgreich hinzugefügt.",
+        });
+      } else if (uploadType === "none") {
+        // Handle info tile without file or URL
+        const validatedData = flyerSchema.parse({
+          title: title.trim(),
+          description: description.trim() || undefined,
+          info_type_id: selectedInfoType,
+        });
+
+        // Save info tile without file or URL to database
+        const { error: dbError } = await supabase
+          .from('flyers')
+          .insert({
+            title: validatedData.title,
+            description: validatedData.description,
+            uploaded_by: user.id,
+            is_external: false,
+            file_url: null,
+            file_name: null,
+            file_size: null,
+            external_url: null,
+            info_type_id: validatedData.info_type_id,
+            background_image_url: backgroundImageUrl,
+          });
+
+        if (dbError) {
+          throw dbError;
+        }
+
+        toast({
+          title: "Info-Kachel erstellt",
+          description: "Die Info-Kachel wurde erfolgreich erstellt.",
         });
       }
 
@@ -824,126 +870,144 @@ const Admin = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs value={uploadType} onValueChange={(value) => setUploadType(value as "file" | "url")}>
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="file">Datei hochladen</TabsTrigger>
-                    <TabsTrigger value="url">Externe URL</TabsTrigger>
-                  </TabsList>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Titel *</Label>
+                    <Input
+                      id="title"
+                      type="text"
+                      placeholder="z.B. Wochenangebote KW 38"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      required
+                      maxLength={100}
+                    />
+                  </div>
 
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="title">Titel *</Label>
-                      <Input
-                        id="title"
-                        type="text"
-                        placeholder="z.B. Wochenangebote KW 38"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        required
-                        maxLength={100}
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Beschreibung (optional)</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Kurze Beschreibung..."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      maxLength={500}
+                      rows={3}
+                    />
+                  </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="description">Beschreibung (optional)</Label>
-                      <Textarea
-                        id="description"
-                        placeholder="Kurze Beschreibung..."
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        maxLength={500}
-                        rows={3}
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="info-type">Info-Art *</Label>
+                    <Select value={selectedInfoType} onValueChange={setSelectedInfoType} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Wählen Sie eine Info-Art..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {infoTypes.map((infoType) => (
+                          <SelectItem key={infoType.id} value={infoType.id}>
+                            {infoType.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="info-type">Info-Art *</Label>
-                      <Select value={selectedInfoType} onValueChange={setSelectedInfoType} required>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Wählen Sie eine Info-Art..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {infoTypes.map((infoType) => (
-                            <SelectItem key={infoType.id} value={infoType.id}>
-                              {infoType.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-2">
+                    <Label>Inhaltstyp *</Label>
+                    <RadioGroup value={uploadType} onValueChange={(value) => setUploadType(value as "file" | "url" | "none")}>
+                      <div className="flex items-center space-x-6">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="file" id="type-file" />
+                          <Label htmlFor="type-file" className="cursor-pointer font-normal">
+                            Datei hochladen
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="url" id="type-url" />
+                          <Label htmlFor="type-url" className="cursor-pointer font-normal">
+                            Externe URL
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="none" id="type-none" />
+                          <Label htmlFor="type-none" className="cursor-pointer font-normal">
+                            Ohne
+                          </Label>
+                        </div>
+                      </div>
+                    </RadioGroup>
+                  </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="background-image">Hintergrundbild (optional)</Label>
-                      <Input
-                        id="background-image"
-                        type="file"
-                        accept=".jpg,.jpeg,.png,.webp"
-                        onChange={handleBackgroundImageChange}
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        Hintergrundbild für die Infokachel. Erlaubte Formate: JPEG, PNG, WebP (max. 10MB)
-                      </p>
-                      {backgroundImageFile && (
-                        <div className="p-4 bg-muted rounded-lg">
+                  <div className="space-y-2">
+                    <Label htmlFor="background-image">Hintergrundbild (optional)</Label>
+                    <Input
+                      id="background-image"
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp"
+                      onChange={handleBackgroundImageChange}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Hintergrundbild für die Infokachel. Erlaubte Formate: JPEG, PNG, WebP (max. 10MB)
+                    </p>
+                    {backgroundImageFile && (
+                      <div className="p-4 bg-muted rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <FileText className="w-4 h-4" />
+                          <span className="text-sm font-medium">{backgroundImageFile.name}</span>
+                          <span className="text-sm text-muted-foreground">
+                            ({Math.round(backgroundImageFile.size / 1024)} KB)
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {editingFlyer?.background_image_url && !backgroundImageFile && !removeBackgroundImage && (
+                      <div className="p-4 bg-muted rounded-lg">
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">
                             <FileText className="w-4 h-4" />
-                            <span className="text-sm font-medium">{backgroundImageFile.name}</span>
-                            <span className="text-sm text-muted-foreground">
-                              ({Math.round(backgroundImageFile.size / 1024)} KB)
-                            </span>
+                            <span className="text-sm font-medium">Aktuelles Hintergrundbild</span>
                           </div>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setRemoveBackgroundImage(true)}
+                          >
+                            Löschen
+                          </Button>
                         </div>
-                      )}
-                      {editingFlyer?.background_image_url && !backgroundImageFile && !removeBackgroundImage && (
-                        <div className="p-4 bg-muted rounded-lg">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <FileText className="w-4 h-4" />
-                              <span className="text-sm font-medium">Aktuelles Hintergrundbild</span>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => setRemoveBackgroundImage(true)}
-                            >
-                              Löschen
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                      {removeBackgroundImage && (
-                        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-destructive">Hintergrundbild wird beim Speichern entfernt</span>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setRemoveBackgroundImage(false)}
-                            >
-                              Rückgängig
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <TabsContent value="file" className="space-y-4 mt-0">
-                      <div className="space-y-2">
-                        <Label htmlFor="file-input">Datei auswählen *</Label>
-                        <Input
-                          id="file-input"
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png,.webp"
-                          onChange={handleFileChange}
-                          required={uploadType === "file" && !editingFlyer}
-                        />
-                        <p className="text-sm text-muted-foreground">
-                          Erlaubte Formate: PDF, JPEG, PNG, WebP (max. 20MB)
-                        </p>
                       </div>
+                    )}
+                    {removeBackgroundImage && (
+                      <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-destructive">Hintergrundbild wird beim Speichern entfernt</span>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setRemoveBackgroundImage(false)}
+                          >
+                            Rückgängig
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
+                  {uploadType === "file" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="file-input">Datei auswählen *</Label>
+                      <Input
+                        id="file-input"
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png,.webp"
+                        onChange={handleFileChange}
+                        required={uploadType === "file" && !editingFlyer}
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        Erlaubte Formate: PDF, JPEG, PNG, WebP (max. 20MB)
+                      </p>
                       {file && (
                         <div className="p-4 bg-muted rounded-lg">
                           <div className="flex items-center space-x-2">
@@ -955,26 +1019,25 @@ const Admin = () => {
                           </div>
                         </div>
                       )}
-                    </TabsContent>
+                    </div>
+                  )}
 
-                    <TabsContent value="url" className="space-y-4 mt-0">
-                      <div className="space-y-2">
-                        <Label htmlFor="external-url">URL zum Dokument *</Label>
-                        <Input
-                          id="external-url"
-                          type="url"
-                          placeholder="https://beispiel.de/werbeblatt.pdf"
-                          value={externalUrl}
-                          onChange={(e) => setExternalUrl(e.target.value)}
-                          onFocus={() => setExternalUrl("")}
-                          required={uploadType === "url"}
-                          maxLength={500}
-                        />
-                        <p className="text-sm text-muted-foreground">
-                          Geben Sie eine direkte URL zum Dokument ein
-                        </p>
-                      </div>
-
+                  {uploadType === "url" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="external-url">URL zum Dokument *</Label>
+                      <Input
+                        id="external-url"
+                        type="url"
+                        placeholder="https://beispiel.de/werbeblatt.pdf"
+                        value={externalUrl}
+                        onChange={(e) => setExternalUrl(e.target.value)}
+                        onFocus={() => setExternalUrl("")}
+                        required={uploadType === "url"}
+                        maxLength={500}
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        Geben Sie eine direkte URL zum Dokument ein
+                      </p>
                       {externalUrl && (
                         <div className="p-4 bg-muted rounded-lg">
                           <div className="flex items-center space-x-2">
@@ -983,41 +1046,46 @@ const Admin = () => {
                           </div>
                         </div>
                       )}
-                    </TabsContent>
+                    </div>
+                  )}
 
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={uploading || !selectedInfoType || (uploadType === "file" && !file && !editingFlyer) || (uploadType === "url" && !externalUrl.trim())}
-                    >
-                      {uploading ? (
-                        <>
-                          <Upload className="w-4 h-4 mr-2 animate-spin" />
-                          {editingFlyer ? "Aktualisieren..." : (uploadType === "file" ? "Hochladen..." : "Speichern...")}
-                        </>
-                      ) : (
-                        <>
-                          {editingFlyer ? (
-                            <>
-                              <Edit className="w-4 h-4 mr-2" />
-                              Info-Kachel aktualisieren
-                            </>
-                          ) : uploadType === "file" ? (
-                            <>
-                              <Upload className="w-4 h-4 mr-2" />
-                              Info-Kachel hochladen
-                            </>
-                          ) : (
-                            <>
-                              <Link className="w-4 h-4 mr-2" />
-                              Link hinzufügen
-                            </>
-                          )}
-                        </>
-                      )}
-                    </Button>
-                  </form>
-                </Tabs>
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={uploading || !selectedInfoType || (uploadType === "file" && !file && !editingFlyer) || (uploadType === "url" && !externalUrl.trim())}
+                  >
+                    {uploading ? (
+                      <>
+                        <Upload className="w-4 h-4 mr-2 animate-spin" />
+                        {editingFlyer ? "Aktualisieren..." : (uploadType === "file" ? "Hochladen..." : uploadType === "url" ? "Speichern..." : "Erstellen...")}
+                      </>
+                    ) : (
+                      <>
+                        {editingFlyer ? (
+                          <>
+                            <Edit className="w-4 h-4 mr-2" />
+                            Info-Kachel aktualisieren
+                          </>
+                        ) : uploadType === "file" ? (
+                          <>
+                            <Upload className="w-4 h-4 mr-2" />
+                            Info-Kachel hochladen
+                          </>
+                        ) : uploadType === "url" ? (
+                          <>
+                            <Link className="w-4 h-4 mr-2" />
+                            Link hinzufügen
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 mr-2" />
+                            Info-Kachel erstellen
+                          </>
+                        )}
+                      </>
+                    )}
+                  </Button>
+                </form>
               </CardContent>
             </Card>
           </TabsContent>
