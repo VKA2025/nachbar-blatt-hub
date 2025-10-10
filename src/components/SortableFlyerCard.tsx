@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, FileText, Download, Eye, ExternalLink, GripVertical, Edit, Trash2, Info } from "lucide-react";
+import { Calendar, FileText, Download, Eye, ExternalLink, GripVertical, Edit, Trash2, Info, Search, Package, FileQuestion } from "lucide-react";
 
 interface Flyer {
   id: string;
@@ -63,6 +63,9 @@ export const SortableFlyerCard = ({
   const [showUnsubscribeInfo, setShowUnsubscribeInfo] = useState(false);
   const [showPickupInfo, setShowPickupInfo] = useState(false);
   const [showExternalUrlInfo, setShowExternalUrlInfo] = useState(false);
+  const [showSearchOffersInfo, setShowSearchOffersInfo] = useState(false);
+  const [showMyOffersInfo, setShowMyOffersInfo] = useState(false);
+  const [showMyRequestsInfo, setShowMyRequestsInfo] = useState(false);
   
   const {
     attributes,
@@ -280,6 +283,85 @@ export const SortableFlyerCard = ({
                   {showPickupInfo && (
                     <div className="text-sm text-black bg-muted/50 p-3 rounded-md">
                       Anzeige der Müllabfuhrtermine Deiner Straße für die nächsten vier Wochen.
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {flyer.info_types?.name === 'NachbarNetz' && userProfile && (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {/* TODO: Implement search offers */}}
+                      className="flex-1"
+                    >
+                      <Search className="w-4 h-4 mr-2" />
+                      Angebote suchen
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowSearchOffersInfo(!showSearchOffersInfo)}
+                      className="px-3"
+                    >
+                      <Info className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {showSearchOffersInfo && (
+                    <div className="text-sm text-black bg-muted/50 p-3 rounded-md">
+                      Finde passende Angebote von Deinen Nachbarn.
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {/* TODO: Implement my offers */}}
+                      className="flex-1"
+                    >
+                      <Package className="w-4 h-4 mr-2" />
+                      Ich biete
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowMyOffersInfo(!showMyOffersInfo)}
+                      className="px-3"
+                    >
+                      <Info className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {showMyOffersInfo && (
+                    <div className="text-sm text-black bg-muted/50 p-3 rounded-md">
+                      Übersicht über meine Angebote für Nachbarn
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {/* TODO: Implement my requests */}}
+                      className="flex-1"
+                    >
+                      <FileQuestion className="w-4 h-4 mr-2" />
+                      Meine Anfragen
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowMyRequestsInfo(!showMyRequestsInfo)}
+                      className="px-3"
+                    >
+                      <Info className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {showMyRequestsInfo && (
+                    <div className="text-sm text-black bg-muted/50 p-3 rounded-md">
+                      Verwalte Anfragen.
                     </div>
                   )}
                 </div>
