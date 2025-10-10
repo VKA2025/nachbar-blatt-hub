@@ -428,6 +428,7 @@ const Admin = () => {
           updateData.file_size = null;
         } else if (uploadType === "none") {
           // Clear any file or URL data
+          console.log('Updating to "none" type - clearing file and URL data');
           updateData.external_url = null;
           updateData.is_external = false;
           updateData.file_url = null;
@@ -578,11 +579,15 @@ const Admin = () => {
         });
       } else if (uploadType === "none") {
         // Handle info tile without file or URL
+        console.log('Creating info tile without file/URL:', { title: title.trim(), description: description.trim(), info_type_id: selectedInfoType });
+        
         const validatedData = flyerSchema.parse({
           title: title.trim(),
           description: description.trim() || undefined,
           info_type_id: selectedInfoType,
         });
+
+        console.log('Validated data:', validatedData);
 
         // Save info tile without file or URL to database
         const { error: dbError } = await supabase
@@ -601,6 +606,7 @@ const Admin = () => {
           });
 
         if (dbError) {
+          console.error('Database error:', dbError);
           throw dbError;
         }
 
