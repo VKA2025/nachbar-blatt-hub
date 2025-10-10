@@ -181,50 +181,52 @@ export const SortableFlyerCard = ({
 
           {user && (
             <div className="space-y-2">
-              <div className="flex space-x-2">
-                {flyer.is_external ? (
-                  <div className="flex gap-2 w-full">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => onViewFlyer(flyer)}
-                      className="flex-1"
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Link öffnen
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowExternalUrlInfo(!showExternalUrlInfo)}
-                      className="px-3"
-                    >
-                      <Info className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => onViewFlyer(flyer)}
-                      className="flex-1"
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Anzeigen
-                    </Button>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => onDownloadFlyer(flyer)}
-                      className="flex-1"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download
-                    </Button>
-                  </>
-                )}
-              </div>
+              {flyer.info_types?.name !== 'NachbarNetz' && (
+                <div className="flex space-x-2">
+                  {flyer.is_external ? (
+                    <div className="flex gap-2 w-full">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => onViewFlyer(flyer)}
+                        className="flex-1"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Link öffnen
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowExternalUrlInfo(!showExternalUrlInfo)}
+                        className="px-3"
+                      >
+                        <Info className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => onViewFlyer(flyer)}
+                        className="flex-1"
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Anzeigen
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => onDownloadFlyer(flyer)}
+                        className="flex-1"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
               
               {flyer.is_external && showExternalUrlInfo && (
                 <div className="text-sm text-black bg-muted/50 p-3 rounded-md break-all">
