@@ -80,7 +80,7 @@ export const NeighborOfferDialog = ({
   useEffect(() => {
     loadCategories();
     loadSubcategories();
-  }, []);
+  }, [neighborType]);
 
   useEffect(() => {
     const categoryId = form.watch("category_id");
@@ -96,13 +96,28 @@ export const NeighborOfferDialog = ({
 
   const loadCategories = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("neighbor_categories")
-        .select("id, name")
+        .select("id, name, is_for_help, is_for_lending, is_for_exchange, is_for_giving")
         .order("name");
 
+      const { data, error } = await query;
+
       if (error) throw error;
-      setCategories(data || []);
+
+      // Filter categories based on neighborType
+      const filtered = (data || []).filter((cat) => {
+        if (neighborType === "Dienstleistung") {
+          return cat.is_for_help;
+        } else if (neighborType === "Verleih") {
+          return cat.is_for_lending;
+        } else if (neighborType === "Tausch/Verschenken") {
+          return cat.is_for_exchange || cat.is_for_giving;
+        }
+        return false;
+      });
+
+      setCategories(filtered);
     } catch (error) {
       console.error("Error loading categories:", error);
     }
