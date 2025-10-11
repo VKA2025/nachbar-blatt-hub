@@ -196,6 +196,50 @@ export type Database = {
         }
         Relationships: []
       }
+      neighbor_subcategories: {
+        Row: {
+          category_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_for_exchange: boolean
+          is_for_giving: boolean
+          is_for_help: boolean
+          is_for_lending: boolean
+          name: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_for_exchange?: boolean
+          is_for_giving?: boolean
+          is_for_help?: boolean
+          is_for_lending?: boolean
+          name: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_for_exchange?: boolean
+          is_for_giving?: boolean
+          is_for_help?: boolean
+          is_for_lending?: boolean
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neighbor_subcategories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "neighbor_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
