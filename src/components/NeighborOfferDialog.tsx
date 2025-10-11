@@ -130,11 +130,11 @@ export const NeighborOfferDialog = ({
       let isFree = null;
 
       if (neighborType === "Dienstleistung") {
-        offerType = "Hilfe";
+        offerType = "Dienstleistung";
       } else if (neighborType === "Verleih") {
-        offerType = "Verleihen";
+        offerType = "Verleih";
       } else if (neighborType === "Tausch/Verschenken") {
-        offerType = values.offer_type;
+        offerType = values.offer_type === "Tauschen" ? "Tausch" : "Verschenken";
         if (values.offer_type === "Verschenken") {
           isFree = true;
         }
