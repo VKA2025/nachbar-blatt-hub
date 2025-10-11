@@ -179,11 +179,24 @@ export const NeighborOfferDialog = ({
     try {
       const { data, error } = await supabase
         .from("neighbor_subcategories")
-        .select("id, name, category_id")
+        .select("id, name, category_id, is_for_help, is_for_lending, is_for_exchange, is_for_giving")
         .order("name");
 
       if (error) throw error;
-      setSubcategories(data || []);
+      
+      // Filter subcategories based on neighborType
+      const filtered = (data || []).filter((sub) => {
+        if (neighborType === "Dienstleistung") {
+          return sub.is_for_help;
+        } else if (neighborType === "Verleih") {
+          return sub.is_for_lending;
+        } else if (neighborType === "Tausch/Verschenken") {
+          return sub.is_for_exchange || sub.is_for_giving;
+        }
+        return false;
+      });
+      
+      setSubcategories(filtered);
     } catch (error) {
       console.error("Error loading subcategories:", error);
     }
