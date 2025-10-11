@@ -331,6 +331,54 @@ export type Database = {
           },
         ]
       }
+      neighbor_transactions: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          item_id: string
+          notes: string
+          requester_id: string
+          start_date: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          item_id: string
+          notes: string
+          requester_id: string
+          start_date?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          item_id?: string
+          notes?: string
+          requester_id?: string
+          start_date?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neighbor_transactions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "neighbor_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neighbor_transactions_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
