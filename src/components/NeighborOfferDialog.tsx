@@ -49,6 +49,8 @@ const baseSchema = z.object({
   usage_tips: z.string().max(500).optional(),
   exchange_preference: z.string().max(500).optional(),
   offer_type: z.enum(["Tauschen", "Verschenken"]).optional(),
+  photo_url: z.string().url("Bitte gib eine gültige URL ein").optional().or(z.literal("")),
+  tags: z.string().optional(),
 });
 
 export const NeighborOfferDialog = ({
@@ -74,6 +76,8 @@ export const NeighborOfferDialog = ({
       deposit_required: "",
       usage_tips: "",
       exchange_preference: "",
+      photo_url: "",
+      tags: "",
     },
   });
 
@@ -156,6 +160,10 @@ export const NeighborOfferDialog = ({
       }
 
       // Prepare data for insertion
+      const tagsArray = values.tags 
+        ? values.tags.split(",").map(tag => tag.trim()).filter(tag => tag.length > 0)
+        : [];
+
       const insertData: any = {
         owner_id: userProfileId,
         category_id: values.category_id,
@@ -172,6 +180,8 @@ export const NeighborOfferDialog = ({
         exchange_preference: values.exchange_preference || null,
         availability_status: "verfügbar",
         deactivated: false,
+        photo_url: values.photo_url || null,
+        tags: tagsArray.length > 0 ? tagsArray : null,
       };
 
       const { error } = await supabase.from("neighbor_items").insert(insertData);
@@ -497,6 +507,36 @@ export const NeighborOfferDialog = ({
                       />
                     </PopoverContent>
                   </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Photo URL */}
+            <FormField
+              control={form.control}
+              name="photo_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Foto-URL (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://beispiel.de/foto.jpg" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Tags */}
+            <FormField
+              control={form.control}
+              name="tags"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Schlagwörter (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="z.B. Werkzeug, Elektro, Bosch (durch Komma getrennt)" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
