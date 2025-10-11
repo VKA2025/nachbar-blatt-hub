@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Upload, X } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -36,6 +36,51 @@ interface Subcategory {
   category_id: string;
 }
 
+// Helper function to compress image
+const compressImage = async (file: File): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Calculate new dimensions (max 800px)
+        let width = img.width;
+        let height = img.height;
+        const maxSize = 800;
+        
+        if (width > height && width > maxSize) {
+          height = (height / width) * maxSize;
+          width = maxSize;
+        } else if (height > maxSize) {
+          width = (width / height) * maxSize;
+          height = maxSize;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Convert to blob with high compression
+        canvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error('Komprimierung fehlgeschlagen'));
+          },
+          'image/jpeg',
+          0.6 // 60% quality for strong compression
+        );
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
+};
+
 // Common base schema
 const baseSchema = z.object({
   title: z.string().min(3, "Titel muss mindestens 3 Zeichen lang sein").max(100),
@@ -49,7 +94,7 @@ const baseSchema = z.object({
   usage_tips: z.string().max(500).optional(),
   exchange_preference: z.string().max(500).optional(),
   offer_type: z.enum(["Tauschen", "Verschenken"]).optional(),
-  photo_url: z.string().url("Bitte gib eine gültige URL ein").optional().or(z.literal("")),
+  photo_url: z.string().optional(),
   tags: z.string().optional(),
 });
 
@@ -63,6 +108,9 @@ export const NeighborOfferDialog = ({
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [filteredSubcategories, setFilteredSubcategories] = useState<Subcategory[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof baseSchema>>({
@@ -138,6 +186,82 @@ export const NeighborOfferDialog = ({
       setSubcategories(data || []);
     } catch (error) {
       console.error("Error loading subcategories:", error);
+    }
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Fehler",
+        description: "Bitte wähle eine Bilddatei aus.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 10MB before compression)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "Fehler",
+        description: "Die Datei ist zu groß. Maximal 10MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Compress the image
+      const compressedBlob = await compressImage(file);
+      
+      // Create unique filename
+      const fileExt = 'jpg';
+      const fileName = `${userProfileId}_${Date.now()}.${fileExt}`;
+      const filePath = fileName;
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('neighbor-photos')
+        .upload(filePath, compressedBlob, {
+          contentType: 'image/jpeg',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('neighbor-photos')
+        .getPublicUrl(filePath);
+
+      setUploadedPhotoUrl(publicUrl);
+      form.setValue('photo_url', publicUrl);
+
+      toast({
+        title: "Erfolg",
+        description: "Foto wurde hochgeladen und komprimiert.",
+      });
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      toast({
+        title: "Fehler",
+        description: "Das Foto konnte nicht hochgeladen werden.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setUploadedPhotoUrl("");
+    form.setValue('photo_url', "");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -512,16 +636,49 @@ export const NeighborOfferDialog = ({
               )}
             />
 
-            {/* Photo URL */}
+            {/* Photo Upload */}
             <FormField
               control={form.control}
               name="photo_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Foto-URL (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://beispiel.de/foto.jpg" {...field} />
-                  </FormControl>
+                  <FormLabel>Foto (optional)</FormLabel>
+                  <div className="space-y-2">
+                    {!uploadedPhotoUrl ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileSelect}
+                          disabled={isUploading}
+                          className="flex-1"
+                        />
+                        {isUploading && (
+                          <span className="text-sm text-muted-foreground">Lädt...</span>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="relative inline-block">
+                          <img
+                            src={uploadedPhotoUrl}
+                            alt="Vorschau"
+                            className="h-32 w-32 object-cover rounded-lg border"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-6 w-6"
+                            onClick={handleRemovePhoto}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
