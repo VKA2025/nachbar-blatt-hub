@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, FileText, Download, Eye, ExternalLink, GripVertical, Edit, Trash2, Info, Search, Package, FileQuestion } from "lucide-react";
+import { NeighborOfferDialog } from "@/components/NeighborOfferDialog";
 
 interface Flyer {
   id: string;
@@ -19,6 +20,7 @@ interface Flyer {
   created_at: string;
   info_type_id: string | null;
   background_image_url: string | null;
+  neighbor_type: string | null;
   info_types?: {
     id: string;
     name: string;
@@ -66,6 +68,7 @@ export const SortableFlyerCard = ({
   const [showSearchOffersInfo, setShowSearchOffersInfo] = useState(false);
   const [showMyOffersInfo, setShowMyOffersInfo] = useState(false);
   const [showMyRequestsInfo, setShowMyRequestsInfo] = useState(false);
+  const [showOfferDialog, setShowOfferDialog] = useState(false);
   
   const {
     attributes,
@@ -321,7 +324,7 @@ export const SortableFlyerCard = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {/* TODO: Implement my offers */}}
+                      onClick={() => setShowOfferDialog(true)}
                       className="flex-1"
                     >
                       <Package className="w-4 h-4 mr-2" />
@@ -340,6 +343,16 @@ export const SortableFlyerCard = ({
                     <div className="text-sm text-black bg-muted/50 p-3 rounded-md">
                       Angebote für Nachbarn einstellen
                     </div>
+                  )}
+                  
+                  {/* Neighbor Offer Dialog */}
+                  {flyer.neighbor_type && userProfile && (
+                    <NeighborOfferDialog
+                      open={showOfferDialog}
+                      onOpenChange={setShowOfferDialog}
+                      neighborType={flyer.neighbor_type as "Dienstleistung" | "Verleih" | "Tausch/Verschenken"}
+                      userProfileId={userProfile.id}
+                    />
                   )}
                   
                   <div className="flex gap-2">

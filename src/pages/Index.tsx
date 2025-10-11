@@ -46,6 +46,7 @@ interface Flyer {
   created_at: string;
   info_type_id: string | null;
   background_image_url: string | null;
+  neighbor_type: string | null;
   info_types?: {
     id: string;
     name: string;
@@ -338,6 +339,7 @@ const Index = () => {
           created_at,
           info_type_id,
           background_image_url,
+          neighbor_type,
           info_types (
             id,
             name
