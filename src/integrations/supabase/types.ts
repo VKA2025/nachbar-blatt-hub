@@ -163,6 +163,39 @@ export type Database = {
         }
         Relationships: []
       }
+      neighbor_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_for_exchange: boolean
+          is_for_giving: boolean
+          is_for_help: boolean
+          is_for_lending: boolean
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_for_exchange?: boolean
+          is_for_giving?: boolean
+          is_for_help?: boolean
+          is_for_lending?: boolean
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_for_exchange?: boolean
+          is_for_giving?: boolean
+          is_for_help?: boolean
+          is_for_lending?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
