@@ -51,6 +51,7 @@ export type Database = {
           info_type_id: string | null
           is_active: boolean
           is_external: boolean
+          neighbor_type: string | null
           title: string
           updated_at: string
           upload_date: string
@@ -68,6 +69,7 @@ export type Database = {
           info_type_id?: string | null
           is_active?: boolean
           is_external?: boolean
+          neighbor_type?: string | null
           title: string
           updated_at?: string
           upload_date?: string
@@ -85,6 +87,7 @@ export type Database = {
           info_type_id?: string | null
           is_active?: boolean
           is_external?: boolean
+          neighbor_type?: string | null
           title?: string
           updated_at?: string
           upload_date?: string
