@@ -196,6 +196,97 @@ export type Database = {
         }
         Relationships: []
       }
+      neighbor_items: {
+        Row: {
+          availability_status: string
+          available_from: string | null
+          available_until: string | null
+          category_id: string
+          created_at: string
+          deactivated: boolean
+          deposit_required: number | null
+          description: string | null
+          duration: string | null
+          exchange_preference: string | null
+          id: string
+          is_free: boolean | null
+          offer_type: string
+          owner_id: string
+          photo_url: string | null
+          subcategory_id: string
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          usage_tips: string | null
+        }
+        Insert: {
+          availability_status?: string
+          available_from?: string | null
+          available_until?: string | null
+          category_id: string
+          created_at?: string
+          deactivated?: boolean
+          deposit_required?: number | null
+          description?: string | null
+          duration?: string | null
+          exchange_preference?: string | null
+          id?: string
+          is_free?: boolean | null
+          offer_type: string
+          owner_id: string
+          photo_url?: string | null
+          subcategory_id: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          usage_tips?: string | null
+        }
+        Update: {
+          availability_status?: string
+          available_from?: string | null
+          available_until?: string | null
+          category_id?: string
+          created_at?: string
+          deactivated?: boolean
+          deposit_required?: number | null
+          description?: string | null
+          duration?: string | null
+          exchange_preference?: string | null
+          id?: string
+          is_free?: boolean | null
+          offer_type?: string
+          owner_id?: string
+          photo_url?: string | null
+          subcategory_id?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          usage_tips?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neighbor_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "neighbor_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neighbor_items_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neighbor_items_subcategory_id_fkey"
+            columns: ["subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "neighbor_subcategories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       neighbor_subcategories: {
         Row: {
           category_id: string
