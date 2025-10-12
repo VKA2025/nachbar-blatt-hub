@@ -17,6 +17,7 @@ import { z } from "zod";
 import { importStreetData } from "@/utils/importStreetData";
 import { importWasteSchedule } from "@/utils/importWasteSchedule";
 import { SubcategoryManagement } from "@/components/SubcategoryManagement";
+import { CategoryManagement } from "@/components/CategoryManagement";
 import { NeighborItemApproval } from "@/components/NeighborItemApproval";
 
 const flyerSchema = z.object({
@@ -850,10 +851,11 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-6">
+          <TabsList className="grid w-full grid-cols-7 mb-6">
             <TabsTrigger value="flyers">Info-Kacheln</TabsTrigger>
             <TabsTrigger value="users">Benutzer</TabsTrigger>
             <TabsTrigger value="neighbor-items">Nachbar-Artikel</TabsTrigger>
+            <TabsTrigger value="categories">Kategorien</TabsTrigger>
             <TabsTrigger value="subcategories">Unterkategorien</TabsTrigger>
             <TabsTrigger value="streets">Straßendaten</TabsTrigger>
             <TabsTrigger value="waste">Abfallkalender</TabsTrigger>
@@ -1259,6 +1261,10 @@ const Admin = () => {
 
           <TabsContent value="neighbor-items">
             <NeighborItemApproval />
+          </TabsContent>
+
+          <TabsContent value="categories">
+            <CategoryManagement />
           </TabsContent>
 
           <TabsContent value="subcategories">
