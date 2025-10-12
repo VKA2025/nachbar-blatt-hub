@@ -241,17 +241,19 @@ export function NeighborItemApproval() {
 
       {/* Detail Dialog */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Artikel-Details</DialogTitle>
-            <DialogDescription>
-              Prüfen Sie die Details und geben Sie den Artikel frei oder lehnen Sie ihn ab.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-3xl h-[85vh] p-0 gap-0 flex flex-col">
+          <div className="px-6 pt-6 flex-shrink-0">
+            <DialogHeader>
+              <DialogTitle>Artikel-Details</DialogTitle>
+              <DialogDescription>
+                Prüfen Sie die Details und geben Sie den Artikel frei oder lehnen Sie ihn ab.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
 
           {selectedItem && (
-            <ScrollArea className="flex-1 pr-4 -mx-6 px-6">
-              <div className="space-y-6">
+            <ScrollArea className="flex-1 px-6">
+              <div className="space-y-6 py-4">
                 {/* Photo */}
                 {selectedItem.photo_url && (
                   <div className="rounded-lg overflow-hidden border">
@@ -373,7 +375,7 @@ export function NeighborItemApproval() {
                   )}
 
                   {/* Status */}
-                  <div>
+                  <div className="pb-4">
                     <p className="text-sm font-medium text-muted-foreground mb-1">Status</p>
                     <Badge>{selectedItem.availability_status}</Badge>
                     {selectedItem.is_free && (
@@ -385,30 +387,32 @@ export function NeighborItemApproval() {
             </ScrollArea>
           )}
 
-          <DialogFooter className="gap-2 mt-4 flex-shrink-0">
-            <Button
-              variant="outline"
-              onClick={() => setDetailDialogOpen(false)}
-              disabled={processing}
-            >
-              Abbrechen
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleReject}
-              disabled={processing}
-            >
-              <XCircle className="h-4 w-4 mr-2" />
-              Ablehnen
-            </Button>
-            <Button
-              onClick={handleApprove}
-              disabled={processing}
-            >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Freigeben
-            </Button>
-          </DialogFooter>
+          <div className="px-6 py-4 border-t flex-shrink-0">
+            <DialogFooter className="gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setDetailDialogOpen(false)}
+                disabled={processing}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleReject}
+                disabled={processing}
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Ablehnen
+              </Button>
+              <Button
+                onClick={handleApprove}
+                disabled={processing}
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Freigeben
+              </Button>
+            </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </>
