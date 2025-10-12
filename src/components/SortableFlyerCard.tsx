@@ -359,7 +359,7 @@ export const SortableFlyerCard = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {/* TODO: Implement my requests */}}
+                      onClick={() => window.open('/mein-bereich', '_self')}
                       className="flex-1"
                     >
                       <FileQuestion className="w-4 h-4 mr-2" />
