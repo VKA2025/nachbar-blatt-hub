@@ -212,6 +212,7 @@ export type Database = {
           duration: string | null
           exchange_preference: string | null
           id: string
+          is_approved: boolean
           is_free: boolean | null
           offer_type: string
           owner_id: string
@@ -234,6 +235,7 @@ export type Database = {
           duration?: string | null
           exchange_preference?: string | null
           id?: string
+          is_approved?: boolean
           is_free?: boolean | null
           offer_type: string
           owner_id: string
@@ -256,6 +258,7 @@ export type Database = {
           duration?: string | null
           exchange_preference?: string | null
           id?: string
+          is_approved?: boolean
           is_free?: boolean | null
           offer_type?: string
           owner_id?: string
