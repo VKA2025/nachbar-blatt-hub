@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { LogIn, LogOut, Calendar, FileText, Shield, Download, Eye, ExternalLink, ArrowUpDown, GripVertical, Edit, Trash2, User as UserIcon, ChevronDown, Filter } from "lucide-react";
+import { LogIn, LogOut, Calendar, FileText, Shield, Download, Eye, ExternalLink, ArrowUpDown, GripVertical, Edit, Trash2, User as UserIcon, ChevronDown, Filter, Layers } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -594,6 +594,10 @@ const Index = () => {
                 <span className="text-sm text-muted-foreground">
                   Willkommen zurück!
                 </span>
+                <Button variant="outline" onClick={() => navigate("/mein-bereich")}>
+                  <Layers className="w-4 h-4 mr-2" />
+                  Mein Bereich
+                </Button>
                 <Button variant="outline" onClick={() => navigate("/profile")}>
                   <UserIcon className="w-4 h-4 mr-2" />
                   Profil
