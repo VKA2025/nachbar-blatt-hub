@@ -76,11 +76,23 @@ export function SubcategoryManagement() {
         .select(`
           *,
           category:neighbor_categories(name)
-        `)
-        .order('name');
+        `);
       
       if (subcategoriesError) throw subcategoriesError;
-      setSubcategories(subcategoriesData || []);
+      
+      // Sort by category name first, then by subcategory name
+      const sortedData = (subcategoriesData || []).sort((a, b) => {
+        const categoryA = a.category?.name || '';
+        const categoryB = b.category?.name || '';
+        
+        if (categoryA !== categoryB) {
+          return categoryA.localeCompare(categoryB, 'de');
+        }
+        
+        return a.name.localeCompare(b.name, 'de');
+      });
+      
+      setSubcategories(sortedData);
     } catch (error) {
       console.error('Error loading data:', error);
       toast({
