@@ -241,7 +241,7 @@ export function NeighborItemApproval() {
 
       {/* Detail Dialog */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh]">
+        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Artikel-Details</DialogTitle>
             <DialogDescription>
@@ -250,7 +250,7 @@ export function NeighborItemApproval() {
           </DialogHeader>
 
           {selectedItem && (
-            <ScrollArea className="max-h-[60vh] pr-4">
+            <ScrollArea className="flex-1 pr-4 -mx-6 px-6">
               <div className="space-y-6">
                 {/* Photo */}
                 {selectedItem.photo_url && (
@@ -385,7 +385,7 @@ export function NeighborItemApproval() {
             </ScrollArea>
           )}
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 mt-4 flex-shrink-0">
             <Button
               variant="outline"
               onClick={() => setDetailDialogOpen(false)}
