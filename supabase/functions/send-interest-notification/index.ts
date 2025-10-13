@@ -16,6 +16,7 @@ interface InterestNotificationRequest {
   itemTitle: string;
   ownerId: string;
   requesterId: string;
+  transactionId: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -34,9 +35,20 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
 
-    const { itemId, itemTitle, ownerId, requesterId }: InterestNotificationRequest = await req.json();
+    const { itemId, itemTitle, ownerId, requesterId, transactionId }: InterestNotificationRequest = await req.json();
 
     console.log('Processing interest notification for item:', itemId);
+
+    // Get transaction with message
+    const { data: transaction, error: transactionError } = await supabaseClient
+      .from('neighbor_transactions')
+      .select('notes')
+      .eq('id', transactionId)
+      .single();
+
+    if (transactionError) {
+      console.error('Error fetching transaction:', transactionError);
+    }
 
     // Get owner profile
     const { data: ownerProfile, error: ownerError } = await supabaseClient
@@ -67,6 +79,10 @@ const handler = async (req: Request): Promise<Response> => {
       ? `${requesterProfile.street} ${requesterProfile.house_number}`
       : 'Nicht angegeben';
 
+    const userMessage = transaction?.notes && transaction.notes !== 'Interesse bekundet' 
+      ? transaction.notes 
+      : '';
+
     // Send email to owner using SMTP
     const emailSubject = `Interesse an deinem Angebot: ${itemTitle}`;
     const emailHtml = `
@@ -74,6 +90,13 @@ const handler = async (req: Request): Promise<Response> => {
       <p><strong>${requesterName}</strong> hat Interesse an deinem Angebot bekundet:</p>
       
       <h2 style="color: #4f46e5;">${itemTitle}</h2>
+      
+      ${userMessage ? `
+        <h3>Nachricht:</h3>
+        <p style="padding: 12px; background-color: #f3f4f6; border-left: 4px solid #4f46e5; margin: 16px 0;">
+          ${userMessage.replace(/\n/g, '<br>')}
+        </p>
+      ` : ''}
       
       <h3>Kontaktdaten des Interessenten:</h3>
       <ul>

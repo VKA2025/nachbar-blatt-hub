@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -51,6 +53,9 @@ const NeighborOffers = () => {
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<NeighborItem | null>(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [showMessageDialog, setShowMessageDialog] = useState(false);
+  const [messageText, setMessageText] = useState("");
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -178,10 +183,25 @@ const NeighborOffers = () => {
       return;
     }
 
+    const existingTransaction = myTransactions.find(t => t.item_id === item.id);
+
+    if (existingTransaction) {
+      setIsWithdrawing(true);
+    } else {
+      setIsWithdrawing(false);
+    }
+
+    setMessageText("");
+    setShowMessageDialog(true);
+  };
+
+  const submitInterestAction = async () => {
+    if (!selectedItem || !myProfileId) return;
+
     setActionLoading(true);
 
     try {
-      const existingTransaction = myTransactions.find(t => t.item_id === item.id);
+      const existingTransaction = myTransactions.find(t => t.item_id === selectedItem.id);
 
       if (existingTransaction) {
         // Interesse zurückziehen
@@ -200,24 +220,27 @@ const NeighborOffers = () => {
         await loadMyTransactions();
       } else {
         // Interesse bekunden
-        const { error: insertError } = await supabase
+        const { data: newTransaction, error: insertError } = await supabase
           .from('neighbor_transactions')
           .insert({
-            item_id: item.id,
+            item_id: selectedItem.id,
             requester_id: myProfileId,
             status: 'offen',
-            notes: 'Interesse bekundet'
-          });
+            notes: messageText || 'Interesse bekundet'
+          })
+          .select()
+          .single();
 
         if (insertError) throw insertError;
 
         // Email senden
         const { error: emailError } = await supabase.functions.invoke('send-interest-notification', {
           body: {
-            itemId: item.id,
-            itemTitle: item.title,
-            ownerId: item.owner_id,
-            requesterId: myProfileId
+            itemId: selectedItem.id,
+            itemTitle: selectedItem.title,
+            ownerId: selectedItem.owner_id,
+            requesterId: myProfileId,
+            transactionId: newTransaction.id
           }
         });
 
@@ -232,6 +255,9 @@ const NeighborOffers = () => {
 
         await loadMyTransactions();
       }
+
+      setShowMessageDialog(false);
+      setMessageText("");
     } catch (error) {
       console.error('Error handling interest:', error);
       toast({
@@ -437,6 +463,57 @@ const NeighborOffers = () => {
               </DialogFooter>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Message Dialog */}
+      <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {isWithdrawing ? "Interesse zurückziehen" : "Interesse bekunden"}
+            </DialogTitle>
+            <DialogDescription>
+              {isWithdrawing 
+                ? "Möchtest du optional eine Nachricht hinterlassen?" 
+                : "Schreibe eine Nachricht an den Anbieter (optional)"}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="message">Nachricht</Label>
+              <Textarea
+                id="message"
+                placeholder="Deine Nachricht..."
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                rows={4}
+                maxLength={500}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {messageText.length}/500 Zeichen
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowMessageDialog(false)}
+              disabled={actionLoading}
+            >
+              Abbrechen
+            </Button>
+            <Button 
+              onClick={submitInterestAction}
+              disabled={actionLoading}
+              variant={isWithdrawing ? "destructive" : "default"}
+            >
+              {isWithdrawing ? "Zurückziehen" : "Interesse bekunden"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
