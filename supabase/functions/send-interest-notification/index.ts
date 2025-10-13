@@ -68,6 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
       : 'Nicht angegeben';
 
     // Send email to owner using SMTP
+    const emailSubject = `Interesse an deinem Angebot: ${itemTitle}`;
     const emailHtml = `
       <h1>Hallo ${ownerProfile.first_name || ''}!</h1>
       <p><strong>${requesterName}</strong> hat Interesse an deinem Angebot bekundet:</p>
@@ -87,23 +88,15 @@ const handler = async (req: Request): Promise<Response> => {
       Dein Schlossstadt.Info Team</p>
     `;
 
-    // Send via SMTP
-    const emailResponse = await fetch(`https://${SMTP_HOST}:587/send`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: SMTP_USER,
-        to: ownerProfile.email,
-        subject: `Interesse an deinem Angebot: ${itemTitle}`,
-        html: emailHtml,
-        auth: {
-          user: SMTP_USER,
-          pass: SMTP_PASS
-        }
-      })
-    });
+    // Send via SMTP using direct TLS connection
+    await sendEmailSMTP(
+      ownerProfile.email,
+      emailSubject,
+      emailHtml,
+      SMTP_HOST!,
+      SMTP_USER!,
+      SMTP_PASS!
+    );
 
     console.log("Email sent successfully");
 
@@ -125,5 +118,73 @@ const handler = async (req: Request): Promise<Response> => {
     );
   }
 };
+
+async function sendEmailSMTP(
+  to: string,
+  subject: string,
+  html: string,
+  smtpHost: string,
+  smtpUser: string,
+  smtpPass: string
+): Promise<void> {
+  const [host, portStr] = smtpHost.split(':');
+  const port = portStr ? parseInt(portStr, 10) : 587;
+
+  console.log(`Connecting to SMTP server: ${host}:${port}`);
+  
+  const conn = await Deno.connectTls({
+    hostname: host,
+    port: port,
+  });
+
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+
+  async function readResponse(): Promise<string> {
+    const buffer = new Uint8Array(1024);
+    const n = await conn.read(buffer);
+    if (!n) throw new Error("Connection closed");
+    return decoder.decode(buffer.subarray(0, n));
+  }
+
+  async function sendCommand(command: string): Promise<string> {
+    console.log(`SMTP > ${command.replace(smtpPass, '***')}`);
+    await conn.write(encoder.encode(command + "\r\n"));
+    const response = await readResponse();
+    console.log(`SMTP < ${response.trim()}`);
+    return response;
+  }
+
+  try {
+    await readResponse(); // Welcome message
+    await sendCommand(`EHLO ${host}`);
+    await sendCommand(`AUTH LOGIN`);
+    await sendCommand(btoa(smtpUser));
+    await sendCommand(btoa(smtpPass));
+    await sendCommand(`MAIL FROM:<${smtpUser}>`);
+    await sendCommand(`RCPT TO:<${to}>`);
+    await sendCommand(`DATA`);
+
+    const emailContent = [
+      `From: Schlossstadt.Info <${smtpUser}>`,
+      `To: ${to}`,
+      `Subject: ${subject}`,
+      `MIME-Version: 1.0`,
+      `Content-Type: text/html; charset=utf-8`,
+      ``,
+      html,
+      `.`
+    ].join("\r\n");
+
+    await conn.write(encoder.encode(emailContent + "\r\n"));
+    await readResponse();
+    await sendCommand(`QUIT`);
+  } catch (error) {
+    console.error("SMTP Error:", error);
+    throw error;
+  } finally {
+    conn.close();
+  }
+}
 
 serve(handler);
