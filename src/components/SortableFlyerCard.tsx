@@ -299,7 +299,7 @@ export const SortableFlyerCard = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {/* TODO: Implement search offers */}}
+                      onClick={() => window.open(`/nachbar-angebote?type=${encodeURIComponent(flyer.neighbor_type || '')}`, '_self')}
                       className="flex-1"
                     >
                       <Search className="w-4 h-4 mr-2" />
@@ -316,7 +316,7 @@ export const SortableFlyerCard = ({
                   </div>
                   {showSearchOffersInfo && (
                     <div className="text-sm text-black bg-muted/50 p-3 rounded-md">
-                      Finde passende Angebote von Deinen Nachbarn.
+                      Angebote von Nachbarn finden und Interesse bekunden.
                     </div>
                   )}
                   

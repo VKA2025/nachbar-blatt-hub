@@ -34,10 +34,30 @@ interface NeighborItem {
   };
 }
 
+interface Transaction {
+  id: string;
+  item_id: string;
+  status: string;
+  created_at: string;
+  neighbor_items?: {
+    title: string;
+    offer_type: string;
+    photo_url: string | null;
+    owner_id: string;
+  };
+  requester_profiles?: {
+    first_name: string | null;
+    last_name: string | null;
+  };
+}
+
 const MyArea = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [myItems, setMyItems] = useState<NeighborItem[]>([]);
+  const [myProfileId, setMyProfileId] = useState<string | null>(null);
+  const [myInterests, setMyInterests] = useState<Transaction[]>([]);
+  const [requestsForMyItems, setRequestsForMyItems] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -68,9 +88,88 @@ const MyArea = () => {
 
   useEffect(() => {
     if (user) {
-      loadMyItems();
+      loadMyProfile();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (myProfileId) {
+      loadMyItems();
+      loadMyInterests();
+      loadRequestsForMyItems();
+    }
+  }, [myProfileId]);
+
+  const loadMyProfile = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!error && data) {
+      setMyProfileId(data.id);
+    }
+  };
+
+  const loadMyInterests = async () => {
+    if (!myProfileId) return;
+
+    const { data, error } = await supabase
+      .from('neighbor_transactions')
+      .select(`
+        *,
+        neighbor_items (
+          title,
+          offer_type,
+          photo_url,
+          owner_id
+        )
+      `)
+      .eq('requester_id', myProfileId)
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setMyInterests(data);
+    }
+  };
+
+  const loadRequestsForMyItems = async () => {
+    if (!myProfileId) return;
+
+    const { data: myItemIds, error: itemsError } = await supabase
+      .from('neighbor_items')
+      .select('id')
+      .eq('owner_id', myProfileId);
+
+    if (itemsError || !myItemIds || myItemIds.length === 0) return;
+
+    const itemIdList = myItemIds.map(item => item.id);
+
+    const { data, error } = await supabase
+      .from('neighbor_transactions')
+      .select(`
+        *,
+        neighbor_items (
+          title,
+          offer_type,
+          photo_url,
+          owner_id
+        ),
+        requester_profiles:profiles!neighbor_transactions_requester_id_fkey (
+          first_name,
+          last_name
+        )
+      `)
+      .in('item_id', itemIdList)
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setRequestsForMyItems(data);
+    }
+  };
 
   const loadMyItems = async () => {
     if (!user) return;
@@ -215,15 +314,101 @@ const MyArea = () => {
               <CardHeader>
                 <CardTitle>Meine Nachrichten</CardTitle>
                 <CardDescription>
-                  Deine Nachrichten und Anfragen
+                  Interessenbekundungen und Anfragen
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <MessageSquare className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">
-                    Diese Funktion wird in Kürze verfügbar sein.
-                  </p>
+                <div className="space-y-6">
+                  {/* Meine Interessen */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Meine Interessen</h3>
+                    {myInterests.length === 0 ? (
+                      <div className="text-center py-8">
+                        <MessageSquare className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          Du hast noch kein Interesse an Angeboten bekundet.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {myInterests.map((transaction) => (
+                          <Card key={transaction.id} className="p-4">
+                            <div className="flex items-start gap-3">
+                              {transaction.neighbor_items?.photo_url && (
+                                <div className="w-16 h-16 flex-shrink-0 bg-muted rounded overflow-hidden">
+                                  <img 
+                                    src={transaction.neighbor_items.photo_url} 
+                                    alt={transaction.neighbor_items.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-sm line-clamp-1">
+                                  {transaction.neighbor_items?.title}
+                                </h4>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge variant="secondary" className="text-xs">
+                                    {transaction.status}
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatDate(transaction.created_at)}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Anfragen für meine Angebote */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Anfragen für meine Angebote</h3>
+                    {requestsForMyItems.length === 0 ? (
+                      <div className="text-center py-8">
+                        <MessageSquare className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          Noch keine Anfragen für deine Angebote.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {requestsForMyItems.map((transaction) => (
+                          <Card key={transaction.id} className="p-4">
+                            <div className="flex items-start gap-3">
+                              {transaction.neighbor_items?.photo_url && (
+                                <div className="w-16 h-16 flex-shrink-0 bg-muted rounded overflow-hidden">
+                                  <img 
+                                    src={transaction.neighbor_items.photo_url} 
+                                    alt={transaction.neighbor_items.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-sm line-clamp-1">
+                                  {transaction.neighbor_items?.title}
+                                </h4>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Interesse von: {transaction.requester_profiles?.first_name} {transaction.requester_profiles?.last_name}
+                                </p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge variant="secondary" className="text-xs">
+                                    {transaction.status}
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatDate(transaction.created_at)}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
