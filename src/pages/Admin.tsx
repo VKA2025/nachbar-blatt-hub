@@ -1191,6 +1191,7 @@ const Admin = () => {
                           <TableHead>E-Mail</TableHead>
                           <TableHead>Straße</TableHead>
                           <TableHead>Rolle</TableHead>
+                          <TableHead>Mail-Benachr.</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Aktionen</TableHead>
                         </TableRow>
@@ -1218,6 +1219,15 @@ const Admin = () => {
                                   <SelectItem value="admin">Admin</SelectItem>
                                 </SelectContent>
                               </Select>
+                            </TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                userRecord.email_notifications
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {userRecord.email_notifications ? 'Ja' : 'Nein'}
+                              </span>
                             </TableCell>
                             <TableCell>
                               <span className={`px-2 py-1 rounded-full text-xs ${
