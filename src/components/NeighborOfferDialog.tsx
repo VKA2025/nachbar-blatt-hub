@@ -321,13 +321,29 @@ export const NeighborOfferDialog = ({
         tags: tagsArray.length > 0 ? tagsArray : null,
       };
 
-      const { error } = await supabase.from("neighbor_items").insert(insertData);
+      const { data: newItem, error } = await supabase
+        .from("neighbor_items")
+        .insert(insertData)
+        .select()
+        .single();
 
       if (error) throw error;
 
+      // Notify admins about the new offer
+      if (newItem) {
+        try {
+          await supabase.functions.invoke('notify-admins-new-offer', {
+            body: { itemId: newItem.id }
+          });
+        } catch (notifyError) {
+          console.error('Error notifying admins:', notifyError);
+          // Don't fail the whole operation if notification fails
+        }
+      }
+
       toast({
         title: "Angebot erstellt",
-        description: "Dein Angebot wurde erfolgreich erstellt.",
+        description: "Dein Angebot wurde erfolgreich erstellt und zur Freigabe an die Admins gesendet.",
       });
 
       form.reset();
