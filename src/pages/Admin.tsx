@@ -852,15 +852,19 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-7 mb-6">
-            <TabsTrigger value="flyers">Info-Kacheln</TabsTrigger>
-            <TabsTrigger value="users">Benutzer</TabsTrigger>
-            <TabsTrigger value="neighbor-items">Nachbar-Artikel</TabsTrigger>
-            <TabsTrigger value="categories">Kategorien</TabsTrigger>
-            <TabsTrigger value="subcategories">Unterkategorien</TabsTrigger>
-            <TabsTrigger value="streets">Straßendaten</TabsTrigger>
-            <TabsTrigger value="waste">Abfallkalender</TabsTrigger>
-          </TabsList>
+          <div className="mb-6 space-y-2">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="flyers">Info-Kacheln</TabsTrigger>
+              <TabsTrigger value="users">Benutzer</TabsTrigger>
+              <TabsTrigger value="neighbor-items">Nachbar-Artikel</TabsTrigger>
+              <TabsTrigger value="categories">Kategorien</TabsTrigger>
+            </TabsList>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="subcategories">Unterkategorien</TabsTrigger>
+              <TabsTrigger value="streets">Straßendaten</TabsTrigger>
+              <TabsTrigger value="waste">Abfallkalender</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="flyers">
             <Card className="max-w-2xl mx-auto">
