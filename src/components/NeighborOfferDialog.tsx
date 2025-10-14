@@ -321,9 +321,44 @@ export const NeighborOfferDialog = ({
         tags: tagsArray.length > 0 ? tagsArray : null,
       };
 
-      const { error } = await supabase.from("neighbor_items").insert(insertData);
+      const { data: newItem, error } = await supabase.from("neighbor_items").insert(insertData).select().single();
 
       if (error) throw error;
+
+      // Notify admins about new offer
+      if (newItem) {
+        try {
+          // Get category and owner info for notification
+          const { data: categoryData } = await supabase
+            .from('neighbor_categories')
+            .select('name')
+            .eq('id', values.category_id)
+            .single();
+
+          const { data: ownerProfile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', userProfileId)
+            .single();
+
+          const ownerName = ownerProfile 
+            ? `${ownerProfile.first_name || ''} ${ownerProfile.last_name || ''}`.trim() || 'Unbekannt'
+            : 'Unbekannt';
+
+          await supabase.functions.invoke('notify-admins-new-offer', {
+            body: {
+              itemId: newItem.id,
+              itemTitle: newItem.title,
+              offerType: offerType,
+              category: categoryData?.name || 'Unbekannt',
+              ownerName: ownerName
+            }
+          });
+        } catch (notifyError) {
+          console.error('Error notifying admins:', notifyError);
+          // Don't block user experience if admin notification fails
+        }
+      }
 
       toast({
         title: "Angebot erstellt",

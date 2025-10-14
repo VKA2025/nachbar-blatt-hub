@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.send-interest-notification]
 verify_jwt = false
+
+[functions.notify-admins-new-offer]
+verify_jwt = false
