@@ -88,7 +88,7 @@ const handler = async (req: Request): Promise<Response> => {
       Dein Schlossstadt.Info Team</p>
     `;
 
-    // Send via SMTP using direct TLS connection
+    // Send via SMTP using direct TLS connection on port 465
     await sendEmailSMTP(
       ownerProfile.email,
       emailSubject,
@@ -128,10 +128,11 @@ async function sendEmailSMTP(
   smtpPass: string
 ): Promise<void> {
   const [host, portStr] = smtpHost.split(':');
-  const port = portStr ? parseInt(portStr, 10) : 587;
+  const port = portStr ? parseInt(portStr, 10) : 465;
 
-  console.log(`Connecting to SMTP server: ${host}:${port}`);
+  console.log(`Connecting to SMTP server: ${host}:${port} (direct TLS)`);
   
+  // For port 465, use direct TLS connection
   const conn = await Deno.connectTls({
     hostname: host,
     port: port,
