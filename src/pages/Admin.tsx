@@ -652,16 +652,19 @@ const Admin = () => {
 
   const loadUsers = async () => {
     try {
-      // Use secure function to get user management data (no personal info)
-      const { data: userManagementData, error: managementError } = await supabase
-        .rpc('get_user_management_data', { limit_count: 100 });
+      // Load all profiles with full details (admins have RLS access)
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, created_at, updated_at, first_name, last_name, email, street, house_number, email_notifications')
+        .order('created_at', { ascending: false })
+        .limit(100);
 
-      if (managementError) {
-        throw managementError;
+      if (profilesError) {
+        throw profilesError;
       }
 
       // Load user roles separately
-      const userIds = userManagementData?.map(userData => userData.user_id) || [];
+      const userIds = profilesData?.map(profile => profile.user_id) || [];
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role')
@@ -671,21 +674,19 @@ const Admin = () => {
         throw rolesError;
       }
 
-      // Combine secure user data with roles (no sensitive data exposed)
-      const usersWithRoles = userManagementData?.map(userData => {
-        const userRole = rolesData?.find(role => role.user_id === userData.user_id);
+      // Combine profiles with roles
+      const usersWithRoles = profilesData?.map(profile => {
+        const userRole = rolesData?.find(role => role.user_id === profile.user_id);
         return {
-          user_id: userData.user_id,
-          created_at: userData.created_at,
-          updated_at: userData.last_updated,
-          // Security: Personal data is protected and not displayed
-          first_name: '[PROTECTED]',
-          last_name: '[PROTECTED]', 
-          email: '[PROTECTED]',
-          street: userData.has_street ? '[HAS_STREET]' : null,
-          house_number: '[PROTECTED]',
-          email_notifications: userData.notifications_enabled,
-          // Role information
+          user_id: profile.user_id,
+          created_at: profile.created_at,
+          updated_at: profile.updated_at,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          email: profile.email,
+          street: profile.street,
+          house_number: profile.house_number,
+          email_notifications: profile.email_notifications,
           user_roles: userRole ? [userRole] : [],
           role: userRole?.role || 'user'
         };
