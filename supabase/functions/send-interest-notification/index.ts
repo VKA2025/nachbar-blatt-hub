@@ -151,7 +151,7 @@ async function sendEmailSMTP(
   smtpPass: string
 ): Promise<void> {
   const [host, portStr] = smtpHost.split(':');
-  const port = portStr ? parseInt(portStr, 10) : 587;
+  const port = portStr ? parseInt(portStr, 10) : 465;
 
   console.log(`Connecting to SMTP server: ${host}:${port}`);
   
