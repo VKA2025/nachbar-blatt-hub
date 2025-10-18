@@ -170,12 +170,12 @@ export const SortableFlyerCard = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {flyer.description && flyer.info_types?.name !== 'NachbarNetz' && (
-            <p className={`text-sm text-primary-dark ${(!flyer.info_types || flyer.info_types.name === 'ohne') ? '' : 'line-clamp-3'}`}>
+            <p className={`text-base text-primary-dark ${(!flyer.info_types || flyer.info_types.name === 'ohne' || (!flyer.file_url && !flyer.external_url)) ? '' : 'line-clamp-3'}`}>
               {flyer.description}
             </p>
           )}
           
-          {!flyer.is_external && flyer.info_types && flyer.info_types.name !== 'NachbarNetz' && flyer.info_types.name !== 'ohne' && (
+          {!flyer.is_external && flyer.info_types && flyer.info_types.name !== 'NachbarNetz' && flyer.info_types.name !== 'ohne' && flyer.file_url && (
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>{flyer.file_name}</span>
               <span>{formatFileSize(flyer.file_size)}</span>
