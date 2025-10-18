@@ -175,7 +175,7 @@ export const SortableFlyerCard = ({
             </p>
           )}
           
-          {!flyer.is_external && flyer.info_types?.name !== 'NachbarNetz' && (
+          {!flyer.is_external && flyer.info_types?.name !== 'NachbarNetz' && (!flyer.info_types || flyer.info_types.name !== 'ohne') && (
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>{flyer.file_name}</span>
               <span>{formatFileSize(flyer.file_size)}</span>
