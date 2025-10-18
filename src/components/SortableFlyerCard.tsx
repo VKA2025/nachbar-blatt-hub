@@ -155,7 +155,7 @@ export const SortableFlyerCard = ({
               <span>{formatUploadDate(flyer.upload_date)}</span>
             </CardDescription>
             <div className="flex items-center space-x-2">
-              {flyer.info_types?.name && (
+              {flyer.info_types?.name && flyer.info_types.name !== 'ohne' && (
                 <Badge variant="outline" className="text-xs">
                   {flyer.info_types.name}
                 </Badge>
@@ -170,7 +170,7 @@ export const SortableFlyerCard = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {flyer.description && flyer.info_types?.name !== 'NachbarNetz' && (
-            <p className="text-sm text-primary-dark line-clamp-3">
+            <p className={`text-sm text-primary-dark ${(!flyer.info_types || flyer.info_types.name === 'ohne') ? '' : 'line-clamp-3'}`}>
               {flyer.description}
             </p>
           )}
@@ -184,7 +184,7 @@ export const SortableFlyerCard = ({
 
           {user && (
             <div className="space-y-2">
-              {flyer.info_types?.name !== 'NachbarNetz' && (
+              {flyer.info_types?.name !== 'NachbarNetz' && (!flyer.info_types || flyer.info_types.name !== 'ohne') && (
                 <div className="flex space-x-2">
                   {flyer.is_external ? (
                     <div className="flex gap-2 w-full">
