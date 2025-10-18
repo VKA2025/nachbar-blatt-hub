@@ -47,6 +47,7 @@ interface Flyer {
   info_type_id: string | null;
   background_image_url: string | null;
   neighbor_type: string | null;
+  expires_at: string | null;
   info_types?: {
     id: string;
     name: string;
@@ -324,7 +325,7 @@ const Index = () => {
 
   const loadFlyers = async () => {
     try {
-      let { data, error } = await supabase
+      let query = supabase
         .from('flyers')
         .select(`
           id,
@@ -340,12 +341,18 @@ const Index = () => {
           info_type_id,
           background_image_url,
           neighbor_type,
+          expires_at,
           info_types (
             id,
             name
           )
         `)
         .eq('is_active', true);
+
+      // Admins see all flyers (including expired ones)
+      // Regular users only see non-expired flyers (handled by RLS)
+      
+      let { data, error } = await query;
 
       if (error) {
         console.error('Error loading flyers:', error);

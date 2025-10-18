@@ -43,6 +43,7 @@ export type Database = {
           background_image_url: string | null
           created_at: string
           description: string | null
+          expires_at: string | null
           external_url: string | null
           file_name: string | null
           file_size: number | null
@@ -61,6 +62,7 @@ export type Database = {
           background_image_url?: string | null
           created_at?: string
           description?: string | null
+          expires_at?: string | null
           external_url?: string | null
           file_name?: string | null
           file_size?: number | null
@@ -79,6 +81,7 @@ export type Database = {
           background_image_url?: string | null
           created_at?: string
           description?: string | null
+          expires_at?: string | null
           external_url?: string | null
           file_name?: string | null
           file_size?: number | null

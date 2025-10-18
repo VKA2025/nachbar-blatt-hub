@@ -21,6 +21,7 @@ interface Flyer {
   info_type_id: string | null;
   background_image_url: string | null;
   neighbor_type: string | null;
+  expires_at: string | null;
   info_types?: {
     id: string;
     name: string;
@@ -102,6 +103,9 @@ export const SortableFlyerCard = ({
 
   const previewImageUrl = getPreviewImageUrl(flyer);
 
+  // Check if flyer is expired
+  const isExpired = flyer.expires_at && new Date(flyer.expires_at) < new Date();
+
   const handleComplaintClick = () => {
     if (!userProfile) return;
     
@@ -127,7 +131,7 @@ export const SortableFlyerCard = ({
     <Card 
       ref={setNodeRef}
       style={style}
-      className={`relative overflow-hidden hover:shadow-lg transition-shadow ${isDragging ? 'z-50' : ''} ${isCustomSort ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      className={`relative overflow-hidden hover:shadow-lg transition-shadow ${isDragging ? 'z-50' : ''} ${isCustomSort ? 'cursor-grab active:cursor-grabbing' : ''} ${isExpired && isAdmin ? 'border-4 border-red-600' : ''}`}
       {...(isCustomSort ? { ...attributes, ...listeners } : {})}
     >
       {/* Background Image */}

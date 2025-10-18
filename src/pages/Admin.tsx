@@ -60,6 +60,7 @@ const Admin = () => {
   const [emailTestResult, setEmailTestResult] = useState<string | null>(null);
   const [userEmails, setUserEmails] = useState<string[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<string>("alle");
+  const [expiresAt, setExpiresAt] = useState<string>("");
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -127,6 +128,7 @@ const Admin = () => {
       setTitle(editFlyer.title);
       setDescription(editFlyer.description || "");
       setSelectedInfoType(editFlyer.info_type_id || "");
+      setExpiresAt(editFlyer.expires_at || "");
       // Determine upload type based on flyer properties
       if (editFlyer.is_external) {
         setUploadType("url");
@@ -394,6 +396,7 @@ const Admin = () => {
           title: title.trim(),
           description: description.trim() || null,
           info_type_id: selectedInfoType || null,
+          expires_at: expiresAt || null,
         };
 
         // Update background image if new one was uploaded
@@ -534,6 +537,7 @@ const Admin = () => {
             external_url: null,
             info_type_id: validatedData.info_type_id,
             background_image_url: backgroundImageUrl,
+            expires_at: expiresAt || null,
           });
 
         if (dbError) {
@@ -569,6 +573,7 @@ const Admin = () => {
             file_size: null,
             info_type_id: validatedData.info_type_id,
             background_image_url: backgroundImageUrl,
+            expires_at: expiresAt || null,
           });
 
         if (dbError) {
@@ -601,6 +606,7 @@ const Admin = () => {
             external_url: null,
             info_type_id: validatedData.info_type_id,
             background_image_url: backgroundImageUrl,
+            expires_at: expiresAt || null,
           });
 
         if (dbError) {
@@ -621,6 +627,7 @@ const Admin = () => {
         setBackgroundImageFile(null);
         setExternalUrl("");
         setSelectedInfoType("");
+        setExpiresAt("");
         // Reset file inputs
         const fileInput = document.getElementById('file-input') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
@@ -921,6 +928,19 @@ const Admin = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="expires-at">Ablaufdatum (optional)</Label>
+                    <Input
+                      id="expires-at"
+                      type="date"
+                      value={expiresAt}
+                      onChange={(e) => setExpiresAt(e.target.value)}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Wenn leer, läuft die Kachel nicht ab. Nach dem Ablaufdatum wird sie nur noch für Admins sichtbar sein.
+                    </p>
                   </div>
 
                   <div className="space-y-2">
