@@ -184,7 +184,7 @@ export const SortableFlyerCard = ({
 
           {user && (
             <div className="space-y-2">
-              {flyer.info_types && flyer.info_types.name !== 'NachbarNetz' && flyer.info_types.name !== 'ohne' && (
+              {flyer.info_types && flyer.info_types.name !== 'NachbarNetz' && flyer.info_types.name !== 'ohne' && ((flyer.is_external && flyer.external_url) || (!flyer.is_external && flyer.file_url)) && (
                 <div className="flex space-x-2">
                   {flyer.is_external ? (
                     <div className="flex gap-2 w-full">
