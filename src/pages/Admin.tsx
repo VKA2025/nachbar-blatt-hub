@@ -332,10 +332,6 @@ const Admin = () => {
         title: "Versand erfolgreich",
         description: successMsg,
       });
-      
-      // Reset form on success
-      setCustomEmailSubject("");
-      setCustomEmailContent("");
     } catch (error) {
       console.error('Error sending custom email:', error);
       const errorMsg = `Fehler beim Versand: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`;
