@@ -176,7 +176,47 @@ async function sendEmailNotification(
   // Generate email HTML based on theme
   let emailHtml: string;
   
-  if (theme === 'christmas') {
+  if (theme === 'advent') {
+    emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${sanitizedSubject}</title>
+      </head>
+      <body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(180deg, #2d1b4e 0%, #1a0f33 100%); color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); overflow: hidden;">
+          <div style="padding: 40px 30px; text-align: center; background: linear-gradient(135deg, #4a1942 0%, #7d3c7b 100%); color: white; position: relative;">
+            <div style="font-size: 40px; margin-bottom: 10px;">🕯️✨</div>
+            <h1 style="margin: 0; font-size: 28px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">🕯️ ${sanitizedSubject}</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.95; font-size: 14px;">Eine besinnliche Adventszeit von Schlossstadt.Info</p>
+          </div>
+          
+          <div style="padding: 35px 30px; background: linear-gradient(180deg, #ffffff 0%, #f8f4ff 100%);">
+            <p style="margin: 0 0 25px 0; font-size: 16px; color: #4a1942;">Hallo ${displayName},</p>
+            
+            <div style="margin: 0 0 30px 0; line-height: 1.7; font-size: 15px; color: #333; padding: 20px; background-color: #fff; border-left: 4px solid #7d3c7b; border-radius: 4px;">
+              ${htmlContent}
+            </div>
+            
+            <div style="text-align: center; font-size: 30px; opacity: 0.6;">
+              🕯️ ⭐ 🕯️ ⭐ 🕯️
+            </div>
+          </div>
+          
+          <div style="padding: 25px 30px; background: linear-gradient(135deg, #4a1942 0%, #2d1b4e 100%); border-top: 2px solid #7d3c7b; color: white;">
+            <p style="margin: 0; font-size: 12px; text-align: center; opacity: 0.9;">
+              Du erhältst diese E-Mail, weil Du Benachrichtigungen aktiviert hast.<br>
+              Du kannst diese Einstellung jederzeit in Deinem Profil ändern.<br><br>
+              <span style="font-size: 16px;">🕯️ Eine besinnliche Adventszeit! 🕯️</span>
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  } else if (theme === 'christmas') {
     emailHtml = `
       <!DOCTYPE html>
       <html>

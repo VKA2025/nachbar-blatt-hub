@@ -1599,6 +1599,7 @@ const Admin = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="standard">Standard</SelectItem>
+                      <SelectItem value="advent">Advent 🕯️</SelectItem>
                       <SelectItem value="christmas">Weihnachten 🎄</SelectItem>
                     </SelectContent>
                   </Select>
