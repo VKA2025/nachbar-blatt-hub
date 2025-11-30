@@ -265,6 +265,10 @@ async function sendEmailNotification(
     await tlsWriter.write(encoder.encode(`RCPT TO:<${profile.email}>\r\n`));
     await tlsReader.read();
 
+    // RCPT TO (BCC)
+    await tlsWriter.write(encoder.encode(`RCPT TO:<info@schlossstadt.info>\r\n`));
+    await tlsReader.read();
+
     // DATA
     await tlsWriter.write(encoder.encode('DATA\r\n'));
     await tlsReader.read();
