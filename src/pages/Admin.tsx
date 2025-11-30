@@ -61,6 +61,11 @@ const Admin = () => {
   const [userEmails, setUserEmails] = useState<string[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<string>("alle");
   const [expiresAt, setExpiresAt] = useState<string>("");
+  const [customEmailSubject, setCustomEmailSubject] = useState<string>("");
+  const [customEmailContent, setCustomEmailContent] = useState<string>("");
+  const [sendingCustomEmail, setSendingCustomEmail] = useState(false);
+  const [customEmailResult, setCustomEmailResult] = useState<string | null>(null);
+  const [customEmailRecipient, setCustomEmailRecipient] = useState<string>("alle");
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -115,8 +120,8 @@ const Admin = () => {
       loadUsers();
     }
 
-    // Load user emails for waste notifications
-    if (activeTab === "waste") {
+    // Load user emails for waste notifications and custom email sending
+    if (activeTab === "waste" || activeTab === "email-send") {
       loadUserEmails();
     }
 
@@ -290,6 +295,58 @@ const Admin = () => {
       });
     } finally {
       setTestingEmail(false);
+    }
+  };
+
+  const handleSendCustomEmail = async () => {
+    if (!customEmailContent.trim()) {
+      toast({
+        title: "Fehler",
+        description: "Bitte geben Sie einen E-Mail-Inhalt ein.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setSendingCustomEmail(true);
+      setCustomEmailResult(null);
+      
+      const body = {
+        subject: customEmailSubject.trim() || "Nachricht von Schlossstadt.Info",
+        content: customEmailContent.trim(),
+        ...(customEmailRecipient !== "alle" && { testEmail: customEmailRecipient })
+      };
+      
+      const { data, error } = await supabase.functions.invoke('send-custom-email', {
+        body
+      });
+      
+      if (error) throw error;
+      
+      const successMsg = customEmailRecipient !== "alle" 
+        ? `E-Mail wurde erfolgreich an ${customEmailRecipient} versendet!`
+        : 'E-Mails wurden erfolgreich versendet!';
+      setCustomEmailResult(successMsg);
+      toast({
+        title: "Versand erfolgreich",
+        description: successMsg,
+      });
+      
+      // Reset form on success
+      setCustomEmailSubject("");
+      setCustomEmailContent("");
+    } catch (error) {
+      console.error('Error sending custom email:', error);
+      const errorMsg = `Fehler beim Versand: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`;
+      setCustomEmailResult(errorMsg);
+      toast({
+        title: "Versand fehlgeschlagen",
+        description: errorMsg,
+        variant: "destructive",
+      });
+    } finally {
+      setSendingCustomEmail(false);
     }
   };
 
@@ -866,10 +923,11 @@ const Admin = () => {
               <TabsTrigger value="neighbor-items">Nachbar-Artikel</TabsTrigger>
               <TabsTrigger value="categories">Kategorien</TabsTrigger>
             </TabsList>
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="subcategories">Unterkategorien</TabsTrigger>
               <TabsTrigger value="streets">Straßendaten</TabsTrigger>
               <TabsTrigger value="waste">Abfallkalender</TabsTrigger>
+              <TabsTrigger value="email-send">Mailversand</TabsTrigger>
             </TabsList>
           </div>
 
@@ -1487,6 +1545,104 @@ const Admin = () => {
 
                 <div className="text-xs text-muted-foreground">
                   <p><strong>Hinweis:</strong> Bestehende Abfallkalender-Daten werden vor dem Import gelöscht und durch die neuen Daten ersetzt.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="email-send">
+            <Card className="max-w-2xl mx-auto">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Upload className="w-5 h-5 mr-2" />
+                  Mailversand
+                </CardTitle>
+                <CardDescription>
+                  Senden Sie benutzerdefinierte E-Mails an alle Benutzer mit aktivierten E-Mail-Benachrichtigungen oder an eine spezifische E-Mail-Adresse.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="custom-email-subject">Betreffzeile</Label>
+                  <Input
+                    id="custom-email-subject"
+                    type="text"
+                    placeholder="z.B. Wichtige Mitteilung"
+                    value={customEmailSubject}
+                    onChange={(e) => setCustomEmailSubject(e.target.value)}
+                    maxLength={200}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Optional. Standard: "Nachricht von Schlossstadt.Info"
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="custom-email-content">Mail-Inhalt *</Label>
+                  <Textarea
+                    id="custom-email-content"
+                    placeholder="Geben Sie hier den Inhalt Ihrer E-Mail ein..."
+                    value={customEmailContent}
+                    onChange={(e) => setCustomEmailContent(e.target.value)}
+                    rows={10}
+                    maxLength={5000}
+                    required
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Erforderlich. Maximale Länge: 5000 Zeichen
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="custom-email-recipient">E-Mail-Adresse auswählen</Label>
+                  <Select value={customEmailRecipient} onValueChange={setCustomEmailRecipient}>
+                    <SelectTrigger id="custom-email-recipient">
+                      <SelectValue placeholder="E-Mail auswählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="alle">alle</SelectItem>
+                      {userEmails.map((email) => (
+                        <SelectItem key={email} value={email}>
+                          {email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    E-Mails werden nur an Benutzer mit aktivierten Benachrichtigungen gesendet.
+                  </p>
+                </div>
+
+                <Button
+                  onClick={handleSendCustomEmail}
+                  disabled={sendingCustomEmail || !customEmailContent.trim()}
+                  className="w-full"
+                >
+                  {sendingCustomEmail ? (
+                    <>
+                      <Upload className="w-4 h-4 mr-2 animate-spin" />
+                      Sende E-Mails...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      E-Mails versenden
+                    </>
+                  )}
+                </Button>
+
+                {customEmailResult && (
+                  <div className={`p-4 rounded-lg border ${
+                    customEmailResult.includes('erfolgreich') 
+                      ? 'bg-green-50 border-green-200 text-green-800' 
+                      : 'bg-red-50 border-red-200 text-red-800'
+                  }`}>
+                    <p className="text-sm font-medium">{customEmailResult}</p>
+                  </div>
+                )}
+
+                <div className="text-xs text-muted-foreground">
+                  <p><strong>Hinweis:</strong> Die E-Mails werden nur an Benutzer mit aktivierten E-Mail-Benachrichtigungen versendet.</p>
                 </div>
               </CardContent>
             </Card>
