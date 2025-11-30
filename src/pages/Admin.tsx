@@ -63,6 +63,7 @@ const Admin = () => {
   const [expiresAt, setExpiresAt] = useState<string>("");
   const [customEmailSubject, setCustomEmailSubject] = useState<string>("");
   const [customEmailContent, setCustomEmailContent] = useState<string>("");
+  const [customEmailTheme, setCustomEmailTheme] = useState<string>("standard");
   const [sendingCustomEmail, setSendingCustomEmail] = useState(false);
   const [customEmailResult, setCustomEmailResult] = useState<string | null>(null);
   const [customEmailRecipient, setCustomEmailRecipient] = useState<string>("alle");
@@ -315,6 +316,7 @@ const Admin = () => {
       const body = {
         subject: customEmailSubject.trim() || "Nachricht von Schlossstadt.Info",
         content: customEmailContent.trim(),
+        theme: customEmailTheme,
         ...(customEmailRecipient !== "alle" && { testEmail: customEmailRecipient })
       };
       
@@ -1586,6 +1588,22 @@ const Admin = () => {
                   />
                   <p className="text-sm text-muted-foreground">
                     Erforderlich. Maximale Länge: 5000 Zeichen
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="custom-email-theme">Mail-Theme</Label>
+                  <Select value={customEmailTheme} onValueChange={setCustomEmailTheme}>
+                    <SelectTrigger id="custom-email-theme">
+                      <SelectValue placeholder="Theme auswählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="standard">Standard</SelectItem>
+                      <SelectItem value="christmas">Weihnachten 🎄</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    Wählen Sie das Design für Ihre E-Mail aus.
                   </p>
                 </div>
 
