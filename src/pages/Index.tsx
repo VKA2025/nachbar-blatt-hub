@@ -637,7 +637,7 @@ const Index = () => {
       >
         <div className="absolute inset-0 bg-background/60"></div>
         <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-primary-dark font-christmas">🎅 Aktuelles aus Brühl 🎁</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-primary-dark font-christmas">🎄 Aktuelles aus Brühl 🎄</h2>
           <p className="text-lg md:text-xl text-primary-dark max-w-2xl mx-auto">
             Entdecke die neuesten Angebote und Informationen aus Deiner Nachbarschaft.
             {!user && " Melde Dich an, um alle Funktionen zu nutzen."}
