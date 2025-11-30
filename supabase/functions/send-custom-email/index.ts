@@ -22,10 +22,11 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log('Starting custom email sending...');
     
-    // Parse request body for subject, content, and optional testEmail parameter
+    // Parse request body for subject, content, theme, and optional testEmail parameter
     const body = await req.json();
     const customSubject = body?.subject || 'Nachricht von Schlossstadt.Info';
     const customContent = body?.content || '';
+    const customTheme = body?.theme || 'standard';
     const testEmail: string | null = body?.testEmail || null;
     
     if (!customContent.trim()) {
@@ -94,7 +95,7 @@ const handler = async (req: Request): Promise<Response> => {
     for (const profile of profiles) {
       try {
         // Send email notification
-        await sendEmailNotification(profile, customSubject, customContent, smtpHost, smtpUser, smtpPass);
+        await sendEmailNotification(profile, customSubject, customContent, customTheme, smtpHost, smtpUser, smtpPass);
         emailsSent++;
         console.log(`Email sent to ${profile.email}`);
 
@@ -148,6 +149,7 @@ async function sendEmailNotification(
   profile: UserProfile,
   subject: string,
   content: string,
+  theme: string,
   smtpHost: string,
   smtpUser: string,
   smtpPass: string
@@ -171,39 +173,85 @@ async function sendEmailNotification(
   // Convert line breaks to HTML breaks
   const htmlContent = sanitizedContent.replace(/\n/g, '<br>');
 
-  const emailHtml = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${sanitizedSubject}</title>
-    </head>
-    <body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f9fa; color: #333;">
-      <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <div style="padding: 30px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px 8px 0 0;">
-          <h1 style="margin: 0; font-size: 24px; font-weight: bold;">📧 ${sanitizedSubject}</h1>
-          <p style="margin: 10px 0 0 0; opacity: 0.9;">Nachricht von Schlossstadt.Info</p>
-        </div>
-        
-        <div style="padding: 30px;">
-          <p style="margin: 0 0 20px 0; font-size: 16px;">Hallo ${displayName},</p>
+  // Generate email HTML based on theme
+  let emailHtml: string;
+  
+  if (theme === 'christmas') {
+    emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${sanitizedSubject}</title>
+      </head>
+      <body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(180deg, #1a472a 0%, #0d2818 100%); color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); overflow: hidden;">
+          <div style="padding: 40px 30px; text-align: center; background: linear-gradient(135deg, #c41e3a 0%, #165b33 100%); color: white; position: relative;">
+            <div style="font-size: 40px; margin-bottom: 10px;">🎄✨</div>
+            <h1 style="margin: 0; font-size: 28px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">🎅 ${sanitizedSubject}</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.95; font-size: 14px;">Frohe Weihnachten von Schlossstadt.Info 🎁</p>
+          </div>
           
-          <div style="margin: 0 0 25px 0; line-height: 1.6; font-size: 15px;">
-            ${htmlContent}
+          <div style="padding: 35px 30px; background: linear-gradient(180deg, #ffffff 0%, #fffef8 100%);">
+            <p style="margin: 0 0 25px 0; font-size: 16px; color: #2d5016;">Hallo ${displayName},</p>
+            
+            <div style="margin: 0 0 30px 0; line-height: 1.7; font-size: 15px; color: #333; padding: 20px; background-color: #fff; border-left: 4px solid #c41e3a; border-radius: 4px;">
+              ${htmlContent}
+            </div>
+            
+            <div style="text-align: center; font-size: 30px; opacity: 0.6;">
+              ❄️ ⭐ 🎄 ⭐ ❄️
+            </div>
+          </div>
+          
+          <div style="padding: 25px 30px; background: linear-gradient(135deg, #165b33 0%, #0d2818 100%); border-top: 2px solid #c41e3a; color: white;">
+            <p style="margin: 0; font-size: 12px; text-align: center; opacity: 0.9;">
+              Du erhältst diese E-Mail, weil Du Benachrichtigungen aktiviert hast.<br>
+              Du kannst diese Einstellung jederzeit in Deinem Profil ändern.<br><br>
+              <span style="font-size: 16px;">🎄 Frohe Weihnachten! 🎄</span>
+            </p>
           </div>
         </div>
-        
-        <div style="padding: 20px 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e5e5;">
-          <p style="margin: 0; font-size: 12px; color: #6c757d; text-align: center;">
-            Du erhältst diese E-Mail, weil Du Benachrichtigungen aktiviert hast.<br>
-            Du kannst diese Einstellung jederzeit in Deinem Profil ändern.
-          </p>
+      </body>
+      </html>
+    `;
+  } else {
+    // Standard theme
+    emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${sanitizedSubject}</title>
+      </head>
+      <body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f9fa; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="padding: 30px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: bold;">📧 ${sanitizedSubject}</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Nachricht von Schlossstadt.Info</p>
+          </div>
+          
+          <div style="padding: 30px;">
+            <p style="margin: 0 0 20px 0; font-size: 16px;">Hallo ${displayName},</p>
+            
+            <div style="margin: 0 0 25px 0; line-height: 1.6; font-size: 15px;">
+              ${htmlContent}
+            </div>
+          </div>
+          
+          <div style="padding: 20px 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e5e5;">
+            <p style="margin: 0; font-size: 12px; color: #6c757d; text-align: center;">
+              Du erhältst diese E-Mail, weil Du Benachrichtigungen aktiviert hast.<br>
+              Du kannst diese Einstellung jederzeit in Deinem Profil ändern.
+            </p>
+          </div>
         </div>
-      </div>
-    </body>
-    </html>
-  `;
+      </body>
+      </html>
+    `;
+  }
 
   // Send email via SMTP
   const encoder = new TextEncoder();
