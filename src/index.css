@@ -8,9 +8,9 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 210 40% 96%;
+    --background: 355 85% 97%;
     --foreground: 222.2 84% 4.9%;
-    --winter-gradient: linear-gradient(135deg, hsl(210 50% 94%) 0%, hsl(200 60% 92%) 50%, hsl(210 50% 94%) 100%);
+    --winter-gradient: linear-gradient(135deg, hsl(355 70% 95%) 0%, hsl(140 40% 95%) 20%, hsl(355 70% 96%) 40%, hsl(45 90% 96%) 60%, hsl(355 70% 95%) 80%, hsl(140 40% 95%) 100%);
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -58,9 +58,9 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 220 40% 12%;
+    --background: 355 30% 15%;
     --foreground: 210 40% 98%;
-    --winter-gradient: linear-gradient(135deg, hsl(220 40% 10%) 0%, hsl(210 50% 14%) 50%, hsl(220 40% 10%) 100%);
+    --winter-gradient: linear-gradient(135deg, hsl(355 40% 12%) 0%, hsl(140 30% 15%) 20%, hsl(355 40% 14%) 40%, hsl(45 50% 18%) 60%, hsl(355 40% 12%) 80%, hsl(140 30% 15%) 100%);
 
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
@@ -110,6 +110,28 @@ All colors MUST be HSL.
   }
   
   body::before {
+    content: "❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐ ❄️ ⭐";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    font-size: 2rem;
+    line-height: 4rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    opacity: 0.4;
+    color: hsl(0 0% 100%);
+    text-shadow: 0 0 10px hsl(45 100% 70%), 0 0 20px hsl(200 100% 70%);
+  }
+  
+  .dark body::before {
+    opacity: 0.3;
+  }
+  
+  body::after {
     content: "";
     position: fixed;
     top: 0;
@@ -119,29 +141,24 @@ All colors MUST be HSL.
     pointer-events: none;
     z-index: 0;
     background-image: 
-      radial-gradient(3px 3px at 15% 20%, hsl(200 100% 95% / 0.6), transparent),
-      radial-gradient(2px 2px at 45% 15%, hsl(200 100% 95% / 0.5), transparent),
-      radial-gradient(3px 3px at 70% 25%, hsl(200 100% 95% / 0.6), transparent),
-      radial-gradient(2px 2px at 25% 45%, hsl(200 100% 95% / 0.5), transparent),
-      radial-gradient(3px 3px at 85% 50%, hsl(200 100% 95% / 0.6), transparent),
-      radial-gradient(2px 2px at 60% 70%, hsl(200 100% 95% / 0.5), transparent),
-      radial-gradient(3px 3px at 30% 75%, hsl(200 100% 95% / 0.6), transparent),
-      radial-gradient(2px 2px at 80% 85%, hsl(200 100% 95% / 0.5), transparent),
-      radial-gradient(2px 2px at 50% 90%, hsl(200 100% 95% / 0.5), transparent);
-    background-size: 400px 400px;
-  }
-  
-  .dark body::before {
-    background-image: 
-      radial-gradient(3px 3px at 15% 20%, hsl(200 100% 90% / 0.35), transparent),
-      radial-gradient(2px 2px at 45% 15%, hsl(200 100% 90% / 0.3), transparent),
-      radial-gradient(3px 3px at 70% 25%, hsl(200 100% 90% / 0.35), transparent),
-      radial-gradient(2px 2px at 25% 45%, hsl(200 100% 90% / 0.3), transparent),
-      radial-gradient(3px 3px at 85% 50%, hsl(200 100% 90% / 0.35), transparent),
-      radial-gradient(2px 2px at 60% 70%, hsl(200 100% 90% / 0.3), transparent),
-      radial-gradient(3px 3px at 30% 75%, hsl(200 100% 90% / 0.35), transparent),
-      radial-gradient(2px 2px at 80% 85%, hsl(200 100% 90% / 0.3), transparent),
-      radial-gradient(2px 2px at 50% 90%, hsl(200 100% 90% / 0.3), transparent);
-    background-size: 400px 400px;
+      radial-gradient(5px 5px at 10% 15%, hsl(0 80% 60% / 0.4), transparent),
+      radial-gradient(6px 6px at 25% 8%, hsl(45 90% 60% / 0.4), transparent),
+      radial-gradient(4px 4px at 40% 20%, hsl(200 100% 80% / 0.5), transparent),
+      radial-gradient(5px 5px at 55% 12%, hsl(0 80% 60% / 0.4), transparent),
+      radial-gradient(6px 6px at 70% 18%, hsl(140 60% 50% / 0.4), transparent),
+      radial-gradient(4px 4px at 85% 10%, hsl(200 100% 80% / 0.5), transparent),
+      radial-gradient(5px 5px at 15% 45%, hsl(140 60% 50% / 0.4), transparent),
+      radial-gradient(6px 6px at 30% 38%, hsl(45 90% 60% / 0.4), transparent),
+      radial-gradient(4px 4px at 45% 50%, hsl(200 100% 80% / 0.5), transparent),
+      radial-gradient(5px 5px at 60% 42%, hsl(0 80% 60% / 0.4), transparent),
+      radial-gradient(6px 6px at 75% 48%, hsl(140 60% 50% / 0.4), transparent),
+      radial-gradient(4px 4px at 90% 40%, hsl(200 100% 80% / 0.5), transparent),
+      radial-gradient(5px 5px at 20% 75%, hsl(45 90% 60% / 0.4), transparent),
+      radial-gradient(6px 6px at 35% 68%, hsl(0 80% 60% / 0.4), transparent),
+      radial-gradient(4px 4px at 50% 80%, hsl(200 100% 80% / 0.5), transparent),
+      radial-gradient(5px 5px at 65% 72%, hsl(140 60% 50% / 0.4), transparent),
+      radial-gradient(6px 6px at 80% 78%, hsl(45 90% 60% / 0.4), transparent),
+      radial-gradient(4px 4px at 92% 70%, hsl(200 100% 80% / 0.5), transparent);
+    background-size: 300px 300px;
   }
 }
