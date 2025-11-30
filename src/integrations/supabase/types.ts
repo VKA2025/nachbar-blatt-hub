@@ -563,7 +563,7 @@ export type Database = {
         }[]
       }
       get_user_statistics: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           recent_signups: number
           total_users: number
