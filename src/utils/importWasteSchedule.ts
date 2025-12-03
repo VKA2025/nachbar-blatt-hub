@@ -72,28 +72,20 @@ export async function importWasteSchedule(csvContent: string) {
   
   console.log(`Importing ${data.length} waste collection schedule records...`);
   
-  // Clear existing data first
-  const { error: deleteError } = await supabase
-    .from('waste_collection_schedule')
-    .delete()
-    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
-    
-  if (deleteError) {
-    console.error('Error clearing existing data:', deleteError);
-    throw deleteError;
-  }
-  
-  // Insert data in batches of 100
+  // Upsert data in batches of 100 (no deletion needed)
   const batchSize = 100;
   for (let i = 0; i < data.length; i += batchSize) {
     const batch = data.slice(i, i + batchSize);
     
     const { error } = await supabase
       .from('waste_collection_schedule')
-      .insert(batch);
+      .upsert(batch, {
+        onConflict: 'collection_date,waste_type,district',
+        ignoreDuplicates: false
+      });
     
     if (error) {
-      console.error('Error inserting batch:', error);
+      console.error('Error upserting batch:', error);
       throw error;
     }
     

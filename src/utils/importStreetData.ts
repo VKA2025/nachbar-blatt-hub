@@ -42,10 +42,13 @@ export async function importStreetData(csvContent: string, year: number = 2025) 
     
     const { error } = await supabase
       .from('street_districts')
-      .insert(batch);
+      .upsert(batch, { 
+        onConflict: 'street_name,notes,district,year',
+        ignoreDuplicates: false 
+      });
     
     if (error) {
-      console.error('Error inserting batch:', error);
+      console.error('Error upserting batch:', error);
       throw error;
     }
     
