@@ -54,6 +54,7 @@ const Admin = () => {
   const [editingUser, setEditingUser] = useState<any>(null);
   const [importingStreets, setImportingStreets] = useState(false);
   const [importResult, setImportResult] = useState<string | null>(null);
+  const [streetImportYear, setStreetImportYear] = useState<number>(new Date().getFullYear());
   const [importingWaste, setImportingWaste] = useState(false);
   const [wasteImportResult, setWasteImportResult] = useState<string | null>(null);
   const [testingEmail, setTestingEmail] = useState(false);
@@ -188,7 +189,7 @@ const Admin = () => {
       const response = await fetch('/data/strassen_Bezirke.csv');
       const csvContent = await response.text();
       
-      const recordCount = await importStreetData(csvContent);
+      const recordCount = await importStreetData(csvContent, streetImportYear);
       
       setImportResult(`Erfolgreich ${recordCount} Straßen-Bezirk-Zuordnungen importiert!`);
       
@@ -1384,13 +1385,22 @@ const Admin = () => {
                     <li><code>Bemerkung</code> - Zusätzliche Hinweise (optional)</li>
                     <li><code>Bezirk</code> - Bezirks-Code (Zahl oder Buchstabe)</li>
                   </ul>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Das Jahr 2025 wird automatisch zu allen Einträgen hinzugefügt.
-                  </p>
                 </div>
 
                 <div className="space-y-4">
-                  <Button 
+                  <div className="flex items-center gap-4">
+                    <Label htmlFor="streetImportYear" className="whitespace-nowrap">Jahr:</Label>
+                    <Input
+                      id="streetImportYear"
+                      type="number"
+                      min={2020}
+                      max={2100}
+                      value={streetImportYear}
+                      onChange={(e) => setStreetImportYear(parseInt(e.target.value) || new Date().getFullYear())}
+                      className="w-24"
+                    />
+                  </div>
+                  <Button
                     onClick={handleImportStreetData}
                     disabled={importingStreets}
                     className="w-full"

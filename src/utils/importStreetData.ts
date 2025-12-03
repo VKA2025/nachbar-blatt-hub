@@ -7,7 +7,7 @@ interface StreetDistrictRow {
   year: number;
 }
 
-export async function importStreetData(csvContent: string) {
+export async function importStreetData(csvContent: string, year: number = 2025) {
   const lines = csvContent.split('\n');
   const data: StreetDistrictRow[] = [];
   
@@ -27,7 +27,7 @@ export async function importStreetData(csvContent: string) {
           street_name: streetName,
           notes: notes,
           district: district,
-          year: 2025
+          year: year
         });
       }
     }
