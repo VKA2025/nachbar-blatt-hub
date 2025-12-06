@@ -38,6 +38,33 @@ export type Database = {
         }
         Relationships: []
       }
+      flyer_button_clicks: {
+        Row: {
+          button_name: string
+          created_at: string
+          flyer_title: string
+          id: string
+          info_type: string | null
+          user_email: string | null
+        }
+        Insert: {
+          button_name: string
+          created_at?: string
+          flyer_title: string
+          id?: string
+          info_type?: string | null
+          user_email?: string | null
+        }
+        Update: {
+          button_name?: string
+          created_at?: string
+          flyer_title?: string
+          id?: string
+          info_type?: string | null
+          user_email?: string | null
+        }
+        Relationships: []
+      }
       flyers: {
         Row: {
           background_image_url: string | null
