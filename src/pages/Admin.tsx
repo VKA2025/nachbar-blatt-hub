@@ -56,6 +56,7 @@ const Admin = () => {
   const [importResult, setImportResult] = useState<string | null>(null);
   const [streetImportYear, setStreetImportYear] = useState<number>(new Date().getFullYear());
   const [importingWaste, setImportingWaste] = useState(false);
+  const [wasteImportFile, setWasteImportFile] = useState<File | null>(null);
   const [wasteImportResult, setWasteImportResult] = useState<string | null>(null);
   const [testingEmail, setTestingEmail] = useState(false);
   const [emailTestResult, setEmailTestResult] = useState<string | null>(null);
@@ -212,18 +213,41 @@ const Admin = () => {
     }
   };
 
+  const handleWasteFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      if (!selectedFile.name.endsWith('.csv')) {
+        toast({
+          title: "Ungültiger Dateityp",
+          description: "Bitte wählen Sie eine CSV-Datei aus.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setWasteImportFile(selectedFile);
+    }
+  };
+
   const handleImportWasteSchedule = async () => {
+    if (!wasteImportFile) {
+      toast({
+        title: "Keine Datei ausgewählt",
+        description: "Bitte wählen Sie eine CSV-Datei aus.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setImportingWaste(true);
     setWasteImportResult(null);
     
     try {
-      // Read the CSV file from public/data
-      const response = await fetch('/data/Abholdatum_Bezirke.csv');
-      const csvContent = await response.text();
+      const csvContent = await wasteImportFile.text();
       
       const recordCount = await importWasteSchedule(csvContent);
       
       setWasteImportResult(`Erfolgreich ${recordCount} Abfallkalender-Einträge importiert!`);
+      setWasteImportFile(null);
       
       toast({
         title: "Import erfolgreich",
@@ -1451,25 +1475,39 @@ const Admin = () => {
                 <div className="p-4 bg-muted rounded-lg">
                   <h3 className="font-medium mb-2">CSV-Datei Format</h3>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Die CSV-Datei sollte folgende Spalten enthalten:
+                    Die CSV-Datei sollte folgende Spalten enthalten (kommagetrennt):
                   </p>
                   <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                    <li><code>Abholdatum</code> - Datum im Format DD.MM.YYYY</li>
-                    <li><code>Wochentag</code> - Wochentag der Abholung</li>
-                    <li><code>Restmülltonne</code> - Bezirke für Restmüll</li>
-                    <li><code>Gelber Sack</code> - Bezirke für Gelben Sack</li>
-                    <li><code>Papiertonne</code> - Bezirke für Papiertonne</li>
-                    <li><code>Biotonne</code> - Bezirke für Biotonne</li>
+                    <li><code>Datum</code> - Datum im Format DD.MM.YYYY</li>
+                    <li><code>Wochentag</code> - Wochentag der Abholung (z.B. Fr, Sa)</li>
+                    <li><code>Müllart</code> - Restmüll, Gelber Sack, Papier, Biotonne oder Straßenlaub</li>
+                    <li><code>Bezirk</code> - Bezirksnummer</li>
                   </ul>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Die Bezirke in den Spalten 3-6 werden mit der street_districts-Tabelle verknüpft.
+                    Beispiel: <code>02.01.2026,Fr,Restmüll,8</code>
                   </p>
                 </div>
 
                 <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="waste-file">CSV-Datei auswählen</Label>
+                    <Input
+                      id="waste-file"
+                      type="file"
+                      accept=".csv"
+                      onChange={handleWasteFileChange}
+                      className="cursor-pointer"
+                    />
+                    {wasteImportFile && (
+                      <p className="text-sm text-muted-foreground">
+                        Ausgewählt: {wasteImportFile.name}
+                      </p>
+                    )}
+                  </div>
+
                   <Button 
                     onClick={handleImportWasteSchedule}
-                    disabled={importingWaste}
+                    disabled={importingWaste || !wasteImportFile}
                     className="w-full"
                   >
                     {importingWaste ? (

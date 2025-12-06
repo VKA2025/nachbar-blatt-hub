@@ -7,6 +7,15 @@ interface WasteScheduleRow {
   district: string;
 }
 
+// Mapping von CSV-Abfallarten zu DB-Werten
+const wasteTypeMapping: Record<string, string> = {
+  'Restmüll': 'Restmülltonne',
+  'Gelber Sack': 'Gelber Sack',
+  'Papier': 'Papiertonne',
+  'Biotonne': 'Biotonne',
+  'Straßenlaub': 'Straßenlaub',
+};
+
 export async function importWasteSchedule(csvContent: string) {
   const lines = csvContent.split('\n');
   const data: WasteScheduleRow[] = [];
@@ -16,63 +25,39 @@ export async function importWasteSchedule(csvContent: string) {
     const line = lines[i].trim();
     if (!line) continue;
     
-    const parts = line.split(';');
-    if (parts.length >= 6) {
+    // New format: Datum,Wochentag,Müllart,Bezirk (comma-separated)
+    const parts = line.split(',');
+    if (parts.length >= 4) {
       const dateStr = parts[0]?.trim();
       const dayOfWeek = parts[1]?.trim();
-      const restmuell = parts[2]?.trim();
-      const gelberSack = parts[3]?.trim();
-      const papier = parts[4]?.trim();
-      const bio = parts[5]?.trim();
+      const wasteTypeRaw = parts[2]?.trim();
+      const district = parts[3]?.trim();
       
-      if (dateStr && dayOfWeek) {
+      if (dateStr && dayOfWeek && wasteTypeRaw && district) {
         // Convert German date format (DD.MM.YYYY) to ISO format (YYYY-MM-DD)
         const [day, month, year] = dateStr.split('.');
+        if (!day || !month || !year) {
+          console.warn(`Skipping line ${i + 1}: Invalid date format "${dateStr}"`);
+          continue;
+        }
         const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
         
-        // Add entry for each waste type if district is specified
-        if (restmuell) {
-          data.push({
-            collection_date: isoDate,
-            day_of_week: dayOfWeek,
-            waste_type: 'Restmülltonne',
-            district: restmuell
-          });
-        }
+        // Map waste type to DB value
+        const wasteType = wasteTypeMapping[wasteTypeRaw] || wasteTypeRaw;
         
-        if (gelberSack) {
-          data.push({
-            collection_date: isoDate,
-            day_of_week: dayOfWeek,
-            waste_type: 'Gelber Sack',
-            district: gelberSack
-          });
-        }
-        
-        if (papier) {
-          data.push({
-            collection_date: isoDate,
-            day_of_week: dayOfWeek,
-            waste_type: 'Papiertonne',
-            district: papier
-          });
-        }
-        
-        if (bio) {
-          data.push({
-            collection_date: isoDate,
-            day_of_week: dayOfWeek,
-            waste_type: 'Biotonne',
-            district: bio
-          });
-        }
+        data.push({
+          collection_date: isoDate,
+          day_of_week: dayOfWeek,
+          waste_type: wasteType,
+          district: district
+        });
       }
     }
   }
   
   console.log(`Importing ${data.length} waste collection schedule records...`);
   
-  // Upsert data in batches of 100 (no deletion needed)
+  // Upsert data in batches of 100
   const batchSize = 100;
   for (let i = 0; i < data.length; i += batchSize) {
     const batch = data.slice(i, i + batchSize);
