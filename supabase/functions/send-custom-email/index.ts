@@ -206,6 +206,9 @@ async function sendEmailNotification(
           </div>
           
           <div style="padding: 25px 30px; background: linear-gradient(135deg, #4a1942 0%, #2d1b4e 100%); border-top: 2px solid #7d3c7b; color: white;">
+            <p style="margin: 0 0 15px 0; font-size: 14px; text-align: center;">
+              Entdecke auch unsere neuesten Inhalte auf <a href="https://www.schlossstadt.info" style="color: #d4a5d9; text-decoration: underline;">www.schlossstadt.info</a>!
+            </p>
             <p style="margin: 0; font-size: 12px; text-align: center; opacity: 0.9;">
               Du erhältst diese E-Mail, weil Du Benachrichtigungen aktiviert hast.<br>
               Du kannst diese Einstellung jederzeit in Deinem Profil ändern.<br><br>
@@ -246,6 +249,9 @@ async function sendEmailNotification(
           </div>
           
           <div style="padding: 25px 30px; background: linear-gradient(135deg, #165b33 0%, #0d2818 100%); border-top: 2px solid #c41e3a; color: white;">
+            <p style="margin: 0 0 15px 0; font-size: 14px; text-align: center;">
+              Entdecke auch unsere neuesten Inhalte auf <a href="https://www.schlossstadt.info" style="color: #90EE90; text-decoration: underline;">www.schlossstadt.info</a>!
+            </p>
             <p style="margin: 0; font-size: 12px; text-align: center; opacity: 0.9;">
               Du erhältst diese E-Mail, weil Du Benachrichtigungen aktiviert hast.<br>
               Du kannst diese Einstellung jederzeit in Deinem Profil ändern.<br><br>
@@ -282,6 +288,9 @@ async function sendEmailNotification(
           </div>
           
           <div style="padding: 20px 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e5e5;">
+            <p style="margin: 0 0 15px 0; font-size: 14px; color: #333; text-align: center;">
+              Entdecke auch unsere neuesten Inhalte auf <a href="https://www.schlossstadt.info" style="color: #667eea; text-decoration: underline;">www.schlossstadt.info</a>!
+            </p>
             <p style="margin: 0; font-size: 12px; color: #6c757d; text-align: center;">
               Du erhältst diese E-Mail, weil Du Benachrichtigungen aktiviert hast.<br>
               Du kannst diese Einstellung jederzeit in Deinem Profil ändern.

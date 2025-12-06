@@ -336,6 +336,9 @@ async function sendEmailNotification(
         </div>
         
         <div style="padding: 20px 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e5e5;">
+          <p style="margin: 0 0 15px 0; font-size: 14px; color: #333; text-align: center;">
+            Entdecke auch unsere neuesten Inhalte auf <a href="https://www.schlossstadt.info" style="color: #667eea; text-decoration: underline;">www.schlossstadt.info</a>!
+          </p>
           <p style="margin: 0; font-size: 12px; color: #6c757d; text-align: center;">
             Du erhältst diese E-Mail, weil Du Benachrichtigungen aktiviert hast.<br>
             Du kannst diese Einstellung jederzeit in Deinem Profil ändern.
