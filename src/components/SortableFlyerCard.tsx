@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, FileText, Download, Eye, ExternalLink, GripVertical, Edit, Trash2, Info, Search, Package, FileQuestion } from "lucide-react";
 import { NeighborOfferDialog } from "@/components/NeighborOfferDialog";
-
+import { supabase } from "@/integrations/supabase/client";
 interface Flyer {
   id: string;
   title: string;
@@ -106,19 +106,30 @@ export const SortableFlyerCard = ({
   // Check if flyer is expired
   const isExpired = flyer.expires_at && new Date(flyer.expires_at) < new Date();
 
+  // Track button clicks
+  const trackButtonClick = async (buttonName: string) => {
+    if (!userProfile?.email) return;
+    
+    try {
+      await supabase.from('flyer_button_clicks').insert({
+        flyer_title: flyer.title,
+        info_type: flyer.info_types?.name || null,
+        button_name: buttonName,
+        user_email: userProfile.email
+      });
+    } catch (error) {
+      console.error('Error tracking button click:', error);
+    }
+  };
+
   const handleComplaintClick = () => {
     if (!userProfile) return;
+    
+    trackButtonClick('Papierversion abbestellen');
     
     // Build the URL with pre-filled data
     const baseUrl = "https://www.rag-koeln.de/WebAdRAG/de-de/14/Reklamation";
     const params = new URLSearchParams();
-    
-    // Pre-fill with profile data using correct field names
-    //if (userProfile.first_name) params.append('Vorname', userProfile.first_name);
-    //if (userProfile.last_name) params.append('Nachname', userProfile.last_name);
-    //if (userProfile.email) params.append('Email', userProfile.email);
-    //if (userProfile.street) params.append('Strasse', userProfile.street);
-    //if (userProfile.house_number) params.append('HsNr', userProfile.house_number);
     
     // Pre-fill the reason with the correct field name and value
     params.append('GewaehlterGrund', '5');
@@ -195,7 +206,10 @@ export const SortableFlyerCard = ({
                       <Button
                         variant="default"
                         size="sm"
-                        onClick={() => onViewFlyer(flyer)}
+                        onClick={() => {
+                          trackButtonClick('Link öffnen');
+                          onViewFlyer(flyer);
+                        }}
                         className="flex-1"
                       >
                         <ExternalLink className="w-4 h-4 mr-2" />
@@ -215,7 +229,10 @@ export const SortableFlyerCard = ({
                       <Button
                         variant="default"
                         size="sm"
-                        onClick={() => onViewFlyer(flyer)}
+                        onClick={() => {
+                          trackButtonClick('Anzeigen');
+                          onViewFlyer(flyer);
+                        }}
                         className="flex-1"
                       >
                         <Eye className="w-4 h-4 mr-2" />
@@ -224,7 +241,10 @@ export const SortableFlyerCard = ({
                       <Button
                         variant="default"
                         size="sm"
-                        onClick={() => onDownloadFlyer(flyer)}
+                        onClick={() => {
+                          trackButtonClick('Download');
+                          onDownloadFlyer(flyer);
+                        }}
                         className="flex-1"
                       >
                         <Download className="w-4 h-4 mr-2" />
@@ -275,7 +295,10 @@ export const SortableFlyerCard = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open('/abholtermine', '_self')}
+                      onClick={() => {
+                        trackButtonClick('Meine Abholtermine');
+                        window.open('/abholtermine', '_self');
+                      }}
                       className="flex-1"
                     >
                       Meine Abholtermine
@@ -303,7 +326,10 @@ export const SortableFlyerCard = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(`/nachbar-angebote?type=${encodeURIComponent(flyer.neighbor_type || '')}`, '_self')}
+                      onClick={() => {
+                        trackButtonClick('Angebote suchen');
+                        window.open(`/nachbar-angebote?type=${encodeURIComponent(flyer.neighbor_type || '')}`, '_self');
+                      }}
                       className="flex-1"
                     >
                       <Search className="w-4 h-4 mr-2" />
@@ -328,7 +354,10 @@ export const SortableFlyerCard = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setShowOfferDialog(true)}
+                      onClick={() => {
+                        trackButtonClick('Ich biete');
+                        setShowOfferDialog(true);
+                      }}
                       className="flex-1"
                     >
                       <Package className="w-4 h-4 mr-2" />
@@ -363,7 +392,10 @@ export const SortableFlyerCard = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open('/mein-bereich', '_self')}
+                      onClick={() => {
+                        trackButtonClick('Mein Bereich');
+                        window.open('/mein-bereich', '_self');
+                      }}
                       className="flex-1"
                     >
                       <FileQuestion className="w-4 h-4 mr-2" />
