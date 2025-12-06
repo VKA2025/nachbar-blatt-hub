@@ -79,6 +79,8 @@ const handler = async (req: Request): Promise<Response> => {
         
         <p>Bitte überprüfen Sie das Angebot im Admin-Bereich.</p>
         
+        <p style="margin-top: 20px;">Entdecke auch unsere neuesten Inhalte auf <a href="https://www.schlossstadt.info" style="color: #4f46e5;">www.schlossstadt.info</a>!</p>
+        
         <p>Viele Grüße,<br>
         Dein Schlossstadt.Info System</p>
       `;

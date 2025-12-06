@@ -169,6 +169,7 @@ const handler = async (req: Request): Promise<Response> => {
               <p>Falls Du Dich nicht bei Schlossstadt.Info registriert hast, kannst Du diese E-Mail ignorieren.</p>
             </div>
             <div class="footer">
+              <p style="margin-bottom: 10px;">Entdecke auch unsere neuesten Inhalte auf <a href="https://www.schlossstadt.info" style="color: #4CAF50;">www.schlossstadt.info</a>!</p>
               <p>© ${new Date().getFullYear()} Schlossstadt.Info</p>
             </div>
           </div>
@@ -208,6 +209,7 @@ const handler = async (req: Request): Promise<Response> => {
               <p>Falls Du diese Anfrage nicht gestellt hast, kannst Du diese E-Mail ignorieren.</p>
             </div>
             <div class="footer">
+              <p style="margin-bottom: 10px;">Entdecke auch unsere neuesten Inhalte auf <a href="https://www.schlossstadt.info" style="color: #4CAF50;">www.schlossstadt.info</a>!</p>
               <p>© ${new Date().getFullYear()} Schlossstadt.Info</p>
             </div>
           </div>
@@ -246,6 +248,7 @@ const handler = async (req: Request): Promise<Response> => {
               <p style="word-break: break-all; color: #666; font-size: 12px;">${confirmationUrl}</p>
             </div>
             <div class="footer">
+              <p style="margin-bottom: 10px;">Entdecke auch unsere neuesten Inhalte auf <a href="https://www.schlossstadt.info" style="color: #4CAF50;">www.schlossstadt.info</a>!</p>
               <p>© ${new Date().getFullYear()} Schlossstadt.Info</p>
             </div>
           </div>
