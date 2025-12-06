@@ -117,9 +117,11 @@ const WasteSchedule = () => {
 
   const loadStreets = async () => {
     try {
+      const currentYear = new Date().getFullYear();
       const { data, error } = await supabase
         .from('street_districts')
         .select('street_name')
+        .eq('year', currentYear)
         .order('street_name');
 
       if (error) {
@@ -142,11 +144,13 @@ const WasteSchedule = () => {
 
     setLoading(true);
     try {
-      // First, get districts for the selected street
+      // First, get districts for the selected street (current year)
+      const currentYear = new Date().getFullYear();
       const { data: streetDistricts, error: streetError } = await supabase
         .from('street_districts')
         .select('district, notes')
-        .eq('street_name', selectedStreet);
+        .eq('street_name', selectedStreet)
+        .eq('year', currentYear);
 
       if (streetError) {
         console.error('Error loading street districts:', streetError);

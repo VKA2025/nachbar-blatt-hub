@@ -60,14 +60,12 @@ export async function importStreetData(csvContent: string, year: number = 2025) 
 }
 
 export async function getStreetDistricts(year?: number) {
-  let query = supabase
+  const filterYear = year ?? new Date().getFullYear();
+  const query = supabase
     .from('street_districts')
     .select('*')
+    .eq('year', filterYear)
     .order('street_name');
-    
-  if (year) {
-    query = query.eq('year', year);
-  }
   
   const { data, error } = await query;
   
