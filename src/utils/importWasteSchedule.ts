@@ -10,10 +10,14 @@ interface WasteScheduleRow {
 // Mapping von CSV-Abfallarten zu DB-Werten
 const wasteTypeMapping: Record<string, string> = {
   'Restmüll': 'Restmülltonne',
+  'Restmülltonne': 'Restmülltonne',
   'Gelber Sack': 'Gelber Sack',
   'Papier': 'Papiertonne',
+  'Papiertonne': 'Papiertonne',
   'Biotonne': 'Biotonne',
+  'Bio': 'Biotonne',
   'Straßenlaub': 'Straßenlaub',
+  'Strassenlaub': 'Straßenlaub',
 };
 
 export async function importWasteSchedule(csvContent: string) {
