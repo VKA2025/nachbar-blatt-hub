@@ -13,10 +13,17 @@ export default {
       },
     },
     extend: {
-      fontFamily: {
-        christmas: ['Mountains of Christmas', 'cursive'],
-      },
-      colors: {
+        fontFamily: {
+          christmas: ['Mountains of Christmas', 'cursive'],
+          festive: ['Playfair Display', 'serif'],
+        },
+        colors: {
+          christmas: {
+            red: "hsl(var(--christmas-red))",
+            green: "hsl(var(--christmas-green))",
+            gold: "hsl(var(--christmas-gold))",
+            snow: "hsl(var(--christmas-snow))",
+          },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
