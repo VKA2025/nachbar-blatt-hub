@@ -11,12 +11,14 @@ import WasteSchedule from "./pages/WasteSchedule";
 import MyArea from "./pages/MyArea";
 import NeighborOffers from "./pages/NeighborOffers";
 import NotFound from "./pages/NotFound";
+import Snowfall from "./components/Snowfall";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <Snowfall />
       <Toaster />
       <Sonner />
       <BrowserRouter>
