@@ -11,7 +11,6 @@ import WasteSchedule from "./pages/WasteSchedule";
 import MyArea from "./pages/MyArea";
 import NeighborOffers from "./pages/NeighborOffers";
 import NotFound from "./pages/NotFound";
-import Snowfall from "./components/Snowfall";
 import Fireworks from "./components/Fireworks";
 
 const queryClient = new QueryClient();
@@ -20,7 +19,6 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Fireworks />
-      <Snowfall />
       <Toaster />
       <Sonner />
       <BrowserRouter>
