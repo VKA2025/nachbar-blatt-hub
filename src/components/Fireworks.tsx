@@ -84,7 +84,7 @@ const Fireworks = () => {
     particleGeometryRef.current = geometry;
 
     const material = new THREE.PointsMaterial({
-      size: 2,
+      size: 4,
       vertexColors: true,
       transparent: true,
       opacity: 1,
@@ -415,7 +415,7 @@ const Fireworks = () => {
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
-        zIndex: 10
+        zIndex: 9999
       }}
       aria-hidden="true"
     />
