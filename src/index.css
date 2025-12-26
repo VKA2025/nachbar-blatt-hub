@@ -174,53 +174,6 @@
     }
   }
   
-  /* Fireworks and sparkles background */
-  body::after {
-    content: "";
-    position: fixed;
-    top: 50px;
-    left: 0;
-    width: 100%;
-    height: calc(100% - 50px);
-    pointer-events: none;
-    z-index: 0;
-    background-image: 
-      /* Gold firework bursts */
-      radial-gradient(20px 20px at 10% 15%, hsl(var(--newyear-gold) / 0.7), transparent),
-      radial-gradient(25px 25px at 15% 20%, hsl(var(--newyear-gold) / 0.4), transparent),
-      radial-gradient(15px 15px at 25% 10%, hsl(var(--newyear-gold) / 0.6), transparent),
-      /* Purple firework bursts */
-      radial-gradient(22px 22px at 40% 18%, hsl(var(--newyear-purple) / 0.6), transparent),
-      radial-gradient(18px 18px at 50% 12%, hsl(var(--newyear-purple) / 0.5), transparent),
-      /* Silver sparkles */
-      radial-gradient(12px 12px at 65% 8%, hsl(var(--newyear-silver) / 0.7), transparent),
-      radial-gradient(10px 10px at 75% 15%, hsl(var(--newyear-silver) / 0.6), transparent),
-      radial-gradient(14px 14px at 85% 10%, hsl(var(--newyear-silver) / 0.65), transparent),
-      /* More gold bursts */
-      radial-gradient(16px 16px at 90% 22%, hsl(var(--newyear-gold) / 0.55), transparent),
-      radial-gradient(20px 20px at 5% 35%, hsl(var(--newyear-gold) / 0.5), transparent),
-      /* Lower decorations */
-      radial-gradient(18px 18px at 30% 65%, hsl(var(--newyear-purple) / 0.4), transparent),
-      radial-gradient(22px 22px at 60% 70%, hsl(var(--newyear-gold) / 0.35), transparent),
-      radial-gradient(14px 14px at 80% 60%, hsl(var(--newyear-silver) / 0.45), transparent);
-    background-size: 600px 600px;
-    animation: firework-glow 2.5s ease-in-out infinite alternate;
-  }
-
-  @keyframes firework-glow {
-    0% {
-      opacity: 0.5;
-      filter: blur(0px);
-    }
-    50% {
-      opacity: 1;
-      filter: blur(1px);
-    }
-    100% {
-      opacity: 0.7;
-      filter: blur(0.5px);
-    }
-  }
 }
 
 /* Confetti and Celebration Animation Container */
