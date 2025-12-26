@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 
 interface Particle {
@@ -29,25 +29,23 @@ interface Firework {
 
 const Fireworks = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.OrthographicCamera | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const fireworksRef = useRef<Firework[]>([]);
-  const particleGeometryRef = useRef<THREE.BufferGeometry | null>(null);
-  const particleMaterialRef = useRef<THREE.PointsMaterial | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
+  const initRef = useRef(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    // Prevent double initialization in Strict Mode
+    if (initRef.current || !containerRef.current) return;
+    initRef.current = true;
 
+    const container = containerRef.current;
+    
     // Setup scene
     const scene = new THREE.Scene();
-    sceneRef.current = scene;
 
     // Calculate aspect ratio
     const aspect = window.innerWidth / window.innerHeight;
     
-    // Setup orthographic camera for 2D-like view that fills the screen
+    // Setup orthographic camera for 2D-like view
     const frustumSize = 100;
     const camera = new THREE.OrthographicCamera(
       (frustumSize * aspect) / -2,
@@ -58,7 +56,6 @@ const Fireworks = () => {
       1000
     );
     camera.position.z = 100;
-    cameraRef.current = camera;
 
     // Setup renderer
     const renderer = new THREE.WebGLRenderer({ 
@@ -68,8 +65,7 @@ const Fireworks = () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
-    containerRef.current.appendChild(renderer.domElement);
-    rendererRef.current = renderer;
+    container.appendChild(renderer.domElement);
 
     // Particle system setup
     const maxParticles = 15000;
@@ -81,20 +77,21 @@ const Fireworks = () => {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-    particleGeometryRef.current = geometry;
 
     const material = new THREE.PointsMaterial({
-      size: 4,
+      size: 5,
       vertexColors: true,
       transparent: true,
       opacity: 1,
       blending: THREE.AdditiveBlending,
       sizeAttenuation: false
     });
-    particleMaterialRef.current = material;
 
     const particles = new THREE.Points(geometry, material);
     scene.add(particles);
+
+    // Firework state
+    const fireworks: Firework[] = [];
 
     // Firework colors
     const fireworkColors = [
@@ -111,15 +108,12 @@ const Fireworks = () => {
     const createFirework = () => {
       const screenWidth = frustumSize * aspect;
       
-      // Random starting position at the bottom of the screen
       const startX = (Math.random() - 0.5) * screenWidth * 0.8;
-      const startY = -frustumSize / 2 - 5; // Start below screen
+      const startY = -frustumSize / 2 - 5;
       
-      // Target position in upper portion of screen
-      const targetY = frustumSize / 2 * (0.3 + Math.random() * 0.5); // Upper 30-80% of screen
+      const targetY = frustumSize / 2 * (0.3 + Math.random() * 0.5);
       const targetX = startX + (Math.random() - 0.5) * 30;
       
-      // Calculate velocity for arc trajectory
       const flightTime = 1.2 + Math.random() * 0.6;
       const gravity = 40;
       
@@ -128,7 +122,7 @@ const Fireworks = () => {
       
       const color = fireworkColors[Math.floor(Math.random() * fireworkColors.length)];
       
-      const firework: Firework = {
+      fireworks.push({
         particles: [],
         exploded: false,
         rocket: {
@@ -137,9 +131,7 @@ const Fireworks = () => {
           color: color.clone(),
           trail: []
         }
-      };
-
-      fireworksRef.current.push(firework);
+      });
     };
 
     const explodeFirework = (firework: Firework) => {
@@ -149,7 +141,6 @@ const Fireworks = () => {
       const baseColor = firework.rocket.color;
       const explosionPos = firework.rocket.position.clone();
       
-      // Create main explosion - circular pattern
       for (let i = 0; i < particleCount; i++) {
         const angle = (i / particleCount) * Math.PI * 2 + Math.random() * 0.3;
         const speed = 15 + Math.random() * 20;
@@ -170,11 +161,10 @@ const Fireworks = () => {
           color: color,
           life: 1.0,
           maxLife: 1.5 + Math.random() * 1.0,
-          size: 2.5 + Math.random() * 1.5
+          size: 3 + Math.random() * 2
         });
       }
 
-      // Add sparkle particles in center
       for (let i = 0; i < 20; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 5 + Math.random() * 10;
@@ -189,7 +179,7 @@ const Fireworks = () => {
           color: new THREE.Color(0xffffff),
           life: 1.0,
           maxLife: 0.8 + Math.random() * 0.4,
-          size: 3 + Math.random() * 2
+          size: 4 + Math.random() * 2
         });
       }
 
@@ -200,18 +190,15 @@ const Fireworks = () => {
     const updateFireworks = (delta: number) => {
       const gravity = 40;
 
-      fireworksRef.current.forEach((firework) => {
-        // Update rocket
+      for (let i = fireworks.length - 1; i >= 0; i--) {
+        const firework = fireworks[i];
+        
         if (firework.rocket) {
-          // Apply gravity
           firework.rocket.velocity.y -= gravity * delta;
-          
-          // Update position
           firework.rocket.position.add(
             firework.rocket.velocity.clone().multiplyScalar(delta)
           );
 
-          // Add trail particles
           if (Math.random() > 0.2) {
             firework.rocket.trail.push({
               position: firework.rocket.position.clone(),
@@ -220,188 +207,147 @@ const Fireworks = () => {
             });
           }
 
-          // Update trail - fade faster
-          firework.rocket.trail.forEach(t => {
-            t.life -= delta * 4;
-          });
-          firework.rocket.trail = firework.rocket.trail.filter(t => t.life > 0);
+          for (let j = firework.rocket.trail.length - 1; j >= 0; j--) {
+            firework.rocket.trail[j].life -= delta * 4;
+            if (firework.rocket.trail[j].life <= 0) {
+              firework.rocket.trail.splice(j, 1);
+            }
+          }
 
-          // Explode when rocket slows down enough
           if (firework.rocket.velocity.y < 8) {
             explodeFirework(firework);
           }
         }
 
-        // Update explosion particles
-        firework.particles.forEach((particle) => {
+        for (let j = firework.particles.length - 1; j >= 0; j--) {
+          const particle = firework.particles[j];
           particle.velocity.y -= gravity * delta * 0.25;
           particle.velocity.multiplyScalar(0.97);
           particle.position.add(
             particle.velocity.clone().multiplyScalar(delta)
           );
           particle.life -= delta / particle.maxLife;
-        });
+          
+          if (particle.life <= 0) {
+            firework.particles.splice(j, 1);
+          }
+        }
 
-        // Remove dead particles
-        firework.particles = firework.particles.filter(p => p.life > 0);
-      });
-
-      // Remove finished fireworks
-      fireworksRef.current = fireworksRef.current.filter(
-        fw => fw.rocket !== null || fw.particles.length > 0
-      );
+        if (!firework.rocket && firework.particles.length === 0) {
+          fireworks.splice(i, 1);
+        }
+      }
     };
 
     const updateParticleGeometry = () => {
-      const positions = particleGeometryRef.current?.getAttribute('position') as THREE.BufferAttribute;
-      const colors = particleGeometryRef.current?.getAttribute('color') as THREE.BufferAttribute;
-      const sizes = particleGeometryRef.current?.getAttribute('size') as THREE.BufferAttribute;
+      const posAttr = geometry.getAttribute('position') as THREE.BufferAttribute;
+      const colAttr = geometry.getAttribute('color') as THREE.BufferAttribute;
+      const sizeAttr = geometry.getAttribute('size') as THREE.BufferAttribute;
 
-      if (!positions || !colors || !sizes) return;
+      let idx = 0;
 
-      let particleIndex = 0;
-      const maxParticles = 15000;
+      for (const firework of fireworks) {
+        if (firework.rocket && idx < maxParticles) {
+          posAttr.setXYZ(idx, firework.rocket.position.x, firework.rocket.position.y, firework.rocket.position.z);
+          colAttr.setXYZ(idx, 1, 1, 1);
+          sizeAttr.setX(idx, 6);
+          idx++;
 
-      fireworksRef.current.forEach(firework => {
-        // Draw rocket
-        if (firework.rocket && particleIndex < maxParticles) {
-          // Draw rocket head (bright white)
-          positions.setXYZ(
-            particleIndex,
-            firework.rocket.position.x,
-            firework.rocket.position.y,
-            firework.rocket.position.z
-          );
-          colors.setXYZ(particleIndex, 1, 1, 1);
-          sizes.setX(particleIndex, 4);
-          particleIndex++;
-
-          // Draw rocket trail
-          firework.rocket.trail.forEach(trail => {
-            if (particleIndex >= maxParticles) return;
-            
+          for (const trail of firework.rocket.trail) {
+            if (idx >= maxParticles) break;
             const alpha = trail.life;
-            positions.setXYZ(
-              particleIndex,
-              trail.position.x,
-              trail.position.y,
-              trail.position.z
-            );
-            colors.setXYZ(
-              particleIndex,
-              trail.color.r * alpha,
-              trail.color.g * alpha * 0.7,
-              trail.color.b * alpha * 0.3
-            );
-            sizes.setX(particleIndex, 2.5 * trail.life);
-            particleIndex++;
-          });
+            posAttr.setXYZ(idx, trail.position.x, trail.position.y, trail.position.z);
+            colAttr.setXYZ(idx, trail.color.r * alpha, trail.color.g * alpha * 0.7, trail.color.b * alpha * 0.3);
+            sizeAttr.setX(idx, 3 * trail.life);
+            idx++;
+          }
         }
 
-        // Draw explosion particles
-        firework.particles.forEach(particle => {
-          if (particleIndex >= maxParticles) return;
-          
+        for (const particle of firework.particles) {
+          if (idx >= maxParticles) break;
           const alpha = Math.pow(particle.life, 0.5);
-          positions.setXYZ(
-            particleIndex,
-            particle.position.x,
-            particle.position.y,
-            particle.position.z
-          );
-          colors.setXYZ(
-            particleIndex,
-            particle.color.r * alpha,
-            particle.color.g * alpha,
-            particle.color.b * alpha
-          );
-          sizes.setX(particleIndex, particle.size * alpha);
-          particleIndex++;
-        });
-      });
-
-      // Hide unused particles
-      for (let i = particleIndex; i < maxParticles; i++) {
-        positions.setXYZ(i, 0, -1000, 0);
-        sizes.setX(i, 0);
+          posAttr.setXYZ(idx, particle.position.x, particle.position.y, particle.position.z);
+          colAttr.setXYZ(idx, particle.color.r * alpha, particle.color.g * alpha, particle.color.b * alpha);
+          sizeAttr.setX(idx, particle.size * alpha);
+          idx++;
+        }
       }
 
-      positions.needsUpdate = true;
-      colors.needsUpdate = true;
-      sizes.needsUpdate = true;
+      for (let i = idx; i < maxParticles; i++) {
+        posAttr.setXYZ(i, 0, -1000, 0);
+        sizeAttr.setX(i, 0);
+      }
+
+      posAttr.needsUpdate = true;
+      colAttr.needsUpdate = true;
+      sizeAttr.needsUpdate = true;
     };
 
-    // Animation loop
+    // Animation
     let lastTime = performance.now();
     let fireworkTimer = 0;
+    let animationId: number;
+    let isRunning = true;
 
     const animate = () => {
+      if (!isRunning) return;
+      
       const currentTime = performance.now();
       const delta = Math.min((currentTime - lastTime) / 1000, 0.1);
       lastTime = currentTime;
 
-      // Launch new fireworks periodically
       fireworkTimer += delta;
       if (fireworkTimer > 0.5 + Math.random() * 0.8) {
         createFirework();
-        // Sometimes launch multiple at once
         if (Math.random() > 0.5) {
-          setTimeout(() => createFirework(), 100 + Math.random() * 200);
-        }
-        if (Math.random() > 0.7) {
-          setTimeout(() => createFirework(), 200 + Math.random() * 300);
+          setTimeout(() => { if (isRunning) createFirework(); }, 100 + Math.random() * 200);
         }
         fireworkTimer = 0;
       }
 
       updateFireworks(delta);
       updateParticleGeometry();
+      renderer.render(scene, camera);
 
-      if (rendererRef.current && sceneRef.current && cameraRef.current) {
-        rendererRef.current.render(sceneRef.current, cameraRef.current);
-      }
-
-      animationFrameRef.current = requestAnimationFrame(animate);
+      animationId = requestAnimationFrame(animate);
     };
 
+    // Start
+    createFirework();
+    setTimeout(() => { if (isRunning) createFirework(); }, 300);
+    setTimeout(() => { if (isRunning) createFirework(); }, 600);
     animate();
 
-    // Launch initial fireworks immediately
-    createFirework();
-    setTimeout(() => createFirework(), 300);
-    setTimeout(() => createFirework(), 600);
-    setTimeout(() => createFirework(), 900);
-
-    // Handle resize
+    // Resize handler
     const handleResize = () => {
-      if (!cameraRef.current || !rendererRef.current) return;
-      
       const newAspect = window.innerWidth / window.innerHeight;
-      
-      if (cameraRef.current instanceof THREE.OrthographicCamera) {
-        cameraRef.current.left = (frustumSize * newAspect) / -2;
-        cameraRef.current.right = (frustumSize * newAspect) / 2;
-        cameraRef.current.top = frustumSize / 2;
-        cameraRef.current.bottom = frustumSize / -2;
-        cameraRef.current.updateProjectionMatrix();
-      }
-      
-      rendererRef.current.setSize(window.innerWidth, window.innerHeight);
+      camera.left = (frustumSize * newAspect) / -2;
+      camera.right = (frustumSize * newAspect) / 2;
+      camera.top = frustumSize / 2;
+      camera.bottom = frustumSize / -2;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
     };
 
     window.addEventListener('resize', handleResize);
 
-    return () => {
+    // Store cleanup function
+    cleanupRef.current = () => {
+      isRunning = false;
       window.removeEventListener('resize', handleResize);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (containerRef.current && rendererRef.current) {
-        containerRef.current.removeChild(rendererRef.current.domElement);
-      }
+      cancelAnimationFrame(animationId);
       geometry.dispose();
       material.dispose();
       renderer.dispose();
+      if (container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement);
+      }
+    };
+
+    return () => {
+      if (cleanupRef.current) {
+        cleanupRef.current();
+      }
     };
   }, []);
 
