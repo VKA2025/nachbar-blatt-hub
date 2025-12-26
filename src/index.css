@@ -2,125 +2,125 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Christmas Design System - Festive colors with gold, red, green and snowy atmosphere */
+/* New Year 2026 Design System - Elegant colors with gold, silver, midnight blue and celebration atmosphere */
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 150 40% 15%;
+    --background: 240 15% 98%;
+    --foreground: 240 25% 10%;
     
-    /* Festive Christmas gradient with red, green, and gold tones */
-    --winter-gradient: linear-gradient(
+    /* Midnight celebration gradient */
+    --celebration-gradient: linear-gradient(
       180deg, 
-      hsl(210 50% 20%) 0%, 
-      hsl(220 45% 35%) 30%,
-      hsl(200 40% 50%) 60%,
-      hsl(0 0% 95%) 100%
+      hsl(240 60% 8%) 0%, 
+      hsl(260 50% 15%) 30%,
+      hsl(280 40% 20%) 60%,
+      hsl(240 45% 12%) 100%
     );
 
     --card: 0 0% 100%;
-    --card-foreground: 150 40% 15%;
+    --card-foreground: 240 25% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 150 40% 15%;
+    --popover-foreground: 240 25% 10%;
 
-    /* Christmas Red as Primary */
-    --primary: 0 75% 42%;
-    --primary-foreground: 0 0% 100%;
-    --primary-dark: 0 80% 32%;
+    /* Champagne Gold as Primary */
+    --primary: 45 85% 55%;
+    --primary-foreground: 240 30% 8%;
+    --primary-dark: 45 80% 42%;
 
-    /* Christmas Green as Secondary */
-    --secondary: 145 60% 32%;
+    /* Midnight Purple as Secondary */
+    --secondary: 260 55% 45%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 140 20% 94%;
-    --muted-foreground: 150 20% 40%;
+    --muted: 240 15% 94%;
+    --muted-foreground: 240 15% 45%;
 
-    /* Gold Accent */
-    --accent: 42 90% 52%;
-    --accent-foreground: 42 95% 12%;
+    /* Silver Accent */
+    --accent: 220 15% 75%;
+    --accent-foreground: 240 30% 10%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 145 35% 82%;
-    --input: 145 30% 90%;
-    --ring: 0 75% 42%;
+    --border: 240 20% 85%;
+    --input: 240 15% 92%;
+    --ring: 45 85% 55%;
 
     --radius: 0.75rem;
 
-    /* Christmas colors for decorative elements */
-    --christmas-red: 0 75% 42%;
-    --christmas-green: 145 60% 32%;
-    --christmas-gold: 42 90% 52%;
-    --christmas-snow: 200 30% 98%;
-    --christmas-dark-blue: 220 45% 25%;
+    /* New Year colors for decorative elements */
+    --newyear-gold: 45 85% 55%;
+    --newyear-silver: 220 15% 75%;
+    --newyear-midnight: 240 60% 12%;
+    --newyear-purple: 280 50% 55%;
+    --newyear-sparkle: 45 100% 85%;
 
-    --sidebar-background: 145 35% 96%;
-    --sidebar-foreground: 150 40% 20%;
-    --sidebar-primary: 0 75% 42%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 145 45% 90%;
-    --sidebar-accent-foreground: 150 40% 15%;
-    --sidebar-border: 145 35% 85%;
-    --sidebar-ring: 0 75% 42%;
+    --sidebar-background: 240 25% 96%;
+    --sidebar-foreground: 240 25% 15%;
+    --sidebar-primary: 45 85% 55%;
+    --sidebar-primary-foreground: 240 30% 8%;
+    --sidebar-accent: 260 30% 92%;
+    --sidebar-accent-foreground: 240 25% 10%;
+    --sidebar-border: 240 20% 88%;
+    --sidebar-ring: 45 85% 55%;
   }
 
   .dark {
-    --background: 220 40% 8%;
+    --background: 240 50% 5%;
     --foreground: 45 30% 95%;
     
-    --winter-gradient: linear-gradient(
+    --celebration-gradient: linear-gradient(
       180deg, 
-      hsl(220 50% 8%) 0%, 
-      hsl(220 45% 15%) 40%,
-      hsl(210 40% 20%) 70%,
-      hsl(220 35% 12%) 100%
+      hsl(240 60% 4%) 0%, 
+      hsl(260 55% 10%) 40%,
+      hsl(280 45% 15%) 70%,
+      hsl(240 50% 8%) 100%
     );
 
-    --card: 220 40% 12%;
+    --card: 240 45% 10%;
     --card-foreground: 45 30% 95%;
 
-    --popover: 220 40% 12%;
+    --popover: 240 45% 10%;
     --popover-foreground: 45 30% 95%;
 
-    /* Brighter Christmas Red for dark mode */
-    --primary: 0 70% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-dark: 0 75% 42%;
+    /* Brighter Gold for dark mode */
+    --primary: 45 90% 60%;
+    --primary-foreground: 240 30% 8%;
+    --primary-dark: 45 85% 48%;
 
-    /* Brighter Christmas Green for dark mode */
-    --secondary: 145 55% 42%;
+    /* Brighter Purple for dark mode */
+    --secondary: 280 60% 60%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 35% 18%;
-    --muted-foreground: 45 20% 70%;
+    --muted: 240 40% 15%;
+    --muted-foreground: 45 15% 70%;
 
-    /* Gold Accent for dark mode */
-    --accent: 42 85% 58%;
-    --accent-foreground: 42 95% 8%;
+    /* Silver Accent for dark mode */
+    --accent: 220 20% 80%;
+    --accent-foreground: 240 30% 8%;
 
     --destructive: 0 62.8% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 30% 22%;
-    --input: 220 30% 18%;
-    --ring: 0 70% 55%;
+    --border: 240 35% 20%;
+    --input: 240 35% 15%;
+    --ring: 45 90% 60%;
 
-    --christmas-red: 0 70% 55%;
-    --christmas-green: 145 55% 42%;
-    --christmas-gold: 42 85% 58%;
-    --christmas-snow: 210 25% 90%;
-    --christmas-dark-blue: 220 45% 15%;
+    --newyear-gold: 45 90% 60%;
+    --newyear-silver: 220 20% 80%;
+    --newyear-midnight: 240 55% 8%;
+    --newyear-purple: 280 60% 60%;
+    --newyear-sparkle: 45 100% 90%;
 
-    --sidebar-background: 220 40% 10%;
+    --sidebar-background: 240 45% 8%;
     --sidebar-foreground: 45 30% 92%;
-    --sidebar-primary: 0 70% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 35% 16%;
+    --sidebar-primary: 45 90% 60%;
+    --sidebar-primary-foreground: 240 30% 8%;
+    --sidebar-accent: 260 40% 15%;
     --sidebar-accent-foreground: 45 30% 95%;
-    --sidebar-border: 220 30% 18%;
-    --sidebar-ring: 0 70% 55%;
+    --sidebar-border: 240 35% 15%;
+    --sidebar-ring: 45 90% 60%;
   }
 }
 
@@ -131,97 +131,99 @@
 
   body {
     @apply text-foreground;
-    background: var(--winter-gradient);
+    background: var(--celebration-gradient);
     background-attachment: fixed;
     position: relative;
     min-height: 100vh;
     overflow-x: hidden;
   }
   
-  /* Christmas lights string at the top */
+  /* Happy New Year 2026 banner at the top */
   body::before {
-    content: "🎄 ⭐ 🎁 ❄️ 🔔 ⭐ 🎄 ❄️ 🎁 ⭐ 🔔 🎄 ❄️ ⭐ 🎁 🔔 🎄 ⭐ ❄️ 🎁 🔔 ⭐ 🎄 ❄️ 🎁 ⭐ 🔔 🎄 ❄️ ⭐ 🎁";
+    content: "🎆 ✨ 🥂 Happy New Year 2026 🥂 ✨ 🎆 🎇 ⭐ 🎊 Happy New Year 2026 🎊 ⭐ 🎇";
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 40px;
+    height: 50px;
     pointer-events: none;
     z-index: 100;
-    font-size: 1.2rem;
-    line-height: 40px;
+    font-size: 1.1rem;
+    line-height: 50px;
     text-align: center;
-    letter-spacing: 0.5rem;
+    letter-spacing: 0.3rem;
+    font-weight: 600;
     background: linear-gradient(
       180deg,
-      hsl(145 60% 25% / 0.95) 0%,
-      hsl(145 55% 20% / 0.85) 100%
+      hsl(240 60% 10% / 0.98) 0%,
+      hsl(260 50% 15% / 0.95) 100%
     );
-    border-bottom: 3px solid hsl(var(--christmas-gold));
+    border-bottom: 3px solid hsl(var(--newyear-gold));
     box-shadow: 
-      0 2px 20px hsl(var(--christmas-gold) / 0.4),
-      0 5px 30px hsl(var(--christmas-red) / 0.2);
-    animation: lights-glow 2s ease-in-out infinite alternate;
+      0 2px 30px hsl(var(--newyear-gold) / 0.5),
+      0 5px 40px hsl(var(--newyear-purple) / 0.3);
+    animation: banner-glow 2s ease-in-out infinite alternate;
   }
 
-  @keyframes lights-glow {
+  @keyframes banner-glow {
     0% {
-      text-shadow: 0 0 10px hsl(var(--christmas-gold)), 0 0 20px hsl(var(--christmas-red));
+      text-shadow: 0 0 15px hsl(var(--newyear-gold)), 0 0 25px hsl(var(--newyear-silver));
     }
     100% {
-      text-shadow: 0 0 20px hsl(var(--christmas-gold)), 0 0 40px hsl(var(--christmas-red)), 0 0 60px hsl(var(--christmas-snow));
+      text-shadow: 0 0 25px hsl(var(--newyear-gold)), 0 0 50px hsl(var(--newyear-purple)), 0 0 70px hsl(var(--newyear-sparkle));
     }
   }
   
-  /* Glowing Christmas ornaments */
+  /* Fireworks and sparkles background */
   body::after {
     content: "";
     position: fixed;
-    top: 40px;
+    top: 50px;
     left: 0;
     width: 100%;
-    height: calc(100% - 40px);
+    height: calc(100% - 50px);
     pointer-events: none;
     z-index: 0;
     background-image: 
-      /* Red ornaments */
-      radial-gradient(12px 12px at 5% 12%, hsl(var(--christmas-red) / 0.6), transparent),
-      radial-gradient(10px 10px at 20% 8%, hsl(var(--christmas-red) / 0.5), transparent),
-      radial-gradient(14px 14px at 38% 15%, hsl(var(--christmas-red) / 0.55), transparent),
-      radial-gradient(11px 11px at 55% 10%, hsl(var(--christmas-red) / 0.6), transparent),
-      radial-gradient(13px 13px at 72% 14%, hsl(var(--christmas-red) / 0.5), transparent),
-      radial-gradient(10px 10px at 88% 8%, hsl(var(--christmas-red) / 0.55), transparent),
-      /* Green ornaments */
-      radial-gradient(11px 11px at 12% 28%, hsl(var(--christmas-green) / 0.55), transparent),
-      radial-gradient(13px 13px at 28% 32%, hsl(var(--christmas-green) / 0.6), transparent),
-      radial-gradient(10px 10px at 45% 26%, hsl(var(--christmas-green) / 0.5), transparent),
-      radial-gradient(12px 12px at 62% 30%, hsl(var(--christmas-green) / 0.55), transparent),
-      radial-gradient(14px 14px at 78% 24%, hsl(var(--christmas-green) / 0.6), transparent),
-      radial-gradient(11px 11px at 95% 28%, hsl(var(--christmas-green) / 0.5), transparent),
-      /* Gold stars */
-      radial-gradient(8px 8px at 8% 55%, hsl(var(--christmas-gold) / 0.7), transparent),
-      radial-gradient(10px 10px at 25% 60%, hsl(var(--christmas-gold) / 0.65), transparent),
-      radial-gradient(9px 9px at 42% 52%, hsl(var(--christmas-gold) / 0.7), transparent),
-      radial-gradient(11px 11px at 58% 58%, hsl(var(--christmas-gold) / 0.65), transparent),
-      radial-gradient(8px 8px at 75% 54%, hsl(var(--christmas-gold) / 0.7), transparent),
-      radial-gradient(10px 10px at 92% 62%, hsl(var(--christmas-gold) / 0.65), transparent);
-    background-size: 500px 500px;
-    animation: ornament-glow 3s ease-in-out infinite alternate;
+      /* Gold firework bursts */
+      radial-gradient(20px 20px at 10% 15%, hsl(var(--newyear-gold) / 0.7), transparent),
+      radial-gradient(25px 25px at 15% 20%, hsl(var(--newyear-gold) / 0.4), transparent),
+      radial-gradient(15px 15px at 25% 10%, hsl(var(--newyear-gold) / 0.6), transparent),
+      /* Purple firework bursts */
+      radial-gradient(22px 22px at 40% 18%, hsl(var(--newyear-purple) / 0.6), transparent),
+      radial-gradient(18px 18px at 50% 12%, hsl(var(--newyear-purple) / 0.5), transparent),
+      /* Silver sparkles */
+      radial-gradient(12px 12px at 65% 8%, hsl(var(--newyear-silver) / 0.7), transparent),
+      radial-gradient(10px 10px at 75% 15%, hsl(var(--newyear-silver) / 0.6), transparent),
+      radial-gradient(14px 14px at 85% 10%, hsl(var(--newyear-silver) / 0.65), transparent),
+      /* More gold bursts */
+      radial-gradient(16px 16px at 90% 22%, hsl(var(--newyear-gold) / 0.55), transparent),
+      radial-gradient(20px 20px at 5% 35%, hsl(var(--newyear-gold) / 0.5), transparent),
+      /* Lower decorations */
+      radial-gradient(18px 18px at 30% 65%, hsl(var(--newyear-purple) / 0.4), transparent),
+      radial-gradient(22px 22px at 60% 70%, hsl(var(--newyear-gold) / 0.35), transparent),
+      radial-gradient(14px 14px at 80% 60%, hsl(var(--newyear-silver) / 0.45), transparent);
+    background-size: 600px 600px;
+    animation: firework-glow 2.5s ease-in-out infinite alternate;
   }
 
-  @keyframes ornament-glow {
+  @keyframes firework-glow {
     0% {
-      opacity: 0.7;
+      opacity: 0.5;
       filter: blur(0px);
     }
-    100% {
+    50% {
       opacity: 1;
       filter: blur(1px);
+    }
+    100% {
+      opacity: 0.7;
+      filter: blur(0.5px);
     }
   }
 }
 
-/* Snowfall Animation Container */
+/* Confetti and Celebration Animation Container */
 @layer components {
   .snowfall {
     position: fixed;
@@ -234,135 +236,193 @@
     overflow: hidden;
   }
 
-  .snowflake {
+  .confetti {
     position: absolute;
-    top: -20px;
-    color: hsl(var(--christmas-snow));
-    font-size: 1rem;
-    text-shadow: 0 0 5px hsl(var(--christmas-snow)), 0 0 10px hsl(200 50% 80% / 0.5);
-    animation: fall linear infinite;
-    opacity: 0.9;
+    top: -30px;
+    font-size: 1.2rem;
+    animation: confetti-fall linear infinite;
+    opacity: 0.95;
   }
 
-  @keyframes fall {
+  @keyframes confetti-fall {
     0% {
-      transform: translateY(-20px) rotate(0deg);
+      transform: translateY(-30px) rotate(0deg) scale(1);
       opacity: 1;
     }
+    50% {
+      transform: translateY(50vh) rotate(180deg) scale(1.1);
+      opacity: 0.9;
+    }
     100% {
-      transform: translateY(100vh) rotate(360deg);
-      opacity: 0.3;
+      transform: translateY(100vh) rotate(360deg) scale(0.8);
+      opacity: 0.2;
     }
   }
 
-  /* Generate multiple snowflakes with different delays and positions */
-  .snowflake:nth-child(1) { left: 5%; animation-duration: 8s; animation-delay: 0s; font-size: 1.2rem; }
-  .snowflake:nth-child(2) { left: 10%; animation-duration: 12s; animation-delay: 1s; font-size: 0.8rem; }
-  .snowflake:nth-child(3) { left: 15%; animation-duration: 10s; animation-delay: 2s; font-size: 1rem; }
-  .snowflake:nth-child(4) { left: 20%; animation-duration: 14s; animation-delay: 0.5s; font-size: 1.4rem; }
-  .snowflake:nth-child(5) { left: 25%; animation-duration: 9s; animation-delay: 3s; font-size: 0.9rem; }
-  .snowflake:nth-child(6) { left: 30%; animation-duration: 11s; animation-delay: 1.5s; font-size: 1.1rem; }
-  .snowflake:nth-child(7) { left: 35%; animation-duration: 13s; animation-delay: 2.5s; font-size: 0.7rem; }
-  .snowflake:nth-child(8) { left: 40%; animation-duration: 8s; animation-delay: 4s; font-size: 1.3rem; }
-  .snowflake:nth-child(9) { left: 45%; animation-duration: 10s; animation-delay: 0.8s; font-size: 1rem; }
-  .snowflake:nth-child(10) { left: 50%; animation-duration: 15s; animation-delay: 1.2s; font-size: 1.5rem; }
-  .snowflake:nth-child(11) { left: 55%; animation-duration: 9s; animation-delay: 3.5s; font-size: 0.8rem; }
-  .snowflake:nth-child(12) { left: 60%; animation-duration: 12s; animation-delay: 2.2s; font-size: 1.2rem; }
-  .snowflake:nth-child(13) { left: 65%; animation-duration: 11s; animation-delay: 0.3s; font-size: 0.9rem; }
-  .snowflake:nth-child(14) { left: 70%; animation-duration: 14s; animation-delay: 4.5s; font-size: 1.1rem; }
-  .snowflake:nth-child(15) { left: 75%; animation-duration: 8s; animation-delay: 1.8s; font-size: 1.4rem; }
-  .snowflake:nth-child(16) { left: 80%; animation-duration: 10s; animation-delay: 2.8s; font-size: 0.7rem; }
-  .snowflake:nth-child(17) { left: 85%; animation-duration: 13s; animation-delay: 0.6s; font-size: 1rem; }
-  .snowflake:nth-child(18) { left: 90%; animation-duration: 9s; animation-delay: 3.2s; font-size: 1.3rem; }
-  .snowflake:nth-child(19) { left: 95%; animation-duration: 11s; animation-delay: 1.4s; font-size: 0.85rem; }
-  .snowflake:nth-child(20) { left: 2%; animation-duration: 12s; animation-delay: 2.6s; font-size: 1.15rem; }
-  .snowflake:nth-child(21) { left: 8%; animation-duration: 10s; animation-delay: 4.2s; font-size: 0.95rem; }
-  .snowflake:nth-child(22) { left: 18%; animation-duration: 14s; animation-delay: 0.9s; font-size: 1.25rem; }
-  .snowflake:nth-child(23) { left: 28%; animation-duration: 8s; animation-delay: 3.8s; font-size: 0.75rem; }
-  .snowflake:nth-child(24) { left: 38%; animation-duration: 11s; animation-delay: 1.1s; font-size: 1.35rem; }
-  .snowflake:nth-child(25) { left: 48%; animation-duration: 13s; animation-delay: 2.4s; font-size: 0.88rem; }
-  .snowflake:nth-child(26) { left: 58%; animation-duration: 9s; animation-delay: 4.8s; font-size: 1.05rem; }
-  .snowflake:nth-child(27) { left: 68%; animation-duration: 12s; animation-delay: 0.4s; font-size: 1.45rem; }
-  .snowflake:nth-child(28) { left: 78%; animation-duration: 10s; animation-delay: 3.1s; font-size: 0.82rem; }
-  .snowflake:nth-child(29) { left: 88%; animation-duration: 15s; animation-delay: 1.7s; font-size: 1.18rem; }
-  .snowflake:nth-child(30) { left: 98%; animation-duration: 11s; animation-delay: 2.9s; font-size: 0.92rem; }
+  /* Generate multiple confetti with different delays and positions */
+  .confetti:nth-child(1) { left: 3%; animation-duration: 6s; animation-delay: 0s; }
+  .confetti:nth-child(2) { left: 8%; animation-duration: 8s; animation-delay: 0.5s; }
+  .confetti:nth-child(3) { left: 12%; animation-duration: 7s; animation-delay: 1s; }
+  .confetti:nth-child(4) { left: 17%; animation-duration: 9s; animation-delay: 0.3s; }
+  .confetti:nth-child(5) { left: 22%; animation-duration: 6.5s; animation-delay: 2s; }
+  .confetti:nth-child(6) { left: 27%; animation-duration: 8.5s; animation-delay: 1.2s; }
+  .confetti:nth-child(7) { left: 32%; animation-duration: 7.5s; animation-delay: 0.8s; }
+  .confetti:nth-child(8) { left: 37%; animation-duration: 6s; animation-delay: 2.5s; }
+  .confetti:nth-child(9) { left: 42%; animation-duration: 9.5s; animation-delay: 0.6s; }
+  .confetti:nth-child(10) { left: 47%; animation-duration: 7s; animation-delay: 1.8s; }
+  .confetti:nth-child(11) { left: 52%; animation-duration: 8s; animation-delay: 0.4s; }
+  .confetti:nth-child(12) { left: 57%; animation-duration: 6.5s; animation-delay: 2.2s; }
+  .confetti:nth-child(13) { left: 62%; animation-duration: 9s; animation-delay: 1.1s; }
+  .confetti:nth-child(14) { left: 67%; animation-duration: 7.5s; animation-delay: 0.7s; }
+  .confetti:nth-child(15) { left: 72%; animation-duration: 8.5s; animation-delay: 1.5s; }
+  .confetti:nth-child(16) { left: 77%; animation-duration: 6s; animation-delay: 2.8s; }
+  .confetti:nth-child(17) { left: 82%; animation-duration: 7s; animation-delay: 0.9s; }
+  .confetti:nth-child(18) { left: 87%; animation-duration: 8s; animation-delay: 1.6s; }
+  .confetti:nth-child(19) { left: 92%; animation-duration: 9s; animation-delay: 0.2s; }
+  .confetti:nth-child(20) { left: 97%; animation-duration: 7.5s; animation-delay: 2.1s; }
+  .confetti:nth-child(21) { left: 5%; animation-duration: 8.5s; animation-delay: 1.3s; }
+  .confetti:nth-child(22) { left: 15%; animation-duration: 6.5s; animation-delay: 2.6s; }
+  .confetti:nth-child(23) { left: 25%; animation-duration: 9s; animation-delay: 0.1s; }
+  .confetti:nth-child(24) { left: 35%; animation-duration: 7s; animation-delay: 1.9s; }
+  .confetti:nth-child(25) { left: 45%; animation-duration: 8s; animation-delay: 0.5s; }
+  .confetti:nth-child(26) { left: 55%; animation-duration: 6s; animation-delay: 2.4s; }
+  .confetti:nth-child(27) { left: 65%; animation-duration: 9.5s; animation-delay: 1.4s; }
+  .confetti:nth-child(28) { left: 75%; animation-duration: 7.5s; animation-delay: 0.3s; }
+  .confetti:nth-child(29) { left: 85%; animation-duration: 8.5s; animation-delay: 2s; }
+  .confetti:nth-child(30) { left: 95%; animation-duration: 6.5s; animation-delay: 1.7s; }
+  .confetti:nth-child(31) { left: 10%; animation-duration: 7s; animation-delay: 2.9s; }
+  .confetti:nth-child(32) { left: 20%; animation-duration: 8s; animation-delay: 0.8s; }
+  .confetti:nth-child(33) { left: 30%; animation-duration: 6s; animation-delay: 1.6s; }
+  .confetti:nth-child(34) { left: 40%; animation-duration: 9s; animation-delay: 2.3s; }
+  .confetti:nth-child(35) { left: 50%; animation-duration: 7.5s; animation-delay: 0.4s; }
+  .confetti:nth-child(36) { left: 60%; animation-duration: 8.5s; animation-delay: 1.2s; }
+  .confetti:nth-child(37) { left: 70%; animation-duration: 6.5s; animation-delay: 2.7s; }
+  .confetti:nth-child(38) { left: 80%; animation-duration: 9.5s; animation-delay: 0.6s; }
+  .confetti:nth-child(39) { left: 90%; animation-duration: 7s; animation-delay: 1.8s; }
+  .confetti:nth-child(40) { left: 99%; animation-duration: 8s; animation-delay: 0.2s; }
 
-  /* Christmas themed component styles */
-  .christmas-card {
+  /* New Year themed component styles */
+  .newyear-card {
     @apply bg-card border-2 rounded-xl shadow-lg;
-    border-color: hsl(var(--christmas-gold) / 0.4);
+    border-color: hsl(var(--newyear-gold) / 0.5);
     box-shadow: 
-      0 4px 25px hsl(var(--christmas-red) / 0.15),
-      0 0 50px hsl(var(--christmas-gold) / 0.08),
-      inset 0 1px 0 hsl(var(--christmas-snow) / 0.5);
+      0 4px 30px hsl(var(--newyear-gold) / 0.2),
+      0 0 60px hsl(var(--newyear-purple) / 0.1),
+      inset 0 1px 0 hsl(var(--newyear-silver) / 0.4);
   }
 
-  .christmas-button-primary {
+  .newyear-button-primary {
     @apply bg-primary text-primary-foreground font-semibold;
     background: linear-gradient(
       135deg,
-      hsl(var(--christmas-red)) 0%,
-      hsl(0 75% 38%) 100%
+      hsl(var(--newyear-gold)) 0%,
+      hsl(45 80% 45%) 100%
     );
     box-shadow: 
-      0 4px 15px hsl(var(--christmas-red) / 0.4),
-      inset 0 1px 0 hsl(0 70% 60% / 0.3);
+      0 4px 20px hsl(var(--newyear-gold) / 0.5),
+      inset 0 1px 0 hsl(45 90% 75% / 0.4);
     transition: all 0.3s ease;
   }
 
-  .christmas-button-primary:hover {
+  .newyear-button-primary:hover {
     box-shadow: 
-      0 6px 25px hsl(var(--christmas-red) / 0.5),
-      inset 0 1px 0 hsl(0 70% 60% / 0.4);
+      0 6px 30px hsl(var(--newyear-gold) / 0.6),
+      inset 0 1px 0 hsl(45 90% 80% / 0.5);
     transform: translateY(-2px);
   }
 
-  .christmas-button-secondary {
+  .newyear-button-secondary {
     @apply bg-secondary text-secondary-foreground font-semibold;
     background: linear-gradient(
       135deg,
-      hsl(var(--christmas-green)) 0%,
-      hsl(145 60% 28%) 100%
+      hsl(var(--newyear-purple)) 0%,
+      hsl(280 50% 40%) 100%
     );
     box-shadow: 
-      0 4px 15px hsl(var(--christmas-green) / 0.4),
-      inset 0 1px 0 hsl(145 50% 50% / 0.3);
+      0 4px 20px hsl(var(--newyear-purple) / 0.4),
+      inset 0 1px 0 hsl(280 60% 70% / 0.3);
   }
 
-  .christmas-heading {
-    @apply font-christmas;
+  .newyear-heading {
+    @apply font-festive;
     background: linear-gradient(
       135deg,
-      hsl(var(--christmas-red)) 0%,
-      hsl(var(--christmas-gold)) 50%,
-      hsl(var(--christmas-green)) 100%
+      hsl(var(--newyear-gold)) 0%,
+      hsl(var(--newyear-silver)) 40%,
+      hsl(var(--newyear-purple)) 70%,
+      hsl(var(--newyear-gold)) 100%
     );
+    background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     text-shadow: none;
-    animation: heading-shimmer 3s ease-in-out infinite;
+    animation: heading-shimmer 4s ease-in-out infinite;
   }
 
   @keyframes heading-shimmer {
     0%, 100% {
-      filter: brightness(1);
+      background-position: 0% center;
     }
     50% {
-      filter: brightness(1.2);
+      background-position: 100% center;
     }
   }
 
-  .christmas-glow {
+  .newyear-glow {
     box-shadow: 
-      0 0 25px hsl(var(--christmas-gold) / 0.4),
-      0 0 50px hsl(var(--christmas-red) / 0.15);
+      0 0 30px hsl(var(--newyear-gold) / 0.5),
+      0 0 60px hsl(var(--newyear-purple) / 0.2);
   }
 
-  .christmas-border {
+  .newyear-border {
     border: 2px solid transparent;
     background: 
       linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
-      linear-gradient(135deg, hsl(var(--christmas-red)), hsl(var(--christmas-gold)), hsl(var(--christmas-green))) border-box;
+      linear-gradient(135deg, hsl(var(--newyear-gold)), hsl(var(--newyear-silver)), hsl(var(--newyear-purple))) border-box;
+  }
+
+  /* Firework burst animation */
+  .firework {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: firework-burst 2s ease-out infinite;
+  }
+
+  @keyframes firework-burst {
+    0% {
+      transform: scale(0);
+      opacity: 1;
+      box-shadow: 
+        0 0 0 0 hsl(var(--newyear-gold)),
+        30px -30px 0 0 hsl(var(--newyear-gold)),
+        -30px -30px 0 0 hsl(var(--newyear-purple)),
+        30px 30px 0 0 hsl(var(--newyear-silver)),
+        -30px 30px 0 0 hsl(var(--newyear-gold)),
+        0 -40px 0 0 hsl(var(--newyear-purple)),
+        0 40px 0 0 hsl(var(--newyear-gold)),
+        40px 0 0 0 hsl(var(--newyear-silver)),
+        -40px 0 0 0 hsl(var(--newyear-purple));
+    }
+    50% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(2);
+      opacity: 0;
+      box-shadow: 
+        0 0 0 0 transparent,
+        60px -60px 0 0 transparent,
+        -60px -60px 0 0 transparent,
+        60px 60px 0 0 transparent,
+        -60px 60px 0 0 transparent,
+        0 -80px 0 0 transparent,
+        0 80px 0 0 transparent,
+        80px 0 0 0 transparent,
+        -80px 0 0 0 transparent;
+    }
   }
 }
