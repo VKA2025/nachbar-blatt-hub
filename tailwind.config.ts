@@ -14,15 +14,16 @@ export default {
     },
     extend: {
         fontFamily: {
-          christmas: ['Mountains of Christmas', 'cursive'],
           festive: ['Playfair Display', 'serif'],
+          celebration: ['Poppins', 'sans-serif'],
         },
         colors: {
-          christmas: {
-            red: "hsl(var(--christmas-red))",
-            green: "hsl(var(--christmas-green))",
-            gold: "hsl(var(--christmas-gold))",
-            snow: "hsl(var(--christmas-snow))",
+          newyear: {
+            gold: "hsl(var(--newyear-gold))",
+            silver: "hsl(var(--newyear-silver))",
+            midnight: "hsl(var(--newyear-midnight))",
+            purple: "hsl(var(--newyear-purple))",
+            sparkle: "hsl(var(--newyear-sparkle))",
           },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -91,10 +92,30 @@ export default {
             height: "0",
           },
         },
+        "sparkle": {
+          "0%, 100%": {
+            opacity: "1",
+            transform: "scale(1)",
+          },
+          "50%": {
+            opacity: "0.5",
+            transform: "scale(0.8)",
+          },
+        },
+        "float": {
+          "0%, 100%": {
+            transform: "translateY(0)",
+          },
+          "50%": {
+            transform: "translateY(-10px)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "sparkle": "sparkle 1.5s ease-in-out infinite",
+        "float": "float 3s ease-in-out infinite",
       },
     },
   },
